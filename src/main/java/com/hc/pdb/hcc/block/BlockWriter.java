@@ -4,6 +4,7 @@ import com.hc.pdb.Cell;
 import com.hc.pdb.conf.Configuration;
 import com.hc.pdb.conf.Constants;
 import com.hc.pdb.hcc.WriteContext;
+import com.hc.pdb.util.ByteBloomFilter;
 import com.hc.pdb.util.Bytes;
 
 import java.io.ByteArrayOutputStream;
@@ -48,8 +49,8 @@ public class BlockWriter implements IBlockWriter {
         return index;
     }
 
-    private void writeBloom(ByteArrayOutputStream bloom, byte[] key) {
-
+    private void writeBloom(ByteBloomFilter filter, byte[] key) {
+        filter.add(key);
     }
 
     private void writeIndex(ByteArrayOutputStream indexStream, byte[] key,long index) throws IOException {

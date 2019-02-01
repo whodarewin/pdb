@@ -1,5 +1,7 @@
 package com.hc.pdb.hcc;
 
+import com.hc.pdb.util.ByteBloomFilter;
+
 import java.io.ByteArrayOutputStream;
 
 /**
@@ -14,7 +16,11 @@ public class WriteContext {
     /**
      * 布隆过滤器
      */
-    private ByteArrayOutputStream bloom = new ByteArrayOutputStream();
+    private ByteBloomFilter bloom;
+
+    public WriteContext(ByteBloomFilter bloom) {
+        this.bloom = bloom;
+    }
 
     public ByteArrayOutputStream getIndex() {
         return index;
@@ -24,11 +30,11 @@ public class WriteContext {
         this.index = index;
     }
 
-    public ByteArrayOutputStream getBloom() {
+    public ByteBloomFilter getBloom() {
         return bloom;
     }
 
-    public void setBloom(ByteArrayOutputStream bloom) {
+    public void setBloom(ByteBloomFilter bloom) {
         this.bloom = bloom;
     }
 }

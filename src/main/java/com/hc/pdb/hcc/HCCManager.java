@@ -6,12 +6,13 @@ import com.hc.pdb.conf.Constants;
 import com.hc.pdb.file.FileConstants;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public class HCCManager {
     private Configuration configuration;
-    private List<HCCInfo> infos;
+    private List<HCCInfo> infos = new ArrayList<>();
 
     public HCCManager(Configuration configuration) {
         Preconditions.checkNotNull(configuration,"configuration can not be null");

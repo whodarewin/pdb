@@ -6,6 +6,7 @@ import com.hc.pdb.conf.Configuration;
 import com.hc.pdb.conf.Constants;
 import com.hc.pdb.file.FileConstants;
 import com.hc.pdb.hcc.block.BlockWriter;
+import com.hc.pdb.util.ByteBloomFilter;
 import com.hc.pdb.util.Bytes;
 
 import java.io.ByteArrayOutputStream;
@@ -35,15 +36,20 @@ public class HCCWriter implements IHCCWriter {
         if(path == null){
             throw new DBPathNotSetException();
         }
-        String fileName = UUID.randomUUID().toString() + FileConstants.DATA_FILE_SUFFIX;
+        if(path.lastIndexOf('/') != path.length() - 1){
+            path = path + '/';
+        }
+        String fileName = path + UUID.randomUUID().toString() + FileConstants.DATA_FILE_SUFFIX;
         File file = new File(fileName);
         if(!file.exists()){
             file.createNewFile();
         }
 
         try(FileOutputStream fileOutputStream = new FileOutputStream(file)) {
-
-            WriteContext context = new WriteContext();
+            double errorRate = configuration.getDouble(Constants.ERROR_RATE_KEY,Constants.ERROR_RATE);
+            ByteBloomFilter filter = new ByteBloomFilter(cells.size(),errorRate,1,1);
+            filter.allocBloom();
+            WriteContext context = new WriteContext(filter);
             //2 开始写block
 
             long blockFinishIndex = blockWriter.writeBlock(cells, fileOutputStream, context);
@@ -55,9 +61,10 @@ public class HCCWriter implements IHCCWriter {
             fileOutputStream.write(indexStream.toByteArray());
 
             //4 开始写bloomFilter
-            ByteArrayOutputStream bloomStream = context.getBloom();
-            long bloomFinishIndex = bloomStream.size() + indexFinishIndex;
-            fileOutputStream.write(bloomStream.toByteArray());
+            ByteBloomFilter bloomFilter = context.getBloom();
+
+            long bloomFinishIndex = bloomFilter.getByteSize() * 8 + indexFinishIndex;
+            bloomFilter.writeBloom(fileOutputStream);
             //4 开始写meta
             fileOutputStream.write(Bytes.toBytes(blockFinishIndex));
             fileOutputStream.write(Bytes.toBytes(indexFinishIndex));
