@@ -14,6 +14,13 @@ public class HCCComparator implements Comparator<HCCInfo> {
         byte[] start1 = o1.getStart();
         byte[] start2 = o2.getStart();
 
+        /**
+         * todo:reader 写好了删掉
+         */
+        if(start1 == null || start2 == null){
+            return 0;
+        }
+
         return Bytes.compare(start1,start2);
     }
 }

@@ -7,5 +7,6 @@ import java.util.List;
 
 public interface IHCCWriter {
 
-    void writeHCC(List<Cell> cells) throws IOException;
+    String writeHCC(List<Cell> cells) throws IOException;
+
 }

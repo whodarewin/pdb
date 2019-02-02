@@ -1,10 +1,13 @@
 package com.hc.pdb.hcc;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
 public interface HCCReader {
     /**
      * load bloom filter，index等信息
      */
-    void open();
+    void open() throws IOException;
 
     /**
      * 一次检索

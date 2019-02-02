@@ -8,6 +8,8 @@ import com.hc.pdb.file.FileConstants;
 import com.hc.pdb.hcc.block.BlockWriter;
 import com.hc.pdb.util.ByteBloomFilter;
 import com.hc.pdb.util.Bytes;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -17,7 +19,7 @@ import java.util.List;
 import java.util.UUID;
 
 public class HCCWriter implements IHCCWriter {
-    private static final byte[] HCC_WRITE_PREFIX = "hcc".getBytes();
+    private static final Logger LOGGER = LoggerFactory.getLogger(HCCWriter.class);
     private Configuration configuration;
     private HCCManager manager;
     private BlockWriter blockWriter;
@@ -30,15 +32,18 @@ public class HCCWriter implements IHCCWriter {
     }
 
     @Override
-    public void writeHCC(List<Cell> cells) throws IOException {
+    public String writeHCC(List<Cell> cells) throws IOException {
         //1 创建文件
         String path = configuration.get(Constants.DB_PATH_KEY);
+
         if(path == null){
             throw new DBPathNotSetException();
         }
+
         if(path.lastIndexOf('/') != path.length() - 1){
             path = path + '/';
         }
+
         String fileName = path + UUID.randomUUID().toString() + FileConstants.DATA_FILE_SUFFIX;
         File file = new File(fileName);
         if(!file.exists()){
@@ -54,22 +59,29 @@ public class HCCWriter implements IHCCWriter {
 
             long blockFinishIndex = blockWriter.writeBlock(cells, fileOutputStream, context);
 
+            long indexStartIndex = blockFinishIndex + 1;
+
             //3 开始写index
             //todo:优化掉toByteArray的copy
             ByteArrayOutputStream indexStream = context.getIndex();
-            long indexFinishIndex = indexStream.size() + blockFinishIndex;
+
             fileOutputStream.write(indexStream.toByteArray());
 
             //4 开始写bloomFilter
             ByteBloomFilter bloomFilter = context.getBloom();
 
-            long bloomFinishIndex = bloomFilter.getByteSize() * 8 + indexFinishIndex;
+            long bloomStartIndex = blockFinishIndex + context.getIndex().size() + 1;
             bloomFilter.writeBloom(fileOutputStream);
+
             //4 开始写meta
-            fileOutputStream.write(Bytes.toBytes(blockFinishIndex));
-            fileOutputStream.write(Bytes.toBytes(indexFinishIndex));
-            fileOutputStream.write(Bytes.toBytes(bloomFinishIndex));
-            fileOutputStream.write(HCC_WRITE_PREFIX);
+            fileOutputStream.write(Bytes.toBytes(indexStartIndex));
+            LOGGER.info("write index finish index {}", indexStartIndex);
+
+            fileOutputStream.write(Bytes.toBytes(bloomStartIndex));
+            LOGGER.info("write bloom finish index {}", bloomStartIndex);
+
         }
+
+        return fileName;
     }
 }

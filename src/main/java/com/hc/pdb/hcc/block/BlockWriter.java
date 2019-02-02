@@ -6,7 +6,6 @@ import com.hc.pdb.conf.Constants;
 import com.hc.pdb.hcc.WriteContext;
 import com.hc.pdb.util.ByteBloomFilter;
 import com.hc.pdb.util.Bytes;
-
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -27,10 +26,11 @@ public class BlockWriter implements IBlockWriter {
         byte[] preKey = null;
         long blockCurSize = 0;
         long index = 0;
+        writeIndex(context.getIndex(), cells.get(0).getKey(), index);
         for (Cell cell : cells) {
             if(preKey == null){
                 preKey = cell.getKey();
-            }else if(Bytes.compare(preKey,cell.getKey()) > 0){
+            }else if(Bytes.compare(preKey,cell.getKey()) >= 0){
                 throw new CellWrongOrderException();
             }
             byte[] bytes = cell.toByte();
@@ -46,6 +46,7 @@ public class BlockWriter implements IBlockWriter {
             }
             writeBloom(context.getBloom(),cell.getKey());
         }
+
         return index;
     }
 
