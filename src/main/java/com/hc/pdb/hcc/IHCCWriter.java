@@ -3,10 +3,10 @@ package com.hc.pdb.hcc;
 import com.hc.pdb.Cell;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.Collection;
 
 public interface IHCCWriter {
 
-    String writeHCC(List<Cell> cells) throws IOException;
+    String writeHCC(Collection<Cell> cells) throws IOException;
 
 }

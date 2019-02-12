@@ -1,5 +1,7 @@
 package com.hc.pdb;
 
+import java.util.Iterator;
+
 /**
  * pdb interface
  */
@@ -7,9 +9,9 @@ public interface PDB {
 
     byte[] get(byte[] key);
 
-    byte[] put(byte[] key,byte[] value);
+    void put(byte[] key,byte[] value);
 
-    byte[] scan(byte[] start,byte[] end);
+    Iterator<Cell> scan(byte[] start, byte[] end);
 
-    byte[] delete(byte[] key);
+    void delete(byte[] key);
 }

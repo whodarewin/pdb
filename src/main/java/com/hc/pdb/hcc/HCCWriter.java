@@ -15,7 +15,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.List;
+import java.util.Collection;
 import java.util.UUID;
 
 public class HCCWriter implements IHCCWriter {
@@ -32,7 +32,7 @@ public class HCCWriter implements IHCCWriter {
     }
 
     @Override
-    public String writeHCC(List<Cell> cells) throws IOException {
+    public String writeHCC(Collection<Cell> cells) throws IOException {
         //1 创建文件
         String path = configuration.get(Constants.DB_PATH_KEY);
 
@@ -51,7 +51,7 @@ public class HCCWriter implements IHCCWriter {
         }
 
         try(FileOutputStream fileOutputStream = new FileOutputStream(file)) {
-            double errorRate = configuration.getDouble(Constants.ERROR_RATE_KEY,Constants.ERROR_RATE);
+            double errorRate = configuration.getDouble(Constants.ERROR_RATE_KEY,Constants.DEFAULT_ERROR_RATE);
             ByteBloomFilter filter = new ByteBloomFilter(cells.size(),errorRate,1,1);
             filter.allocBloom();
             WriteContext context = new WriteContext(filter);

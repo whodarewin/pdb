@@ -9,6 +9,7 @@ import com.hc.pdb.util.Bytes;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 
 public class BlockWriter implements IBlockWriter {
@@ -19,14 +20,14 @@ public class BlockWriter implements IBlockWriter {
     }
 
     @Override
-    public long writeBlock(List<Cell> cells, FileOutputStream outputStream, WriteContext context) throws IOException {
+    public long writeBlock(Collection<Cell> cells, FileOutputStream outputStream, WriteContext context) throws IOException {
         long blockSize = conf.getLong(Constants.BLOCK_SIZE_KEY,Constants.BLOCK_SIZE);
         blockSize = blockSize * 1024;
 
         byte[] preKey = null;
         long blockCurSize = 0;
         long index = 0;
-        writeIndex(context.getIndex(), cells.get(0).getKey(), index);
+        writeIndex(context.getIndex(), cells.iterator().next().getKey(), index);
         for (Cell cell : cells) {
             if(preKey == null){
                 preKey = cell.getKey();

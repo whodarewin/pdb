@@ -10,5 +10,13 @@ public class Constants {
 
     public static final String ERROR_RATE_KEY = "error.rate.key";
 
-    public static final Double ERROR_RATE = 0.0001;
+    public static final Double DEFAULT_ERROR_RATE = 0.0001;
+
+    public static final String FLUSHER_THREAD_SIZE_KEY = "flusher.thread.size.key";
+
+    public static final int DEFAULT_FLUSHER_THREAD_SIZE = 8;
+
+    public static final String MEM_CACHE_MAX_SIZE_KEY = "mem.cache.max.size.key";
+
+    public static final long DEFAULT_MEM_CACHE_MAX_SIZE = 1024 * 1024 * 100;
 }
