@@ -51,13 +51,16 @@ public class HCCWriter implements IHCCWriter {
         }
 
         try(FileOutputStream fileOutputStream = new FileOutputStream(file)) {
+            //写prefix
+            fileOutputStream.write(FileConstants.HCC_WRITE_PREFIX);
+            //创建bloom filter
             double errorRate = configuration.getDouble(Constants.ERROR_RATE_KEY,Constants.DEFAULT_ERROR_RATE);
             ByteBloomFilter filter = new ByteBloomFilter(cells.size(),errorRate,1,1);
             filter.allocBloom();
             WriteContext context = new WriteContext(filter);
-            //2 开始写block
 
-            long blockFinishIndex = blockWriter.writeBlock(cells, fileOutputStream, context);
+            //2 开始写block
+            long blockFinishIndex = blockWriter.writeBlock(cells, fileOutputStream, context) + 3 * 8 ;
 
             long indexStartIndex = blockFinishIndex + 1;
 

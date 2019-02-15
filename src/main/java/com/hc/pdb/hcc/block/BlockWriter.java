@@ -10,7 +10,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.List;
 
 public class BlockWriter implements IBlockWriter {
     private Configuration conf;

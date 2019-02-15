@@ -19,7 +19,7 @@ public class PDBBuilder {
     }
 
     public PDBBuilder flusherThreadSize(int flushThreadSize){
-        configuration.put(Constants.FLUSHER_THREAD_SIZE,flushThreadSize);
+        configuration.put(Constants.FLUSHER_THREAD_SIZE_KEY,flushThreadSize);
         return this;
     }
 }

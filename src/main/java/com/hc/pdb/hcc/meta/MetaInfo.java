@@ -2,27 +2,27 @@ package com.hc.pdb.hcc.meta;
 
 public class MetaInfo {
 
-    private long indexStartIndex;
-    private long bloomStartIndex;
+    private int indexStartIndex;
+    private int bloomStartIndex;
 
-    public MetaInfo(long indexStartIndex, long bloomStartIndex) {
+    public MetaInfo(int indexStartIndex, int bloomStartIndex) {
         this.indexStartIndex = indexStartIndex;
         this.bloomStartIndex = bloomStartIndex;
     }
 
-    public long getIndexStartIndex() {
+    public int getIndexStartIndex() {
         return indexStartIndex;
     }
 
-    public void setIndexStartIndex(long indexStartIndex) {
+    public void setIndexStartIndex(int indexStartIndex) {
         this.indexStartIndex = indexStartIndex;
     }
 
-    public long getBloomStartIndex() {
+    public int getBloomStartIndex() {
         return bloomStartIndex;
     }
 
-    public void setBloomStartIndex(long bloomStartIndex) {
+    public void setBloomStartIndex(int bloomStartIndex) {
         this.bloomStartIndex = bloomStartIndex;
     }
 }

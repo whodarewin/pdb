@@ -1,7 +1,5 @@
 package com.hc.pdb.hcc.meta;
 
-import com.hc.pdb.file.FileConstants;
-
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
