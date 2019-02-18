@@ -3,6 +3,7 @@ package com.hc.pdb.hcc.block;
 import com.hc.pdb.Cell;
 import com.hc.pdb.conf.Configuration;
 import com.hc.pdb.conf.Constants;
+import com.hc.pdb.file.FileConstants;
 import com.hc.pdb.hcc.WriteContext;
 import com.hc.pdb.util.ByteBloomFilter;
 import com.hc.pdb.util.Bytes;
@@ -13,19 +14,21 @@ import java.util.Collection;
 
 public class BlockWriter implements IBlockWriter {
     private Configuration conf;
+    private int indexShift = FileConstants.HCC_WRITE_PREFIX.length;
 
     public BlockWriter(Configuration conf) {
         this.conf = conf;
     }
 
     @Override
-    public long writeBlock(Collection<Cell> cells, FileOutputStream outputStream, WriteContext context) throws IOException {
+    public int writeBlock(Collection<Cell> cells, FileOutputStream outputStream, WriteContext context)
+            throws IOException {
         long blockSize = conf.getLong(Constants.BLOCK_SIZE_KEY,Constants.BLOCK_SIZE);
         blockSize = blockSize * 1024;
 
         byte[] preKey = null;
-        long blockCurSize = 0;
-        long index = 0;
+        int blockCurSize = 0;
+        int index = indexShift;
         writeIndex(context.getIndex(), cells.iterator().next().getKey(), index);
         for (Cell cell : cells) {
             if(preKey == null){
@@ -38,6 +41,7 @@ public class BlockWriter implements IBlockWriter {
             blockCurSize = blockCurSize + bytes.length;
             index = index + bytes.length;
 
+            //写数据
             outputStream.write(bytes);
 
             if(blockCurSize > blockSize){

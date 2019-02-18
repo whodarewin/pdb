@@ -5,18 +5,19 @@ import com.hc.pdb.util.Bytes;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 public class Cell {
 
     private byte[] key;
     private byte[] value;
-    private long timeToDrop;
+    private long ttl;
 
 
     public Cell(byte[] key, byte[] value, long ttl) {
         this.key = key;
         this.value = value;
-        this.timeToDrop = System.currentTimeMillis() + ttl;
+        this.ttl = System.currentTimeMillis() + ttl;
 
     }
 
@@ -29,17 +30,29 @@ public class Cell {
     }
 
     public long getTimeToDrop() {
-        return timeToDrop;
+        return ttl;
     }
     //key length + key timeToDrop + value
     public byte[] toByte() throws IOException {
         //todo:抛弃output stream 的写法，写到文件里要增加version字段。
-        int keyLength = key.length;
+
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        outputStream.write(keyLength);
+        outputStream.write(key.length);
         outputStream.write(key);
-        outputStream.write(Bytes.toBytes(timeToDrop));
+        outputStream.write(value.length);
         outputStream.write(value);
+        outputStream.write(Bytes.toBytes(ttl));
         return outputStream.toByteArray();
+    }
+
+    public static Cell toCell(ByteBuffer byteBuffer){
+        int keyL = byteBuffer.getInt();
+        byte[] key = new byte[keyL];
+        byteBuffer.get(key);
+        int valueL = byteBuffer.getInt();
+        byte[] value = new byte[valueL];
+        byteBuffer.get(value);
+        long ttl = byteBuffer.getLong();
+        return new Cell(key,value,ttl);
     }
 }

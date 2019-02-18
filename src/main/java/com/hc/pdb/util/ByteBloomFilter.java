@@ -240,6 +240,11 @@ public class ByteBloomFilter {
         this.hash = Hash.getInstance(hashType);
     }
 
+    public ByteBloomFilter(int hashType,ByteBuffer bloom){
+        this(hashType);
+        this.bloom = bloom;
+    }
+
     /**
      * Determines & initializes bloom filter meta data from user config. Call
      * {@link #allocBloom()} to allocate bloom filter data.
@@ -366,7 +371,7 @@ public class ByteBloomFilter {
     /**
      * Should only be used in tests
      */
-    boolean contains(byte[] buf) {
+    public boolean contains(byte[] buf) {
         return contains(buf, 0, buf.length, this.bloom);
     }
 

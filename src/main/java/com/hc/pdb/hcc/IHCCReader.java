@@ -1,11 +1,15 @@
 package com.hc.pdb.hcc;
 
+import com.hc.pdb.Cell;
+
+import java.io.IOException;
+
 public interface IHCCReader {
     /**
      * load bloom filter，index等信息
      */
     public static enum Result{
-        exit,
+        not_exist,
         dontKnow
     }
 
@@ -17,13 +21,13 @@ public interface IHCCReader {
     Result exist(byte[] key);
 
     /**
-     * 下一个key
+     * 下一个cell
      * @param key
      */
-    void next(byte[] key);
+    Cell next(byte[] key) throws IOException;
 
     /**
      *  关闭
      */
-    void close();
+    void close() throws IOException;
 }

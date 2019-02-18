@@ -10,8 +10,8 @@ public class MetaReader implements IMetaReader {
         //todo:怎样让这些固定的位置信息自动记录呢
         file.seek(file.length() - 8 * 2);
 
-        long indexStartIndex = file.readLong();
-        long bloomStartIndex = file.readLong();
+        int indexStartIndex = file.readInt();
+        int bloomStartIndex = file.readInt();
 
         return new MetaInfo(indexStartIndex,bloomStartIndex);
     }

@@ -20,6 +20,7 @@ import java.util.UUID;
 
 public class HCCWriter implements IHCCWriter {
     private static final Logger LOGGER = LoggerFactory.getLogger(HCCWriter.class);
+
     private Configuration configuration;
     private HCCManager manager;
     private BlockWriter blockWriter;
@@ -60,9 +61,9 @@ public class HCCWriter implements IHCCWriter {
             WriteContext context = new WriteContext(filter);
 
             //2 开始写block
-            long blockFinishIndex = blockWriter.writeBlock(cells, fileOutputStream, context) + 3 * 8 ;
+            int blockFinishIndex = blockWriter.writeBlock(cells, fileOutputStream, context);
 
-            long indexStartIndex = blockFinishIndex + 1;
+            int indexStartIndex = blockFinishIndex + 1;
 
             //3 开始写index
             //todo:优化掉toByteArray的copy
@@ -73,7 +74,7 @@ public class HCCWriter implements IHCCWriter {
             //4 开始写bloomFilter
             ByteBloomFilter bloomFilter = context.getBloom();
 
-            long bloomStartIndex = blockFinishIndex + context.getIndex().size() + 1;
+            int bloomStartIndex = blockFinishIndex + context.getIndex().size() + 1;
             bloomFilter.writeBloom(fileOutputStream);
 
             //4 开始写meta

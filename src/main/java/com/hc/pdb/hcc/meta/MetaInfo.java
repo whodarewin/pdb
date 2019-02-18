@@ -1,6 +1,7 @@
 package com.hc.pdb.hcc.meta;
 
 public class MetaInfo {
+    public static final int META_SIZE = 8;
 
     private int indexStartIndex;
     private int bloomStartIndex;

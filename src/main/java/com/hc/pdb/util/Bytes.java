@@ -11,8 +11,24 @@ public class Bytes {
         return b;
     }
 
+    public static byte[] toBytes(int val){
+        byte [] b = new byte[4];
+        for(int i = 3; i > 0; i--) {
+            b[i] = (byte) val;
+            val >>>= 8;
+        }
+        b[0] = (byte) val;
+        return b;
+    }
+
+
+
     public static long toLong(byte[] b){
         return UnsafeAccess.toLong(b,0);
+    }
+
+    public static int toInt(byte[] b){
+        return UnsafeAccess.toInt(b,0);
     }
 
     public static int compare(byte[] bytes1, byte[] bytes2){

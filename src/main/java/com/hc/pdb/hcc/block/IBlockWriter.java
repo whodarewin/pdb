@@ -8,5 +8,5 @@ import java.util.Collection;
 import java.util.List;
 
 public interface IBlockWriter {
-    long writeBlock(Collection<Cell> cells, FileOutputStream outputStream, WriteContext context) throws IOException;
+    int writeBlock(Collection<Cell> cells, FileOutputStream outputStream, WriteContext context) throws IOException;
 }
