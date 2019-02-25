@@ -9,10 +9,10 @@ import com.hc.pdb.util.Bytes;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
-import java.util.List;
 import java.util.TreeMap;
 
 public class HCCReader implements IHCCReader {
+
     private MetaInfo metaInfo;
     /**
      * bloom filter
@@ -23,7 +23,7 @@ public class HCCReader implements IHCCReader {
      */
     private RandomAccessFile file;
     /**
-     * 索引
+     * 索引 block的开始key和blcok的开始index
      */
     private TreeMap<byte[],Integer> key2index = new TreeMap<>(Bytes::compare);
 
@@ -77,20 +77,28 @@ public class HCCReader implements IHCCReader {
 
     @Override
     public Cell next(byte[] key) throws IOException {
-        //1 找到key的index
-        int start = this.key2index.lowerEntry(key).getValue();
-        int end = this.key2index.higherEntry(key).getValue();
+        //1 找到key所定义的index
+        Integer start = this.key2index.lowerEntry(key).getValue();
+        Integer end = this.key2index.higherEntry(key).getValue();
         //2 读取到block
-        List<Cell> cells = readCell(start,end);
+        Cell ret = readCell(start,end, key);
 
-        //3 遍历cell，查询key的cell
-        return null;
+
+        return ret;
     }
 
-    private List<Cell> readCell(int start, int end) throws IOException {
+    private Cell readCell(int start, int end, byte[] theKey) throws IOException {
         ByteBuffer blockBuffer = ByteBuffer.allocate(end - start);
         file.getChannel().read(blockBuffer,start);
-        //todo:
+        byte[] key = null;
+        int position = blockBuffer.position();
+        while((key = Cell.readKey(blockBuffer)) != null){
+            if(Bytes.compare(key,theKey) > 0){
+                blockBuffer.position(position);
+                return Cell.toCell(blockBuffer);
+            }
+            position = blockBuffer.position();
+        }
         return null;
     }
 

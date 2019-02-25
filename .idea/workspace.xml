@@ -2,19 +2,17 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="708837e0-399d-4ab7-a529-65dbf8cb0222" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/test/java/com/hc/pdb/Test.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/hc/pdb/exception/NoEnoughByteException.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/hc/pdb/Cell.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/hc/pdb/Cell.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/HCCReader.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/HCCReader.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/HCCWriter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/HCCWriter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/IHCCReader.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/IHCCReader.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/IHCCWriter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/IHCCWriter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/WriteContext.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/WriteContext.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/block/BlockWriter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/block/BlockWriter.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/block/IBlockWriter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/block/IBlockWriter.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/meta/MetaInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/meta/MetaInfo.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/meta/MetaReader.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/meta/MetaReader.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/package-info.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/package-info.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/hc/pdb/util/ByteBloomFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/hc/pdb/util/ByteBloomFilter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/hc/pdb/util/Bytes.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/hc/pdb/util/Bytes.java" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <ignored path="$PROJECT_DIR$/target/" />
@@ -28,41 +26,41 @@
     <session id="384408951">
       <usages-collector id="statistics.lifecycle.project">
         <counts>
-          <entry key="project.closed" value="11" />
+          <entry key="project.closed" value="12" />
           <entry key="project.open.time.1" value="7" />
           <entry key="project.open.time.11" value="1" />
           <entry key="project.open.time.2" value="1" />
           <entry key="project.open.time.3" value="1" />
           <entry key="project.open.time.5" value="1" />
-          <entry key="project.open.time.8" value="1" />
-          <entry key="project.opened" value="12" />
+          <entry key="project.open.time.8" value="2" />
+          <entry key="project.opened" value="13" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
-          <entry key="java" value="21366" />
+          <entry key="java" value="24108" />
           <entry key="txt" value="40" />
           <entry key="xml" value="58" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
-          <entry key="JAVA" value="21366" />
+          <entry key="JAVA" value="24108" />
           <entry key="PLAIN_TEXT" value="40" />
           <entry key="XML" value="58" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.open">
         <counts>
-          <entry key="class" value="1" />
-          <entry key="java" value="230" />
+          <entry key="class" value="2" />
+          <entry key="java" value="242" />
           <entry key="xml" value="4" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.open">
         <counts>
-          <entry key="CLASS" value="1" />
-          <entry key="JAVA" value="230" />
+          <entry key="CLASS" value="2" />
+          <entry key="JAVA" value="242" />
           <entry key="XML" value="4" />
         </counts>
       </usages-collector>
@@ -70,11 +68,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/HCCReader.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="618">
-              <caret line="93" column="20" selection-start-line="93" selection-start-column="20" selection-end-line="93" selection-end-column="20" />
+            <state relative-caret-position="263">
+              <caret line="35" column="31" selection-start-line="35" selection-start-column="31" selection-end-line="35" selection-end-column="31" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -85,17 +83,20 @@
       <file pinned="false" current-in-tab="false">
         <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_181.jdk/Contents/Home/src.zip!/java/io/RandomAccessFile.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="430">
-              <caret line="568" column="23" selection-start-line="568" selection-start-column="23" selection-end-line="568" selection-end-column="23" />
+            <state relative-caret-position="261">
+              <caret line="375" column="15" selection-start-line="375" selection-start-column="15" selection-end-line="375" selection-end-column="15" />
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/test/java/com/hc/pdb/Test.java">
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/meta/MetaReader.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="30">
-              <caret line="2" column="20" selection-start-line="2" selection-start-column="20" selection-end-line="2" selection-end-column="20" />
+            <state relative-caret-position="165">
+              <caret line="11" column="43" selection-start-line="11" selection-start-column="43" selection-end-line="11" selection-end-column="43" />
+              <folding>
+                <element signature="imports" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -103,36 +104,18 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/meta/MetaInfo.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="315">
-              <caret line="29" lean-forward="true" selection-start-line="29" selection-end-line="29" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/java/com/hc/pdb/Cell.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="513">
-              <caret line="43" column="47" lean-forward="true" selection-start-line="43" selection-start-column="47" selection-end-line="43" selection-end-column="47" />
+            <state relative-caret-position="255">
+              <caret line="17" column="11" selection-start-line="17" selection-start-column="11" selection-end-line="17" selection-end-column="11" />
               <folding>
                 <element signature="imports" expanded="true" />
-                <element signature="e#423#424#0" expanded="true" />
-                <element signature="e#449#450#0" expanded="true" />
-                <element signature="e#544#545#0" expanded="true" />
-                <element signature="e#577#578#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_181.jdk/Contents/Home/src.zip!/java/nio/Buffer.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-8">
-              <caret line="204" column="68" selection-start-line="204" selection-start-column="68" selection-end-line="204" selection-end-column="68" />
-              <folding>
-                <element signature="e#7176#7177#0" expanded="true" />
-                <element signature="e#7207#7208#0" expanded="true" />
+                <element signature="e#897#898#0" expanded="true" />
+                <element signature="e#928#929#0" expanded="true" />
+                <element signature="e#976#977#0" expanded="true" />
+                <element signature="e#1016#1017#0" expanded="true" />
+                <element signature="e#1049#1050#0" expanded="true" />
+                <element signature="e#1078#1079#0" expanded="true" />
+                <element signature="e#1122#1123#0" expanded="true" />
+                <element signature="e#1158#1159#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -141,8 +124,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/HCCWriter.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="333">
-              <caret line="67" column="24" lean-forward="true" selection-start-line="67" selection-start-column="24" selection-end-line="67" selection-end-column="24" />
+            <state relative-caret-position="694">
+              <caret line="88" lean-forward="true" selection-start-line="88" selection-end-line="88" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -151,27 +134,39 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/block/BlockWriter.java">
+        <entry file="file://$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/IHCCWriter.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-26">
-              <caret line="14" column="38" lean-forward="true" selection-start-line="14" selection-start-column="38" selection-end-line="14" selection-end-column="38" />
-              <folding>
-                <element signature="imports" expanded="true" />
-              </folding>
+            <state relative-caret-position="210">
+              <caret line="18" column="24" selection-start-line="18" selection-start-column="24" selection-end-line="18" selection-end-column="24" />
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/java/com/hc/pdb/util/Bytes.java">
+        <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_181.jdk/Contents/Home/src.zip!/java/util/Collection.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="195">
-              <caret line="13" column="40" selection-start-line="13" selection-start-column="40" selection-end-line="13" selection-end-column="40" />
+            <state relative-caret-position="238">
+              <caret line="141" column="3" lean-forward="true" selection-start-line="141" selection-start-column="3" selection-end-line="141" selection-end-column="3" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/WriteContext.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="540">
+              <caret line="39" column="5" selection-start-line="39" selection-start-column="5" selection-end-line="39" selection-end-column="5" />
               <folding>
-                <element signature="e#319#320#0" expanded="true" />
-                <element signature="e#366#367#0" expanded="true" />
-                <element signature="e#410#411#0" expanded="true" />
-                <element signature="e#438#439#0" expanded="true" />
+                <element signature="e#469#470#0" expanded="true" />
+                <element signature="e#503#504#0" expanded="true" />
+                <element signature="e#550#551#0" expanded="true" />
+                <element signature="e#578#579#0" expanded="true" />
+                <element signature="e#635#636#0" expanded="true" />
+                <element signature="e#669#670#0" expanded="true" />
+                <element signature="e#710#711#0" expanded="true" />
+                <element signature="e#738#739#0" expanded="true" />
+                <element signature="e#789#790#0" expanded="true" />
+                <element signature="e#823#824#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -180,8 +175,20 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/block/IBlockWriter.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="30">
-              <caret line="7" column="22" lean-forward="true" selection-start-line="7" selection-start-column="22" selection-end-line="7" selection-end-column="22" />
+            <state relative-caret-position="75">
+              <caret line="5" column="27" selection-start-line="5" selection-start-column="27" selection-end-line="5" selection-end-column="27" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/block/BlockWriter.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="156">
+              <caret line="15" column="41" lean-forward="true" selection-start-line="15" selection-start-column="41" selection-end-line="15" selection-end-column="41" />
+              <folding>
+                <element signature="imports" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -229,7 +236,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/src/main/java/com/hc/pdb/util/Filter.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/hc/pdb/util/Hash.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/hc/pdb/util/BloomFilterUtil.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/hc/pdb/hash/MurmurHash3.java" />
@@ -238,7 +244,6 @@
         <option value="$PROJECT_DIR$/src/main/java/com/hc/pdb/hash/Hash.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/hc/pdb/util/CellUtil.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/HCCMeta.java" />
-        <option value="$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/WriteContext.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/hc/pdb/conf/Configuration.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/HCCManager.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/IndexInfo.java" />
@@ -250,7 +255,6 @@
         <option value="$PROJECT_DIR$/src/test/java/com/hc/pdb/HCCWriterTest.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/bloom/IBloomFilterReader.java" />
         <option value="$PROJECT_DIR$/src/test/java/com/hc/pdb/MetaReaderTest.java" />
-        <option value="$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/IHCCWriter.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/hc/pdb/PDB.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/hc/pdb/DiskPDB.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/hc/pdb/mem/MemCache.java" />
@@ -271,15 +275,18 @@
         <option value="$PROJECT_DIR$/src/main/java/com/hc/pdb/util/ByteBloomFilter.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/package-info.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/IHCCReader.java" />
-        <option value="$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/meta/MetaReader.java" />
-        <option value="$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/HCCWriter.java" />
-        <option value="$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/block/BlockWriter.java" />
-        <option value="$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/block/IBlockWriter.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/hc/pdb/util/Bytes.java" />
         <option value="$PROJECT_DIR$/src/test/java/com/hc/pdb/Test.java" />
-        <option value="$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/meta/MetaInfo.java" />
+        <option value="$PROJECT_DIR$/src/main/java/com/hc/pdb/exception/NoEnoughByteException.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/hc/pdb/Cell.java" />
+        <option value="$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/meta/MetaInfo.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/HCCReader.java" />
+        <option value="$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/IHCCWriter.java" />
+        <option value="$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/block/BlockWriter.java" />
+        <option value="$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/block/IBlockWriter.java" />
+        <option value="$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/WriteContext.java" />
+        <option value="$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/HCCWriter.java" />
+        <option value="$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/meta/MetaReader.java" />
       </list>
     </option>
   </component>
@@ -296,7 +303,7 @@
       </MavenImportingSettings>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="6" fullScreen="true">
+  <component name="ProjectFrameBounds" fullScreen="true">
     <option name="y" value="23" />
     <option name="width" value="1440" />
     <option name="height" value="805" />
@@ -308,7 +315,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="PackagesPane" />
       <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
@@ -377,17 +383,6 @@
               <item name="pdb" type="b2602c69:ProjectViewProjectNode" />
               <item name="pdb" type="462c0819:PsiDirectoryNode" />
               <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="main" type="462c0819:PsiDirectoryNode" />
-              <item name="java" type="462c0819:PsiDirectoryNode" />
-              <item name="com" type="462c0819:PsiDirectoryNode" />
-              <item name="hc" type="462c0819:PsiDirectoryNode" />
-              <item name="pdb" type="462c0819:PsiDirectoryNode" />
-              <item name="util" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="pdb" type="b2602c69:ProjectViewProjectNode" />
-              <item name="pdb" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
               <item name="test" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
@@ -428,14 +423,15 @@
           <select />
         </subPane>
       </pane>
+      <pane id="PackagesPane" />
     </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="SONARLINT_PRECOMMIT_ANALYSIS" value="false" />
-    <property name="SearchEverywhereHistoryKey" value="MetaInfo&#9;FILE&#9;file:///Users/momo/sourcecode/pdb/src/main/java/com/hc/pdb/hcc/meta/MetaInfo.java&#10;Cell&#9;FILE&#9;file:///Users/momo/sourcecode/pdb/src/main/java/com/hc/pdb/Cell.java&#10;Bytes&#9;FILE&#9;file:///Users/momo/sourcecode/pdb/src/main/java/com/hc/pdb/util/Bytes.java&#10;HCCWriter&#9;FILE&#9;file:///Users/momo/sourcecode/pdb/src/main/java/com/hc/pdb/hcc/HCCWriter.java&#10;HCCReader&#9;FILE&#9;file:///Users/momo/sourcecode/pdb/src/main/java/com/hc/pdb/hcc/HCCReader.java&#10;InputStream&#9;PSI&#9;JAVA://java.io.InputStream&#10;BlockWriter&#9;FILE&#9;file:///Users/momo/sourcecode/pdb/src/main/java/com/hc/pdb/hcc/block/BlockWriter.java&#10;BlocWriter&#9;FILE&#9;file:///Users/momo/sourcecode/pdb/src/main/java/com/hc/pdb/hcc/block/BlockWriter.java&#10;fileConstants&#9;FILE&#9;file:///Users/momo/sourcecode/pdb/src/main/java/com/hc/pdb/file/FileConstants.java&#10;Bloomfilter&#9;FILE&#9;file:///Users/momo/sourcecode/pdb/src/main/java/com/hc/pdb/util/ByteBloomFilter.java&#10;FileCOn&#9;FILE&#9;file:///Users/momo/sourcecode/pdb/src/main/java/com/hc/pdb/file/FileConstants.java&#10;CellUtil&#9;FILE&#9;file:///Users/momo/sourcecode/pdb/src/main/java/com/hc/pdb/util/CellUtil.java&#10;Flusher&#9;FILE&#9;file:///Users/momo/sourcecode/pdb/src/main/java/com/hc/pdb/flusher/Flusher.java&#10;HccWriter&#9;FILE&#9;file:///Users/momo/sourcecode/pdb/src/main/java/com/hc/pdb/hcc/HCCWriter.java&#10;HCCW&#9;FILE&#9;file:///Users/momo/sourcecode/pdb/src/main/java/com/hc/pdb/hcc/HCCWriter.java&#10;MEtaReader&#9;FILE&#9;file:///Users/momo/sourcecode/pdb/src/main/java/com/hc/pdb/hcc/meta/MetaReader.java&#10;IBloomFilterReader&#9;FILE&#9;file:///Users/momo/sourcecode/pdb/src/main/java/com/hc/pdb/hcc/bloom/IBloomFilterReader.java&#10;FIleConstants&#9;FILE&#9;file:///Users/momo/sourcecode/pdb/src/main/java/com/hc/pdb/file/FileConstants.java&#10;Bloom&#9;FILE&#9;file:///Users/momo/sourcecode/pdb/src/main/java/com/hc/pdb/util/ByteBloomFilter.java&#10;FIleCon&#9;FILE&#9;file:///Users/momo/sourcecode/pdb/src/main/java/com/hc/pdb/file/FileConstants.java&#10;FIleCOn&#9;FILE&#9;file:///Users/momo/sourcecode/pdb/src/main/java/com/hc/pdb/file/FileConstants.java&#10; Cons&#9;FILE&#9;file:///Users/momo/sourcecode/pdb/src/main/java/com/hc/pdb/conf/Constants.java&#10;WriteCOntext&#9;FILE&#9;file:///Users/momo/sourcecode/pdb/src/main/java/com/hc/pdb/hcc/WriteContext.java&#10;BloomFilter&#9;FILE&#9;file:///Users/momo/sourcecode/pdb/src/main/java/com/hc/pdb/util/ByteBloomFilter.java&#10;COnstan&#9;FILE&#9;file:///Users/momo/sourcecode/pdb/src/main/java/com/hc/pdb/conf/Constants.java&#10;Configuration&#9;FILE&#9;file:///Users/momo/sourcecode/pdb/src/main/java/com/hc/pdb/conf/Configuration.java&#10;HCCm&#9;FILE&#9;file:///Users/momo/sourcecode/pdb/src/main/java/com/hc/pdb/hcc/HCCManager.java&#10;Comparator&#9;PSI&#9;JAVA://java.util.Comparators&#10;HCCComparator&#9;FILE&#9;file:///Users/momo/sourcecode/pdb/src/main/java/com/hc/pdb/hcc/HCCComparator.java&#10;HCC&#9;PSI&#9;JAVA://com.hc.pdb.hcc.HCCManager&#10;HCCInfo&#9;FILE&#9;file:///Users/momo/sourcecode/pdb/src/main/java/com/hc/pdb/hcc/HCCInfo.java&#10;ArrayList&#9;PSI&#9;JAVA://java.util.ArrayList" />
+    <property name="SearchEverywhereHistoryKey" value="HCCReader&#9;FILE&#9;file:///Users/momo/sourcecode/pdb/src/main/java/com/hc/pdb/hcc/HCCReader.java&#10;BlockWriter&#9;FILE&#9;file:///Users/momo/sourcecode/pdb/src/main/java/com/hc/pdb/hcc/block/BlockWriter.java&#10;HCCWriter&#9;FILE&#9;file:///Users/momo/sourcecode/pdb/src/main/java/com/hc/pdb/hcc/HCCWriter.java&#10;Cell&#9;FILE&#9;file:///Users/momo/sourcecode/pdb/src/main/java/com/hc/pdb/Cell.java&#10;MetaInfo&#9;FILE&#9;file:///Users/momo/sourcecode/pdb/src/main/java/com/hc/pdb/hcc/meta/MetaInfo.java&#10;Bytes&#9;FILE&#9;file:///Users/momo/sourcecode/pdb/src/main/java/com/hc/pdb/util/Bytes.java&#10;InputStream&#9;PSI&#9;JAVA://java.io.InputStream&#10;BlocWriter&#9;FILE&#9;file:///Users/momo/sourcecode/pdb/src/main/java/com/hc/pdb/hcc/block/BlockWriter.java&#10;fileConstants&#9;FILE&#9;file:///Users/momo/sourcecode/pdb/src/main/java/com/hc/pdb/file/FileConstants.java&#10;Bloomfilter&#9;FILE&#9;file:///Users/momo/sourcecode/pdb/src/main/java/com/hc/pdb/util/ByteBloomFilter.java&#10;FileCOn&#9;FILE&#9;file:///Users/momo/sourcecode/pdb/src/main/java/com/hc/pdb/file/FileConstants.java&#10;CellUtil&#9;FILE&#9;file:///Users/momo/sourcecode/pdb/src/main/java/com/hc/pdb/util/CellUtil.java&#10;Flusher&#9;FILE&#9;file:///Users/momo/sourcecode/pdb/src/main/java/com/hc/pdb/flusher/Flusher.java&#10;HccWriter&#9;FILE&#9;file:///Users/momo/sourcecode/pdb/src/main/java/com/hc/pdb/hcc/HCCWriter.java&#10;HCCW&#9;FILE&#9;file:///Users/momo/sourcecode/pdb/src/main/java/com/hc/pdb/hcc/HCCWriter.java&#10;MEtaReader&#9;FILE&#9;file:///Users/momo/sourcecode/pdb/src/main/java/com/hc/pdb/hcc/meta/MetaReader.java&#10;IBloomFilterReader&#9;FILE&#9;file:///Users/momo/sourcecode/pdb/src/main/java/com/hc/pdb/hcc/bloom/IBloomFilterReader.java&#10;FIleConstants&#9;FILE&#9;file:///Users/momo/sourcecode/pdb/src/main/java/com/hc/pdb/file/FileConstants.java&#10;Bloom&#9;FILE&#9;file:///Users/momo/sourcecode/pdb/src/main/java/com/hc/pdb/util/ByteBloomFilter.java&#10;FIleCon&#9;FILE&#9;file:///Users/momo/sourcecode/pdb/src/main/java/com/hc/pdb/file/FileConstants.java&#10;FIleCOn&#9;FILE&#9;file:///Users/momo/sourcecode/pdb/src/main/java/com/hc/pdb/file/FileConstants.java&#10; Cons&#9;FILE&#9;file:///Users/momo/sourcecode/pdb/src/main/java/com/hc/pdb/conf/Constants.java&#10;WriteCOntext&#9;FILE&#9;file:///Users/momo/sourcecode/pdb/src/main/java/com/hc/pdb/hcc/WriteContext.java&#10;BloomFilter&#9;FILE&#9;file:///Users/momo/sourcecode/pdb/src/main/java/com/hc/pdb/util/ByteBloomFilter.java&#10;COnstan&#9;FILE&#9;file:///Users/momo/sourcecode/pdb/src/main/java/com/hc/pdb/conf/Constants.java&#10;Configuration&#9;FILE&#9;file:///Users/momo/sourcecode/pdb/src/main/java/com/hc/pdb/conf/Configuration.java&#10;HCCm&#9;FILE&#9;file:///Users/momo/sourcecode/pdb/src/main/java/com/hc/pdb/hcc/HCCManager.java&#10;Comparator&#9;PSI&#9;JAVA://java.util.Comparators&#10;HCCComparator&#9;FILE&#9;file:///Users/momo/sourcecode/pdb/src/main/java/com/hc/pdb/hcc/HCCComparator.java&#10;HCC&#9;PSI&#9;JAVA://com.hc.pdb.hcc.HCCManager&#10;HCCInfo&#9;FILE&#9;file:///Users/momo/sourcecode/pdb/src/main/java/com/hc/pdb/hcc/HCCInfo.java&#10;ArrayList&#9;PSI&#9;JAVA://java.util.ArrayList" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="aspect.path.notification.shown" value="true" />
-    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1550488152053" />
+    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1551086166374" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
     <property name="project.structure.last.edited" value="Modules" />
@@ -557,7 +553,8 @@
       <workItem from="1549959441955" duration="5595000" />
       <workItem from="1550058611874" duration="1711000" />
       <workItem from="1550226031447" duration="3607000" />
-      <workItem from="1550479048206" duration="7504000" />
+      <workItem from="1550479048206" duration="8709000" />
+      <workItem from="1551082372532" duration="3758000" />
     </task>
     <task id="LOCAL-00001" summary="bloom filter">
       <created>1548995071152</created>
@@ -587,7 +584,14 @@
       <option name="project" value="LOCAL" />
       <updated>1550230206773</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="reader">
+      <created>1550488167302</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1550488167302</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -623,13 +627,13 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="55469000" />
+    <option name="totallyTimeSpent" value="60432000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="0" width="1440" height="900" extended-state="6" />
+    <frame x="0" y="0" width="1440" height="900" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.49879518" visible="true" weight="0.28898427" />
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.49879518" visible="true" weight="0.2932761" />
       <window_info id="Structure" order="1" sideWeight="0.50120485" side_tool="true" weight="0.2746781" />
       <window_info id="Image Layers" order="2" />
       <window_info id="Designer" order="3" />
@@ -674,35 +678,6 @@
     <option name="LAST_COMMIT_MESSAGE" value="reader" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/IndexInfo.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="45">
-          <caret line="3" column="15" selection-start-line="3" selection-start-column="15" selection-end-line="3" selection-end-column="15" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/com/hc/pdb/conf/Configuration.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="330">
-          <caret line="22" column="19" selection-start-line="22" selection-start-column="19" selection-end-line="22" selection-end-column="19" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_181.jdk/Contents/Home/src.zip!/java/util/concurrent/Executors.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="177">
-          <caret line="87" column="34" selection-start-line="87" selection-start-column="34" selection-end-line="87" selection-end-column="34" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/com/hc/pdb/PDB.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="105">
-          <caret line="7" column="17" selection-start-line="7" selection-start-column="17" selection-end-line="7" selection-end-column="17" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/com/hc/pdb/util/NotifyableQueue.java" />
     <entry file="file://$PROJECT_DIR$/src/main/java/com/hc/pdb/conf/Constants.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="285">
@@ -848,20 +823,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/WriteContext.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="105">
-          <caret line="9" column="13" selection-start-line="9" selection-start-column="13" selection-end-line="9" selection-end-column="13" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/IHCCWriter.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="60">
-          <caret line="7" column="17" selection-start-line="7" selection-start-column="17" selection-end-line="7" selection-end-column="17" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/com/hc/pdb/file/FileConstants.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="75">
@@ -920,16 +881,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/IHCCReader.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="345">
-          <caret line="23" column="14" selection-start-line="23" selection-start-column="14" selection-end-line="23" selection-end-column="14" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/com/hc/pdb/util/UnsafeAccess.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-6447">
@@ -954,46 +905,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/meta/MetaReader.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="225">
-          <caret line="15" column="61" lean-forward="true" selection-start-line="15" selection-start-column="61" selection-end-line="15" selection-end-column="61" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/block/IBlockWriter.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="30">
-          <caret line="7" column="22" lean-forward="true" selection-start-line="7" selection-start-column="22" selection-end-line="7" selection-end-column="22" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/block/BlockWriter.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-26">
-          <caret line="14" column="38" lean-forward="true" selection-start-line="14" selection-start-column="38" selection-end-line="14" selection-end-column="38" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/com/hc/pdb/util/Bytes.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="195">
-          <caret line="13" column="40" selection-start-line="13" selection-start-column="40" selection-end-line="13" selection-end-column="40" />
-          <folding>
-            <element signature="e#319#320#0" expanded="true" />
-            <element signature="e#366#367#0" expanded="true" />
-            <element signature="e#410#411#0" expanded="true" />
-            <element signature="e#438#439#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/test/java/com/hc/pdb/Test.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="30">
@@ -1001,26 +912,9 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/HCCWriter.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="333">
-          <caret line="67" column="24" lean-forward="true" selection-start-line="67" selection-start-column="24" selection-end-line="67" selection-end-column="24" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_181.jdk/Contents/Home/src.zip!/java/io/RandomAccessFile.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="430">
-          <caret line="568" column="23" selection-start-line="568" selection-start-column="23" selection-end-line="568" selection-end-column="23" />
-        </state>
-      </provider>
-    </entry>
     <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_181.jdk/Contents/Home/src.zip!/java/nio/Buffer.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-8">
+        <state relative-caret-position="2715">
           <caret line="204" column="68" selection-start-line="204" selection-start-column="68" selection-end-line="204" selection-end-column="68" />
           <folding>
             <element signature="e#7176#7177#0" expanded="true" />
@@ -1029,31 +923,170 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/meta/MetaInfo.java">
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/hc/pdb/util/Bytes.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="315">
-          <caret line="29" lean-forward="true" selection-start-line="29" selection-end-line="29" />
+        <state relative-caret-position="195">
+          <caret line="13" column="40" selection-start-line="13" selection-start-column="40" selection-end-line="13" selection-end-column="40" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/hc/pdb/exception/NoEnoughByteException.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="45">
+          <caret line="3" column="26" selection-start-line="3" selection-start-column="26" selection-end-line="3" selection-end-column="26" />
+          <folding>
+            <element signature="e#139#140#0" expanded="true" />
+            <element signature="e#162#163#0" expanded="true" />
+            <element signature="e#209#210#0" expanded="true" />
+            <element signature="e#235#236#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/IHCCReader.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="345">
+          <caret line="23" column="14" selection-start-line="23" selection-start-column="14" selection-end-line="23" selection-end-column="14" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/com/hc/pdb/Cell.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="513">
-          <caret line="43" column="47" lean-forward="true" selection-start-line="43" selection-start-column="47" selection-end-line="43" selection-end-column="47" />
+        <state relative-caret-position="333">
+          <caret line="60" column="55" selection-start-line="60" selection-start-column="55" selection-end-line="60" selection-end-column="55" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#423#424#0" expanded="true" />
-            <element signature="e#449#450#0" expanded="true" />
-            <element signature="e#544#545#0" expanded="true" />
-            <element signature="e#577#578#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_181.jdk/Contents/Home/src.zip!/java/lang/Long.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="376">
+          <caret line="1350" column="51" selection-start-line="1350" selection-start-column="51" selection-end-line="1350" selection-end-column="51" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_181.jdk/Contents/Home/src.zip!/java/lang/Byte.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="520">
+          <caret line="507" column="28" selection-start-line="507" selection-start-column="28" selection-end-line="507" selection-end-column="28" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_181.jdk/Contents/Home/jre/lib/rt.jar!/com/sun/xml/internal/messaging/saaj/util/ByteInputStream.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="165">
+          <caret line="17" column="11" selection-start-line="17" selection-start-column="11" selection-end-line="17" selection-end-column="11" />
+          <folding>
+            <element signature="e#462#463#0" expanded="true" />
+            <element signature="e#499#500#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_181.jdk/Contents/Home/src.zip!/java/util/Collection.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="238">
+          <caret line="141" column="3" lean-forward="true" selection-start-line="141" selection-start-column="3" selection-end-line="141" selection-end-column="3" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/block/BlockWriter.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="156">
+          <caret line="15" column="41" lean-forward="true" selection-start-line="15" selection-start-column="41" selection-end-line="15" selection-end-column="41" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/block/IBlockWriter.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="75">
+          <caret line="5" column="27" selection-start-line="5" selection-start-column="27" selection-end-line="5" selection-end-column="27" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/WriteContext.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="540">
+          <caret line="39" column="5" selection-start-line="39" selection-start-column="5" selection-end-line="39" selection-end-column="5" />
+          <folding>
+            <element signature="e#469#470#0" expanded="true" />
+            <element signature="e#503#504#0" expanded="true" />
+            <element signature="e#550#551#0" expanded="true" />
+            <element signature="e#578#579#0" expanded="true" />
+            <element signature="e#635#636#0" expanded="true" />
+            <element signature="e#669#670#0" expanded="true" />
+            <element signature="e#710#711#0" expanded="true" />
+            <element signature="e#738#739#0" expanded="true" />
+            <element signature="e#789#790#0" expanded="true" />
+            <element signature="e#823#824#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/IHCCWriter.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="210">
+          <caret line="18" column="24" selection-start-line="18" selection-start-column="24" selection-end-line="18" selection-end-column="24" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/meta/MetaInfo.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="255">
+          <caret line="17" column="11" selection-start-line="17" selection-start-column="11" selection-end-line="17" selection-end-column="11" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="e#897#898#0" expanded="true" />
+            <element signature="e#928#929#0" expanded="true" />
+            <element signature="e#976#977#0" expanded="true" />
+            <element signature="e#1016#1017#0" expanded="true" />
+            <element signature="e#1049#1050#0" expanded="true" />
+            <element signature="e#1078#1079#0" expanded="true" />
+            <element signature="e#1122#1123#0" expanded="true" />
+            <element signature="e#1158#1159#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/HCCWriter.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="694">
+          <caret line="88" lean-forward="true" selection-start-line="88" selection-end-line="88" />
+          <folding>
+            <element signature="imports" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/HCCReader.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="618">
-          <caret line="93" column="20" selection-start-line="93" selection-start-column="20" selection-end-line="93" selection-end-column="20" />
+        <state relative-caret-position="263">
+          <caret line="35" column="31" selection-start-line="35" selection-start-column="31" selection-end-line="35" selection-end-column="31" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar:///Library/Java/JavaVirtualMachines/jdk1.8.0_181.jdk/Contents/Home/src.zip!/java/io/RandomAccessFile.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="261">
+          <caret line="375" column="15" selection-start-line="375" selection-start-column="15" selection-end-line="375" selection-end-column="15" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/hc/pdb/hcc/meta/MetaReader.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="165">
+          <caret line="11" column="43" selection-start-line="11" selection-start-column="43" selection-end-line="11" selection-end-column="43" />
           <folding>
             <element signature="imports" expanded="true" />
           </folding>

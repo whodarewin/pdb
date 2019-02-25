@@ -6,6 +6,7 @@ import com.hc.pdb.conf.Configuration;
 import com.hc.pdb.conf.Constants;
 import com.hc.pdb.file.FileConstants;
 import com.hc.pdb.hcc.block.BlockWriter;
+import com.hc.pdb.hcc.meta.MetaInfo;
 import com.hc.pdb.util.ByteBloomFilter;
 import com.hc.pdb.util.Bytes;
 import org.slf4j.Logger;
@@ -15,7 +16,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 public class HCCWriter implements IHCCWriter {
@@ -33,7 +34,7 @@ public class HCCWriter implements IHCCWriter {
     }
 
     @Override
-    public String writeHCC(Collection<Cell> cells) throws IOException {
+    public String writeHCC(List<Cell> cells) throws IOException {
         //1 创建文件
         String path = configuration.get(Constants.DB_PATH_KEY);
 
@@ -78,11 +79,13 @@ public class HCCWriter implements IHCCWriter {
             bloomFilter.writeBloom(fileOutputStream);
 
             //4 开始写meta
-            fileOutputStream.write(Bytes.toBytes(indexStartIndex));
-            LOGGER.info("write index finish index {}", indexStartIndex);
+            byte[] startK = cells.get(0).getKey();
+            byte[] endK = cells.get(cells.size() - 1).getKey();
 
-            fileOutputStream.write(Bytes.toBytes(bloomStartIndex));
-            LOGGER.info("write bloom finish index {}", bloomStartIndex);
+            MetaInfo metaInfo = new MetaInfo(startK,endK,indexStartIndex,bloomStartIndex);
+            byte[] bytes = metaInfo.serialize();
+            fileOutputStream.write(bytes);
+            fileOutputStream.write(bytes.length);
 
         }
 

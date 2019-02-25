@@ -1,6 +1,7 @@
 package com.hc.pdb;
 
 
+import com.hc.pdb.exception.NoEnoughByteException;
 import com.hc.pdb.util.Bytes;
 
 import java.io.ByteArrayOutputStream;
@@ -37,22 +38,47 @@ public class Cell {
         //todo:抛弃output stream 的写法，写到文件里要增加version字段。
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        outputStream.write(key.length + value.length + 4);
         outputStream.write(key.length);
         outputStream.write(key);
-        outputStream.write(value.length);
         outputStream.write(value);
         outputStream.write(Bytes.toBytes(ttl));
         return outputStream.toByteArray();
     }
 
     public static Cell toCell(ByteBuffer byteBuffer){
+        if(byteBuffer.position() == byteBuffer.limit()){
+            return null;
+        }
+        int allL = byteBuffer.getInt();
+        if(byteBuffer.position() + allL > byteBuffer.limit()){
+            throw new NoEnoughByteException("need byte:" + allL+" remain byte:"
+                    + (byteBuffer.limit() - byteBuffer.position()));
+        }
         int keyL = byteBuffer.getInt();
         byte[] key = new byte[keyL];
         byteBuffer.get(key);
-        int valueL = byteBuffer.getInt();
-        byte[] value = new byte[valueL];
+        byte[] value = new byte[allL - keyL - Long.BYTES];
         byteBuffer.get(value);
         long ttl = byteBuffer.getLong();
         return new Cell(key,value,ttl);
     }
+
+    public static byte[] readKey(ByteBuffer byteBuffer){
+        if(byteBuffer.position() == byteBuffer.limit()){
+            return null;
+        }
+
+        int allL = byteBuffer.getInt();
+        if(byteBuffer.position() + allL > byteBuffer.limit()){
+            throw new NoEnoughByteException("need byte:" + allL+" remain byte:"
+                    + (byteBuffer.limit() - byteBuffer.position()));
+        }
+        int keyL = byteBuffer.getInt();
+        byte[] key = new byte[keyL];
+        byteBuffer.get(key);
+        return key;
+    }
+
+
 }

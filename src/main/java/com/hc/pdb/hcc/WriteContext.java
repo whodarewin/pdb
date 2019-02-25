@@ -1,5 +1,6 @@
 package com.hc.pdb.hcc;
 
+import com.hc.pdb.Cell;
 import com.hc.pdb.util.ByteBloomFilter;
 
 import java.io.ByteArrayOutputStream;

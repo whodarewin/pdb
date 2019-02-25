@@ -11,6 +11,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 
 public class BlockWriter implements IBlockWriter {
     private Configuration conf;
@@ -21,7 +22,7 @@ public class BlockWriter implements IBlockWriter {
     }
 
     @Override
-    public int writeBlock(Collection<Cell> cells, FileOutputStream outputStream, WriteContext context)
+    public int writeBlock(List<Cell> cells, FileOutputStream outputStream, WriteContext context)
             throws IOException {
         long blockSize = conf.getLong(Constants.BLOCK_SIZE_KEY,Constants.BLOCK_SIZE);
         blockSize = blockSize * 1024;
@@ -50,6 +51,8 @@ public class BlockWriter implements IBlockWriter {
             }
             writeBloom(context.getBloom(),cell.getKey());
         }
+
+
 
         return index;
     }
