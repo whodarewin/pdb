@@ -1,17 +1,41 @@
 package com.hc.pdb;
 
+import com.hc.pdb.conf.Configuration;
+import com.hc.pdb.engine.IEngine;
+import com.hc.pdb.engine.LSMEngine;
+
 import java.util.Iterator;
 
 /**
- * pdb interface
+ * PDB 对外暴露接口
  */
-public interface PDB {
+public class PDB {
 
-    byte[] get(byte[] key);
+    private Configuration configuration;
+    private IEngine engine;
 
-    void put(byte[] key,byte[] value);
 
-    Iterator<Cell> scan(byte[] start, byte[] end);
+    public PDB(Configuration configuration) {
+        this.configuration = configuration;
+        this.engine = new LSMEngine(configuration);
+    }
 
-    void delete(byte[] key);
+
+    public byte[] get(byte[] key) {
+        return new byte[0];
+    }
+
+
+    public void put(byte[] key, byte[] value) {
+        this.engine.put(key,value,-1);
+    }
+
+
+    public Iterator<Cell> scan(byte[] start, byte[] end) {
+        return null;
+    }
+
+    public void delete(byte[] key) {
+
+    }
 }

@@ -9,14 +9,14 @@ import com.hc.pdb.flusher.IFlusher;
 import com.hc.pdb.hcc.HCCWriter;
 import com.hc.pdb.mem.MemCache;
 
-public class Engine {
+public class LSMEngine implements IEngine{
 
     private Configuration configuration;
     private volatile MemCache memCache;
     private HCCWriter hccWriter;
     private IFlusher flusher;
 
-    public Engine(Configuration configuration) {
+    public LSMEngine(Configuration configuration) {
         Preconditions.checkNotNull(configuration);
         this.configuration = configuration;
         memCache = new MemCache(configuration);
@@ -48,4 +48,5 @@ public class Engine {
     public void delete(byte[] key){
 
     }
+
 }

@@ -11,6 +11,9 @@ import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.util.TreeMap;
 
+/**
+ * 读取一个文件
+ */
 public class HCCReader implements IHCCReader {
 
     private MetaInfo metaInfo;
@@ -77,6 +80,9 @@ public class HCCReader implements IHCCReader {
 
     @Override
     public Cell next(byte[] key) throws IOException {
+        if(Bytes.compare(key,metaInfo.getEndKey() ) < 0){
+            return null;
+        }
         //1 找到key所定义的index
         Integer start = this.key2index.lowerEntry(key).getValue();
         Integer end = this.key2index.higherEntry(key).getValue();

@@ -8,7 +8,6 @@ import com.hc.pdb.file.FileConstants;
 import com.hc.pdb.hcc.block.BlockWriter;
 import com.hc.pdb.hcc.meta.MetaInfo;
 import com.hc.pdb.util.ByteBloomFilter;
-import com.hc.pdb.util.Bytes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
