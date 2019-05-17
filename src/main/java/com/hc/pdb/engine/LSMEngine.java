@@ -9,7 +9,7 @@ import com.hc.pdb.flusher.IFlusher;
 import com.hc.pdb.hcc.HCCWriter;
 import com.hc.pdb.mem.MemCache;
 
-public class LSMEngine implements IEngine{
+public class LSMEngine implements IEngine {
 
     private Configuration configuration;
     private volatile MemCache memCache;
@@ -21,18 +21,18 @@ public class LSMEngine implements IEngine{
         this.configuration = configuration;
         memCache = new MemCache(configuration);
         hccWriter = new HCCWriter(configuration);
-        flusher = new Flusher(configuration,hccWriter);
+        flusher = new Flusher(configuration, hccWriter);
 
     }
 
-    public void put(byte[] key, byte[] value, long ttl){
-        this.memCache.put(new Cell(key,value,ttl));
+    public void put(byte[] key, byte[] value, long ttl) {
+        this.memCache.put(new Cell(key, value, ttl));
         //flush
-        if(memCache.size() > configuration.getLong(Constants.MEM_CACHE_MAX_SIZE_KEY,
-                Constants.DEFAULT_MEM_CACHE_MAX_SIZE)){
+        if (memCache.size() > configuration.getLong(Constants.MEM_CACHE_MAX_SIZE_KEY,
+                Constants.DEFAULT_MEM_CACHE_MAX_SIZE)) {
             synchronized (this) {
-                if(memCache.size() > configuration.getLong(Constants.MEM_CACHE_MAX_SIZE_KEY,
-                        Constants.DEFAULT_MEM_CACHE_MAX_SIZE)){
+                if (memCache.size() > configuration.getLong(Constants.MEM_CACHE_MAX_SIZE_KEY,
+                        Constants.DEFAULT_MEM_CACHE_MAX_SIZE)) {
                     MemCache tmpCache = memCache;
                     memCache = new MemCache(configuration);
                     flusher.flush(tmpCache);
@@ -41,11 +41,11 @@ public class LSMEngine implements IEngine{
         }
     }
 
-    public Cell get(byte[] key){
+    public Cell get(byte[] key) {
         return null;
     }
 
-    public void delete(byte[] key){
+    public void delete(byte[] key) {
 
     }
 

@@ -6,9 +6,10 @@ package com.hc.pdb.engine;
 public interface IEngine {
     /**
      * 写入
-     * @param key key
+     *
+     * @param key   key
      * @param value value
-     * @param ttl 过期时间
+     * @param ttl   过期时间
      */
     void put(byte[] key, byte[] value, long ttl);
 }

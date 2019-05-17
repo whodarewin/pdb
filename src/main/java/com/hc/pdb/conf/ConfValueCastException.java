@@ -2,11 +2,11 @@ package com.hc.pdb.conf;
 
 public class ConfValueCastException extends RuntimeException {
 
-    public ConfValueCastException(){
+    public ConfValueCastException() {
         super();
     }
 
-    public ConfValueCastException(String reason){
+    public ConfValueCastException(String reason) {
         super(reason);
     }
 }

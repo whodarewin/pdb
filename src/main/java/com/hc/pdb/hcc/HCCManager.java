@@ -15,19 +15,19 @@ public class HCCManager {
     private List<HCCInfo> infos = new ArrayList<>();
 
     public HCCManager(Configuration configuration) {
-        Preconditions.checkNotNull(configuration,"configuration can not be null");
+        Preconditions.checkNotNull(configuration, "configuration can not be null");
         this.configuration = configuration;
         loadInfo();
     }
 
     private void loadInfo() {
         String path = configuration.get(Constants.DB_PATH_KEY);
-        if(path == null){
+        if (path == null) {
             throw new DBPathNotSetException();
         }
 
         File file = new File(path);
-        if(handleEmpty(file)){
+        if (handleEmpty(file)) {
             return;
         }
 
@@ -37,21 +37,20 @@ public class HCCManager {
     private void handleNotEmpty(File file) {
         File[] subFiles = file.listFiles();
         for (File subFile : subFiles) {
-            if(subFile.getName().endsWith(FileConstants.DATA_FILE_SUFFIX)){
-                infos.add(new HCCInfo(subFile.getName(),null,null));
+            if (subFile.getName().endsWith(FileConstants.DATA_FILE_SUFFIX)) {
+                infos.add(new HCCInfo(subFile.getName(), null, null));
             }
         }
-        Collections.sort(infos,new HCCComparator());
+        Collections.sort(infos, new HCCComparator());
     }
 
     private boolean handleEmpty(File file) {
-        if(!file.exists()){
+        if (!file.exists()) {
             file.mkdirs();
             return true;
         }
         return false;
     }
-
 
 
 }

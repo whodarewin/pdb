@@ -1,8 +1,7 @@
-
-
 package com.hc.pdb.util;
 
 import com.hc.pdb.hash.Hash;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
@@ -59,15 +58,33 @@ public class ByteBloomFilter {
      * Current file format version
      */
     public static final int VERSION = 1;
-
     /**
-     * Bytes (B) in the array. This actually has to fit into an int.
+     * Record separator for the Bloom filter statistics human-readable string
      */
-    protected long byteSize;
+    public static final String STATS_RECORD_SEP = "; ";
     /**
-     * Number of hash functions
+     * Used in computing the optimal Bloom filter size. This approximately equals
+     * 0.480453.
      */
-    protected int hashCount;
+    public static final double LOG2_SQUARED = Math.log(2) * Math.log(2);
+    /**
+     * Bit-value lookup array to prevent doing the same work over and over
+     */
+    private static final byte[] bitvals = {
+            (byte) 0x01,
+            (byte) 0x02,
+            (byte) 0x04,
+            (byte) 0x08,
+            (byte) 0x10,
+            (byte) 0x20,
+            (byte) 0x40,
+            (byte) 0x80
+    };
+    /**
+     * A random number generator to use for "fake lookups" when testing to
+     * estimate the ideal false positive rate.
+     */
+    private static Random randomGeneratorForTest;
     /**
      * Hash type
      */
@@ -76,6 +93,14 @@ public class ByteBloomFilter {
      * Hash Function
      */
     protected final Hash hash;
+    /**
+     * Bytes (B) in the array. This actually has to fit into an int.
+     */
+    protected long byteSize;
+    /**
+     * Number of hash functions
+     */
+    protected int hashCount;
     /**
      * Keys currently in the bloom
      */
@@ -90,35 +115,46 @@ public class ByteBloomFilter {
     protected ByteBuffer bloom;
 
     /**
-     * Record separator for the Bloom filter statistics human-readable string
+     * Private constructor used by other constructors.
      */
-    public static final String STATS_RECORD_SEP = "; ";
+    private ByteBloomFilter(int hashType) {
+        this.hashType = hashType;
+        this.hash = Hash.getInstance(hashType);
+    }
+
+    public ByteBloomFilter(int hashType, ByteBuffer bloom) {
+        this(hashType);
+        this.bloom = bloom;
+    }
 
     /**
-     * Used in computing the optimal Bloom filter size. This approximately equals
-     * 0.480453.
+     * Determines & initializes bloom filter meta data from user config. Call
+     * {@link #allocBloom()} to allocate bloom filter data.
+     *
+     * @param maxKeys    bloom过滤器可以存放的key的最大值。
+     * @param errorRate  布隆过滤器判断错误的概率。
+     * @param hashType   使用的hash函数
+     * @param foldFactor When finished adding entries, you may be able to 'fold'
+     *                   this bloom to save space. Tradeoff potentially excess bytes in
+     *                   bloom for ability to fold if keyCount is exponentially greater
+     *                   than maxKeys.
+     * @throws IllegalArgumentException
      */
-    public static final double LOG2_SQUARED = Math.log(2) * Math.log(2);
+    public ByteBloomFilter(int maxKeys, double errorRate, int hashType,
+                           int foldFactor) throws IllegalArgumentException {
+        //设置hash函数
+        this(hashType);
+        //计算在这个错误概率下需要申请的空间大小
+        long bitSize = computeBitSize(maxKeys, errorRate);
+        //计算需要的hash函数数量
+        hashCount = optimalFunctionCount(maxKeys, bitSize);
+        this.maxKeys = maxKeys;
 
-    /**
-     * A random number generator to use for "fake lookups" when testing to
-     * estimate the ideal false positive rate.
-     */
-    private static Random randomGeneratorForTest;
+        // increase byteSize so folding is possible
+        byteSize = computeFoldableByteSize(bitSize, foldFactor);
 
-    /**
-     * Bit-value lookup array to prevent doing the same work over and over
-     */
-    private static final byte[] bitvals = {
-            (byte) 0x01,
-            (byte) 0x02,
-            (byte) 0x04,
-            (byte) 0x08,
-            (byte) 0x10,
-            (byte) 0x20,
-            (byte) 0x40,
-            (byte) 0x80
-    };
+        sanityCheck();
+    }
 
     /**
      * @param maxKeys
@@ -164,19 +200,6 @@ public class ByteBloomFilter {
                                       int hashCount) {
         return (long) (-bitSize * 1.0 / hashCount *
                 Math.log(1 - Math.exp(Math.log(errorRate) / hashCount)));
-    }
-
-    /**
-     * Computes the error rate for this Bloom filter, taking into account the
-     * actual number of hash functions and keys inserted. The return value of
-     * this function changes as a Bloom filter is being populated. Used for
-     * reporting the actual error rate of compound Bloom filters when writing
-     * them out.
-     *
-     * @return error rate for this particular Bloom filter
-     */
-    public double actualErrorRate() {
-        return actualErrorRate(keyCount, byteSize * 8, hashCount);
     }
 
     /**
@@ -233,48 +256,6 @@ public class ByteBloomFilter {
     }
 
     /**
-     * Private constructor used by other constructors.
-     */
-    private ByteBloomFilter(int hashType) {
-        this.hashType = hashType;
-        this.hash = Hash.getInstance(hashType);
-    }
-
-    public ByteBloomFilter(int hashType,ByteBuffer bloom){
-        this(hashType);
-        this.bloom = bloom;
-    }
-
-    /**
-     * Determines & initializes bloom filter meta data from user config. Call
-     * {@link #allocBloom()} to allocate bloom filter data.
-     *
-     * @param maxKeys    bloom过滤器可以存放的key的最大值。
-     * @param errorRate  布隆过滤器判断错误的概率。
-     * @param hashType   使用的hash函数
-     * @param foldFactor When finished adding entries, you may be able to 'fold'
-     *                   this bloom to save space. Tradeoff potentially excess bytes in
-     *                   bloom for ability to fold if keyCount is exponentially greater
-     *                   than maxKeys.
-     * @throws IllegalArgumentException
-     */
-    public ByteBloomFilter(int maxKeys, double errorRate, int hashType,
-                           int foldFactor) throws IllegalArgumentException {
-        //设置hash函数
-        this(hashType);
-        //计算在这个错误概率下需要申请的空间大小
-        long bitSize = computeBitSize(maxKeys, errorRate);
-        //计算需要的hash函数数量
-        hashCount = optimalFunctionCount(maxKeys, bitSize);
-        this.maxKeys = maxKeys;
-
-        // increase byteSize so folding is possible
-        byteSize = computeFoldableByteSize(bitSize, foldFactor);
-
-        sanityCheck();
-    }
-
-    /**
      * Creates a Bloom filter of the given size.
      *
      * @param byteSizeHint the desired number of bytes for the Bloom filter bit
@@ -299,6 +280,72 @@ public class ByteBloomFilter {
         bbf.maxKeys = (int) computeMaxKeys(bitSize, errorRate, bbf.hashCount);
 
         return bbf;
+    }
+
+    public static boolean contains(byte[] buf, int offset, int length,
+                                   ByteBuffer bloomBuf, int bloomOffset, int bloomSize, Hash hash,
+                                   int hashCount) {
+
+        int hash1 = hash.hash(buf, offset, length, 0);
+        int hash2 = hash.hash(buf, offset, length, hash1);
+        int bloomBitSize = bloomSize << 3;
+
+        if (randomGeneratorForTest == null) {
+            // Production mode.
+            int compositeHash = hash1;
+            for (int i = 0; i < hashCount; i++) {
+                int hashLoc = Math.abs(compositeHash % bloomBitSize);
+                compositeHash += hash2;
+                if (!get(hashLoc, bloomBuf, bloomOffset)) {
+                    return false;
+                }
+            }
+        } else {
+            // Test mode with "fake lookups" to estimate "ideal false positive rate".
+            for (int i = 0; i < hashCount; i++) {
+                int hashLoc = randomGeneratorForTest.nextInt(bloomBitSize);
+                if (!get(hashLoc, bloomBuf, bloomOffset)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Check if bit at specified index is 1.
+     *
+     * @param pos index of bit
+     * @return true if bit at specified index is 1, false if 0.
+     */
+    static boolean get(int pos, ByteBuffer bloomBuf, int bloomOffset) {
+        int bytePos = pos >> 3; //pos / 8
+        int bitPos = pos & 0x7; //pos % 8
+        // TODO access this via Util API which can do Unsafe access if possible(?)
+        byte curByte = bloomBuf.get(bloomOffset + bytePos);
+        curByte &= bitvals[bitPos];
+        return (curByte != 0);
+    }
+
+    public static void setFakeLookupMode(boolean enabled) {
+        if (enabled) {
+            randomGeneratorForTest = new Random(283742987L);
+        } else {
+            randomGeneratorForTest = null;
+        }
+    }
+
+    /**
+     * Computes the error rate for this Bloom filter, taking into account the
+     * actual number of hash functions and keys inserted. The return value of
+     * this function changes as a Bloom filter is being populated. Used for
+     * reporting the actual error rate of compound Bloom filters when writing
+     * them out.
+     *
+     * @return error rate for this particular Bloom filter
+     */
+    public double actualErrorRate() {
+        return actualErrorRate(keyCount, byteSize * 8, hashCount);
     }
 
     /**
@@ -382,6 +429,9 @@ public class ByteBloomFilter {
         return contains(buf, offset, length, bloom);
     }
 
+    //---------------------------------------------------------------------------
+    /** Private helpers */
+
     /**
      * Should only be used in tests
      */
@@ -406,39 +456,6 @@ public class ByteBloomFilter {
         return contains(buf, offset, length, theBloom, 0, (int) byteSize, hash, hashCount);
     }
 
-    public static boolean contains(byte[] buf, int offset, int length,
-                                   ByteBuffer bloomBuf, int bloomOffset, int bloomSize, Hash hash,
-                                   int hashCount) {
-
-        int hash1 = hash.hash(buf, offset, length, 0);
-        int hash2 = hash.hash(buf, offset, length, hash1);
-        int bloomBitSize = bloomSize << 3;
-
-        if (randomGeneratorForTest == null) {
-            // Production mode.
-            int compositeHash = hash1;
-            for (int i = 0; i < hashCount; i++) {
-                int hashLoc = Math.abs(compositeHash % bloomBitSize);
-                compositeHash += hash2;
-                if (!get(hashLoc, bloomBuf, bloomOffset)) {
-                    return false;
-                }
-            }
-        } else {
-            // Test mode with "fake lookups" to estimate "ideal false positive rate".
-            for (int i = 0; i < hashCount; i++) {
-                int hashLoc = randomGeneratorForTest.nextInt(bloomBitSize);
-                if (!get(hashLoc, bloomBuf, bloomOffset)) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
-    //---------------------------------------------------------------------------
-    /** Private helpers */
-
     /**
      * Set the bit at the specified index to 1.
      *
@@ -450,21 +467,6 @@ public class ByteBloomFilter {
         byte curByte = bloom.get(bytePos);
         curByte |= bitvals[bitPos];
         bloom.put(bytePos, curByte);
-    }
-
-    /**
-     * Check if bit at specified index is 1.
-     *
-     * @param pos index of bit
-     * @return true if bit at specified index is 1, false if 0.
-     */
-    static boolean get(int pos, ByteBuffer bloomBuf, int bloomOffset) {
-        int bytePos = pos >> 3; //pos / 8
-        int bitPos = pos & 0x7; //pos % 8
-        // TODO access this via Util API which can do Unsafe access if possible(?)
-        byte curByte = bloomBuf.get(bloomOffset + bytePos);
-        curByte &= bitvals[bitPos];
-        return (curByte != 0);
     }
 
     public long getKeyCount() {
@@ -483,6 +485,8 @@ public class ByteBloomFilter {
         return hashType;
     }
 
+
+    //---------------------------------------------------------------------------
 
     public void compactBloom() {
         // see if the actual size is exponentially smaller than expected.
@@ -521,9 +525,6 @@ public class ByteBloomFilter {
         }
     }
 
-
-    //---------------------------------------------------------------------------
-
     /**
      * Writes just the bloom filter to the output array
      *
@@ -537,21 +538,12 @@ public class ByteBloomFilter {
         out.write(bloom.array(), bloom.arrayOffset(), bloom.limit());
     }
 
-
     public int getHashCount() {
         return hashCount;
     }
 
     public boolean supportsAutoLoading() {
         return bloom != null;
-    }
-
-    public static void setFakeLookupMode(boolean enabled) {
-        if (enabled) {
-            randomGeneratorForTest = new Random(283742987L);
-        } else {
-            randomGeneratorForTest = null;
-        }
     }
 
     /**

@@ -24,10 +24,14 @@ public class HCCWriter implements IHCCWriter {
     private Configuration configuration;
     private HCCManager manager;
     private BlockWriter blockWriter;
+    private String path;
+    private double errorRate;
 
     public HCCWriter(Configuration configuration) {
-        Preconditions.checkNotNull(configuration,"configuration can not be null");
+        Preconditions.checkNotNull(configuration, "configuration can not be null");
         this.configuration = configuration;
+        path = configuration.get(Constants.DB_PATH_KEY);
+        errorRate = configuration.getDouble(Constants.ERROR_RATE_KEY, Constants.DEFAULT_ERROR_RATE);
         this.manager = new HCCManager(configuration);
         this.blockWriter = new BlockWriter(configuration);
     }
@@ -35,28 +39,27 @@ public class HCCWriter implements IHCCWriter {
     @Override
     public String writeHCC(List<Cell> cells) throws IOException {
         //1 创建文件
-        String path = configuration.get(Constants.DB_PATH_KEY);
 
-        if(path == null){
+        if (path == null) {
             throw new DBPathNotSetException();
         }
 
-        if(path.lastIndexOf('/') != path.length() - 1){
+        if (path.lastIndexOf('/') != path.length() - 1) {
             path = path + '/';
         }
 
         String fileName = path + UUID.randomUUID().toString() + FileConstants.DATA_FILE_SUFFIX;
         File file = new File(fileName);
-        if(!file.exists()){
+        if (!file.exists()) {
             file.createNewFile();
         }
 
-        try(FileOutputStream fileOutputStream = new FileOutputStream(file)) {
+        try (FileOutputStream fileOutputStream = new FileOutputStream(file)) {
             //写prefix
             fileOutputStream.write(FileConstants.HCC_WRITE_PREFIX);
             //创建bloom filter
-            double errorRate = configuration.getDouble(Constants.ERROR_RATE_KEY,Constants.DEFAULT_ERROR_RATE);
-            ByteBloomFilter filter = new ByteBloomFilter(cells.size(),errorRate,1,1);
+
+            ByteBloomFilter filter = new ByteBloomFilter(cells.size(), errorRate, 1, 1);
             filter.allocBloom();
             WriteContext context = new WriteContext(filter);
 
@@ -81,7 +84,7 @@ public class HCCWriter implements IHCCWriter {
             byte[] startK = cells.get(0).getKey();
             byte[] endK = cells.get(cells.size() - 1).getKey();
 
-            MetaInfo metaInfo = new MetaInfo(startK,endK,indexStartIndex,bloomStartIndex);
+            MetaInfo metaInfo = new MetaInfo(startK, endK, indexStartIndex, bloomStartIndex);
             byte[] bytes = metaInfo.serialize();
             fileOutputStream.write(bytes);
             fileOutputStream.write(bytes.length);

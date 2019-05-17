@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,75 +17,62 @@
  */
 package com.hc.pdb.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import sun.misc.Unsafe;
+import sun.nio.ch.DirectBuffer;
+
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import sun.misc.Unsafe;
-import sun.nio.ch.DirectBuffer;
 public final class UnsafeAccess {
 
-    private static final Logger LOG = LoggerFactory.getLogger(UnsafeAccess.class);
-
     public static final Unsafe theUnsafe;
-
-
     /**
      * Size of boolean in bytes
      */
     public static final int SIZEOF_BOOLEAN = Byte.SIZE / Byte.SIZE;
-
     /**
      * Size of byte in bytes
      */
     public static final int SIZEOF_BYTE = SIZEOF_BOOLEAN;
-
     /**
      * Size of char in bytes
      */
     public static final int SIZEOF_CHAR = Character.SIZE / Byte.SIZE;
-
     /**
      * Size of double in bytes
      */
     public static final int SIZEOF_DOUBLE = Double.SIZE / Byte.SIZE;
-
     /**
      * Size of float in bytes
      */
     public static final int SIZEOF_FLOAT = Float.SIZE / Byte.SIZE;
-
     /**
      * Size of int in bytes
      */
     public static final int SIZEOF_INT = Integer.SIZE / Byte.SIZE;
-
     /**
      * Size of long in bytes
      */
     public static final int SIZEOF_LONG = Long.SIZE / Byte.SIZE;
-
     /**
      * Size of short in bytes
      */
     public static final int SIZEOF_SHORT = Short.SIZE / Byte.SIZE;
-
-
     /** The offset to the first element in a byte array. */
     public static final long BYTE_ARRAY_BASE_OFFSET;
-
     public static final boolean LITTLE_ENDIAN = ByteOrder.nativeOrder()
             .equals(ByteOrder.LITTLE_ENDIAN);
-
     // This number limits the number of bytes to copy per call to Unsafe's
     // copyMemory method. A limit is imposed to allow for safepoint polling
     // during a large copy
     static final long UNSAFE_COPY_THRESHOLD = 1024L * 1024L;
+    private static final Logger LOG = LoggerFactory.getLogger(UnsafeAccess.class);
+
     static {
         theUnsafe = (Unsafe) AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
             try {
@@ -100,14 +87,16 @@ public final class UnsafeAccess {
 
         if (theUnsafe != null) {
             BYTE_ARRAY_BASE_OFFSET = theUnsafe.arrayBaseOffset(byte[].class);
-        } else{
+        } else {
             BYTE_ARRAY_BASE_OFFSET = -1;
         }
     }
 
-    private UnsafeAccess(){}
+    private UnsafeAccess() {
+    }
 
     // APIs to read primitive data from a byte[] using Unsafe way
+
     /**
      * Converts a byte array to a short value considering it was written in big-endian format.
      * @param bytes byte array
@@ -151,6 +140,7 @@ public final class UnsafeAccess {
     }
 
     // APIs to write primitive data to a byte[] using Unsafe way
+
     /**
      * Put a short value out to the specified byte array position in big-endian format.
      * @param bytes the byte array
@@ -197,6 +187,7 @@ public final class UnsafeAccess {
     }
 
     // APIs to read primitive data from a ByteBuffer using Unsafe way
+
     /**
      * Reads a short value at the given buffer's offset considering it was written in big-endian
      * format.
@@ -343,6 +334,7 @@ public final class UnsafeAccess {
     }
 
     // APIs to copy data. This will be direct memory location copy and will be much faster
+
     /**
      * Copies the bytes from given array's offset to length part into the given buffer.
      * @param src
@@ -415,7 +407,7 @@ public final class UnsafeAccess {
         if (src.isDirect()) {
             srcAddress = srcOffset + ((DirectBuffer) src).address();
         } else {
-            srcAddress = (long) srcOffset +  src.arrayOffset() + BYTE_ARRAY_BASE_OFFSET;
+            srcAddress = (long) srcOffset + src.arrayOffset() + BYTE_ARRAY_BASE_OFFSET;
             srcBase = src.array();
         }
         if (dest.isDirect()) {
@@ -428,6 +420,7 @@ public final class UnsafeAccess {
     }
 
     // APIs to add primitives to BBs
+
     /**
      * Put a short value out to the specified BB position in big-endian format.
      * @param buf the byte buffer
@@ -465,6 +458,7 @@ public final class UnsafeAccess {
         }
         return offset + SIZEOF_LONG;
     }
+
     /**
      * Put a byte value out to the specified BB position in big-endian format.
      * @param buf the byte buffer

@@ -3,7 +3,6 @@ package com.hc.pdb.mem;
 import com.google.common.base.Preconditions;
 import com.hc.pdb.Cell;
 import com.hc.pdb.conf.Configuration;
-import com.hc.pdb.conf.Constants;
 import com.hc.pdb.util.Bytes;
 import com.hc.pdb.util.CellUtil;
 
@@ -16,7 +15,7 @@ public class MemCache {
     private ConcurrentSkipListMap<byte[], Cell> memValue = new ConcurrentSkipListMap<>(new Comparator<byte[]>() {
         @Override
         public int compare(byte[] o1, byte[] o2) {
-            return Bytes.compare(o1,o2);
+            return Bytes.compare(o1, o2);
         }
     });
 
@@ -24,20 +23,20 @@ public class MemCache {
     private Configuration configuration;
 
     public MemCache(Configuration configuration) {
-        Preconditions.checkNotNull(configuration,"Configuration can not be null!");
+        Preconditions.checkNotNull(configuration, "Configuration can not be null!");
         this.configuration = configuration;
     }
 
-    public void put(Cell cell){
-        this.memValue.put(cell.getKey(),cell);
+    public void put(Cell cell) {
+        this.memValue.put(cell.getKey(), cell);
         size.addAndGet(CellUtil.calculateCellSize(cell));
     }
 
-    public Collection<Cell> getAllCells(){
+    public Collection<Cell> getAllCells() {
         return memValue.values();
     }
 
-    public long size(){
+    public long size() {
         return size.get();
     }
 }

@@ -3,7 +3,6 @@ package com.hc.pdb.hcc;
 import com.hc.pdb.Cell;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -12,6 +11,7 @@ import java.util.List;
 public interface IHCCWriter {
     /**
      * 从一个hcc文件中读取数据
+     *
      * @param cells
      * @return
      * @throws IOException

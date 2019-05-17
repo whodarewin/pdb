@@ -11,6 +11,7 @@ public interface IFlusher {
 
     /**
      * 将cache进行flush,此方法在flush的entry里面如果太多的时候，会阻塞。
+     *
      * @param cache
      * @return
      */
@@ -18,6 +19,7 @@ public interface IFlusher {
 
     /**
      * 获得正在进行flush的任务
+     *
      * @return
      */
     int getWaitingToFlushSize();

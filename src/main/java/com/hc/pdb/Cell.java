@@ -22,6 +22,40 @@ public class Cell {
 
     }
 
+    public static Cell toCell(ByteBuffer byteBuffer) {
+        if (byteBuffer.position() == byteBuffer.limit()) {
+            return null;
+        }
+        int allL = byteBuffer.getInt();
+        if (byteBuffer.position() + allL > byteBuffer.limit()) {
+            throw new NoEnoughByteException("need byte:" + allL + " remain byte:"
+                    + (byteBuffer.limit() - byteBuffer.position()));
+        }
+        int keyL = byteBuffer.getInt();
+        byte[] key = new byte[keyL];
+        byteBuffer.get(key);
+        byte[] value = new byte[allL - keyL - Long.BYTES];
+        byteBuffer.get(value);
+        long ttl = byteBuffer.getLong();
+        return new Cell(key, value, ttl);
+    }
+
+    public static byte[] readKey(ByteBuffer byteBuffer) {
+        if (byteBuffer.position() == byteBuffer.limit()) {
+            return null;
+        }
+
+        int allL = byteBuffer.getInt();
+        if (byteBuffer.position() + allL > byteBuffer.limit()) {
+            throw new NoEnoughByteException("need byte:" + allL + " remain byte:"
+                    + (byteBuffer.limit() - byteBuffer.position()));
+        }
+        int keyL = byteBuffer.getInt();
+        byte[] key = new byte[keyL];
+        byteBuffer.get(key);
+        return key;
+    }
+
     public byte[] getKey() {
         return key;
     }
@@ -30,9 +64,10 @@ public class Cell {
         return value;
     }
 
-    public long getTimeToDrop() {
+    public long getTtl() {
         return ttl;
     }
+
     //key length + key timeToDrop + value
     public byte[] toByte() throws IOException {
         //todo:抛弃output stream 的写法，写到文件里要增加version字段。
@@ -44,40 +79,6 @@ public class Cell {
         outputStream.write(value);
         outputStream.write(Bytes.toBytes(ttl));
         return outputStream.toByteArray();
-    }
-
-    public static Cell toCell(ByteBuffer byteBuffer){
-        if(byteBuffer.position() == byteBuffer.limit()){
-            return null;
-        }
-        int allL = byteBuffer.getInt();
-        if(byteBuffer.position() + allL > byteBuffer.limit()){
-            throw new NoEnoughByteException("need byte:" + allL+" remain byte:"
-                    + (byteBuffer.limit() - byteBuffer.position()));
-        }
-        int keyL = byteBuffer.getInt();
-        byte[] key = new byte[keyL];
-        byteBuffer.get(key);
-        byte[] value = new byte[allL - keyL - Long.BYTES];
-        byteBuffer.get(value);
-        long ttl = byteBuffer.getLong();
-        return new Cell(key,value,ttl);
-    }
-
-    public static byte[] readKey(ByteBuffer byteBuffer){
-        if(byteBuffer.position() == byteBuffer.limit()){
-            return null;
-        }
-
-        int allL = byteBuffer.getInt();
-        if(byteBuffer.position() + allL > byteBuffer.limit()){
-            throw new NoEnoughByteException("need byte:" + allL+" remain byte:"
-                    + (byteBuffer.limit() - byteBuffer.position()));
-        }
-        int keyL = byteBuffer.getInt();
-        byte[] key = new byte[keyL];
-        byteBuffer.get(key);
-        return key;
     }
 
 
