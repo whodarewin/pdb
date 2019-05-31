@@ -34,7 +34,7 @@ public class BlockWriter implements IBlockWriter {
         for (Cell cell : cells) {
             if (preKey == null) {
                 preKey = cell.getKey();
-            } else if (Bytes.compare(preKey, cell.getKey()) >= 0) {
+            } else if (Bytes.compare(preKey, cell.getKey()) > 0) {
                 throw new CellWrongOrderException();
             }
             byte[] bytes = cell.toByte();

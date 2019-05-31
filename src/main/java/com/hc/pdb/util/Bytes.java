@@ -12,9 +12,12 @@ public class Bytes {
     }
 
     public static byte[] toBytes(int val) {
+        //int 占用4个字节
         byte[] b = new byte[4];
         for (int i = 3; i > 0; i--) {
+            //int 强转byte，丢失高位
             b[i] = (byte) val;
+            //无符号右移，无论正负，高位都以0填充
             val >>>= 8;
         }
         b[0] = (byte) val;
@@ -30,13 +33,18 @@ public class Bytes {
         return UnsafeAccess.toInt(b, 0);
     }
 
+    /**
+     * @param bytes1
+     * @param bytes2
+     * @return
+     */
     public static int compare(byte[] bytes1, byte[] bytes2) {
         for (int i = 0; i < bytes1.length; i++) {
             if (i > bytes2.length) {
                 return 1;
             }
-            byte b1 = bytes1[i];
-            byte b2 = bytes2[i];
+            int b1 = bytes1[i] & 0xff;
+            int b2 = bytes2[i] & 0xff;
             if (b1 > b2) {
                 return 1;
             } else if (b1 < b2) {

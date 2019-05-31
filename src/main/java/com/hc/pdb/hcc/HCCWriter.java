@@ -48,11 +48,15 @@ public class HCCWriter implements IHCCWriter {
             path = path + '/';
         }
 
+
         String fileName = path + UUID.randomUUID().toString() + FileConstants.DATA_FILE_SUFFIX;
         File file = new File(fileName);
-        if (!file.exists()) {
-            file.createNewFile();
+        while(file.exists()) {
+            fileName = path + UUID.randomUUID().toString() + FileConstants.DATA_FILE_SUFFIX;
+            file = new File(fileName);
         }
+
+        file.createNewFile();
 
         try (FileOutputStream fileOutputStream = new FileOutputStream(file)) {
             //写prefix

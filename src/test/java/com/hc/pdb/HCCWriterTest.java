@@ -14,7 +14,7 @@ public class HCCWriterTest extends TestCase {
 
     public void testHcc() throws IOException {
         Configuration configuration = new Configuration();
-        configuration.put(Constants.DB_PATH_KEY,"/opt/test/");
+        configuration.put(Constants.DB_PATH_KEY,"/tmp/test/");
         HCCWriter writer = new HCCWriter(configuration);
         List<Cell> cells = new ArrayList<>();
         for (int i = 0; i < 10000 ; i++) {
