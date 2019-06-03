@@ -13,11 +13,15 @@ public interface IHCCReader {
     Result exist(byte[] key);
 
     /**
-     * 下一个cell
-     *
+     * seek 到某一位置
      * @param key
      */
-    Cell next(byte[] key) throws IOException;
+    void seek(byte[] key);
+
+    /**
+     * 下一个cell
+     */
+    Cell next() throws IOException;
 
     /**
      * 关闭
@@ -27,8 +31,14 @@ public interface IHCCReader {
     /**
      * load bloom filter，index等信息
      */
-    public static enum Result {
+    enum Result {
+        /**
+         * 不存在
+         */
         not_exist,
+        /**
+         * 不清楚是否存在
+         */
         dontKnow
     }
 }
