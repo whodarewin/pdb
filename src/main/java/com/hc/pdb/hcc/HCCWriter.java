@@ -8,6 +8,7 @@ import com.hc.pdb.file.FileConstants;
 import com.hc.pdb.hcc.block.BlockWriter;
 import com.hc.pdb.hcc.meta.MetaInfo;
 import com.hc.pdb.util.ByteBloomFilter;
+import com.hc.pdb.util.Bytes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -91,8 +92,7 @@ public class HCCWriter implements IHCCWriter {
             MetaInfo metaInfo = new MetaInfo(startK, endK, indexStartIndex, bloomStartIndex);
             byte[] bytes = metaInfo.serialize();
             fileOutputStream.write(bytes);
-            fileOutputStream.write(bytes.length);
-
+            fileOutputStream.write(Bytes.toBytes(bytes.length));
         }
 
         return fileName;

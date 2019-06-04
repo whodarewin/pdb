@@ -35,19 +35,7 @@ public class MetaInfo {
         this.bloomStartIndex = bloomStartIndex;
     }
 
-    public static MetaInfo deSerialize(byte[] bytes) throws IOException {
-        ByteArrayInputStream byteInputStream = new ByteArrayInputStream(bytes);
-        int skl = byteInputStream.read();
-        byte[] startK = new byte[skl];
-        byteInputStream.read(startK);
-        int ekl = byteInputStream.read();
-        byte[] endK = new byte[ekl];
-        byteInputStream.read(endK);
-        int indexStartIndex = byteInputStream.read();
-        int bloomStartIndex = byteInputStream.read();
 
-        return new MetaInfo(startK, endK, indexStartIndex, bloomStartIndex);
-    }
 
     public int getIndexStartIndex() {
         return indexStartIndex;
@@ -83,17 +71,45 @@ public class MetaInfo {
 
     /**
      * 序列化
-     *
+     * start key length | start key | end key length | end key | index start index | bloom start index
      * @return
      */
     public byte[] serialize() throws IOException {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        outputStream.write(startKey.length);
+        outputStream.write(Bytes.toBytes(startKey.length));
         outputStream.write(startKey);
-        outputStream.write(endKey.length);
+        outputStream.write(Bytes.toBytes(endKey.length));
         outputStream.write(endKey);
         outputStream.write(Bytes.toBytes(indexStartIndex));
         outputStream.write(Bytes.toBytes(bloomStartIndex));
         return outputStream.toByteArray();
+    }
+
+    /**
+     *
+     * @param bytes
+     * @return
+     * @throws IOException
+     */
+    public static MetaInfo deSerialize(byte[] bytes) throws IOException {
+        ByteArrayInputStream byteInputStream = new ByteArrayInputStream(bytes);
+        byte[] sklBytes = new byte[4];
+        byteInputStream.read(sklBytes);
+        int skl = Bytes.toInt(sklBytes);
+        byte[] startK = new byte[skl];
+        byteInputStream.read(startK);
+        byte[] eklBytes = new byte[4];
+        byteInputStream.read(eklBytes);
+        int ekl = Bytes.toInt(eklBytes);
+        byte[] endK = new byte[ekl];
+        byteInputStream.read(endK);
+        byte[] indexStartBytes = new byte[4];
+        byte[] bloomStartBytes = new byte[4];
+        byteInputStream.read(indexStartBytes);
+        byteInputStream.read(bloomStartBytes);
+        int indexStartIndex = Bytes.toInt(indexStartBytes);
+        int bloomStartIndex = Bytes.toInt(bloomStartBytes);
+
+        return new MetaInfo(startK, endK, indexStartIndex, bloomStartIndex);
     }
 }

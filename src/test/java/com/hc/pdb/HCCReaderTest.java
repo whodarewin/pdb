@@ -17,7 +17,7 @@ public class HCCReaderTest extends TestCase {
 
     public void testRead() throws IOException {
         MetaReader metaReader = new MetaReader();
-        HCCReader hccReader = new HCCReader("/tmp/test/6cc9762e-3236-4133-aa82-25d6f51e4ca0.hcc",metaReader);
+        HCCReader hccReader = new HCCReader("D:/fe4bd9ff-7f95-4399-8d99-0653eb1bcb2a.hcc",metaReader);
         System.out.println(hccReader.next("1".getBytes()));
     }
 }

@@ -18,6 +18,6 @@ public class MetaReader implements IMetaReader {
         file.seek(file.length() - 4 - metaL);
         file.readFully(metaByte);
 
-        return MetaInfo.deSerialize(metaLengthBytes);
+        return MetaInfo.deSerialize(metaByte);
     }
 }

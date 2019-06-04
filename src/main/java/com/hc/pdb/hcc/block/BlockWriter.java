@@ -61,7 +61,7 @@ public class BlockWriter implements IBlockWriter {
     }
 
     private void writeIndex(ByteArrayOutputStream indexStream, byte[] key, long index) throws IOException {
-        indexStream.write(key.length);
+        indexStream.write(Bytes.toBytes(key.length));
         indexStream.write(key);
         indexStream.write(Bytes.toBytes(index));
     }
