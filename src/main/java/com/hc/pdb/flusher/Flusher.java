@@ -6,16 +6,19 @@ import com.hc.pdb.conf.Configuration;
 import com.hc.pdb.conf.Constants;
 import com.hc.pdb.hcc.HCCWriter;
 import com.hc.pdb.mem.MemCache;
+import com.hc.pdb.util.NamedThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.*;
+
+
+/**
+ * Flusher
+ * flush memCache 到磁盘
+ * @author han.congcong
+ * @date 2019/6/3
+ */
 
 public class Flusher implements IFlusher {
 
@@ -26,8 +29,12 @@ public class Flusher implements IFlusher {
     public Flusher(Configuration configuration, HCCWriter hccWriter) {
         Preconditions.checkNotNull(configuration);
         this.configuration = configuration;
-        int flushThreadNum = configuration.getInt(Constants.FLUSHER_THREAD_SIZE_KEY, Constants.DEFAULT_FLUSHER_THREAD_SIZE);
-        executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(flushThreadNum);
+        int flushThreadNum = configuration.getInt(Constants.FLUSHER_THREAD_SIZE_KEY,
+                Constants.DEFAULT_FLUSHER_THREAD_SIZE);
+        executor = new ThreadPoolExecutor(flushThreadNum, flushThreadNum,
+                0L, TimeUnit.MILLISECONDS,
+                new SynchronousQueue<Runnable>(),
+                new NamedThreadFactory("pdb-flusher"));
         this.hccWriter = hccWriter;
     }
 

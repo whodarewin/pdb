@@ -9,4 +9,12 @@ public class ConfValueCastException extends RuntimeException {
     public ConfValueCastException(String reason) {
         super(reason);
     }
+
+    public ConfValueCastException(Exception e){
+        super(e);
+    }
+
+    public ConfValueCastException(String msg,Exception e){
+        super(msg,e);
+    }
 }

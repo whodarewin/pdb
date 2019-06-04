@@ -17,7 +17,7 @@ public class HCCComparator implements Comparator<HCCInfo> {
         /**
          * todo:reader 写好了删掉
          */
-        if (start1 == null || start2 == null) {
+        if (start1 == null && start2 == null) {
             return 0;
         }
 

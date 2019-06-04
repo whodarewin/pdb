@@ -9,6 +9,13 @@ import com.hc.pdb.flusher.IFlusher;
 import com.hc.pdb.hcc.HCCWriter;
 import com.hc.pdb.mem.MemCache;
 
+/**
+ * LSMEngine
+ * LSM数的engine
+ * @author han.congcong
+ * @date 2019/6/3
+ */
+
 public class LSMEngine implements IEngine {
 
     private Configuration configuration;
@@ -25,6 +32,7 @@ public class LSMEngine implements IEngine {
 
     }
 
+    @Override
     public void put(byte[] key, byte[] value, long ttl) {
         this.memCache.put(new Cell(key, value, ttl));
         //flush
