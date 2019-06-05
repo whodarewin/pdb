@@ -1,6 +1,8 @@
 package com.hc.pdb.hcc;
 
 import com.hc.pdb.Cell;
+import com.hc.pdb.exception.KeyOutofRangeException;
+import com.hc.pdb.exception.SeekOutofRangeException;
 import com.hc.pdb.hcc.meta.MetaInfo;
 import com.hc.pdb.hcc.meta.MetaReader;
 import com.hc.pdb.util.ByteBloomFilter;
@@ -11,9 +13,14 @@ import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.util.TreeMap;
 
+
 /**
- * 读取一个文件
+ * HCCReader
+ * 读取一个hcc文件
+ * @author han.congcong
+ * @date 2019/6/5
  */
+
 public class HCCReader implements IHCCReader {
 
     private MetaInfo metaInfo;
@@ -29,6 +36,10 @@ public class HCCReader implements IHCCReader {
      * 索引 block的开始key和blcok的开始index
      */
     private TreeMap<byte[], Integer> key2index = new TreeMap<>(Bytes::compare);
+
+    private int blockStartIndex;
+    private int blockEndIndex;
+    private ByteBuffer currentBlock;
 
     /**
      * 加载预加载内容
@@ -47,6 +58,14 @@ public class HCCReader implements IHCCReader {
         loadBloom();
         //读取索引
         loadIndex();
+        seekToFirst();
+    }
+
+    private void seekToFirst() throws IOException {
+        //1 找到key所定义的index
+        blockStartIndex = this.key2index.firstEntry().getValue();
+        blockEndIndex = this.key2index.lowerEntry(this.metaInfo.getStartKey()).getValue();
+        readBlock(blockStartIndex,blockEndIndex);
     }
 
     private void loadIndex() throws IOException {
@@ -80,35 +99,43 @@ public class HCCReader implements IHCCReader {
     }
 
     @Override
-    public Cell next(byte[] key) throws IOException {
+    public void seek(byte[] key) throws IOException {
         if (Bytes.compare(key, metaInfo.getEndKey()) < 0) {
-            return null;
+            throw new KeyOutofRangeException();
         }
         //1 找到key所定义的index
-        Integer start = this.key2index.lowerEntry(key).getValue();
-        Integer end = this.key2index.higherEntry(key).getValue();
-        //2 读取到block
-        Cell ret = readCell(start, end, key);
-
-
-        return ret;
+        blockStartIndex = this.key2index.lowerEntry(key).getValue();
+        blockEndIndex = this.key2index.higherEntry(key).getValue();
+        readBlock(blockStartIndex,blockEndIndex);
+        seekBlock(key);
     }
 
-    private Cell readCell(int start, int end, byte[] theKey) throws IOException {
-        ByteBuffer blockBuffer = ByteBuffer.allocate(end - start);
-        file.getChannel().read(blockBuffer, start);
+    private void seekBlock(byte[] seekkey) {
         byte[] key = null;
-        int position = blockBuffer.position();
-        while ((key = Cell.readKey(blockBuffer)) != null) {
-            if (Bytes.compare(key, theKey) > 0) {
-                blockBuffer.position(position);
-                return Cell.toCell(blockBuffer);
+        int position = currentBlock.position();
+        while ((key = Cell.readKey(currentBlock)) != null) {
+            if (Bytes.compare(key, seekkey) > 0) {
+                currentBlock.position(position);
+                return;
             }
-            position = blockBuffer.position();
+            position = currentBlock.position();
         }
-        return null;
+        throw new SeekOutofRangeException();
     }
 
+    private void readBlock(int blockStartIndex, int blockEndIndex) throws IOException {
+        this.currentBlock = ByteBuffer.allocate(blockEndIndex - blockStartIndex);
+        file.getChannel().read(this.currentBlock, blockStartIndex);
+    }
+
+
+    @Override
+    public Cell next() throws IOException {
+        if(this.currentBlock.position() == this.currentBlock.limit()){
+            //读另一个block
+        }
+        return Cell.toCell(currentBlock);
+    }
     @Override
     public void close() throws IOException {
         file.close();

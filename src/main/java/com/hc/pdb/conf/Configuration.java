@@ -2,6 +2,7 @@ package com.hc.pdb.conf;
 
 import com.hc.pdb.exception.WrongClassException;
 
+import java.util.HashMap;
 import java.util.Map;
 
 

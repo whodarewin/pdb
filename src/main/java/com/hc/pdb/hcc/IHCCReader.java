@@ -16,7 +16,7 @@ public interface IHCCReader {
      * seek 到某一位置
      * @param key
      */
-    void seek(byte[] key);
+    void seek(byte[] key) throws IOException;
 
     /**
      * 下一个cell
