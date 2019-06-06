@@ -6,9 +6,11 @@ import com.hc.pdb.hcc.HCCWriter;
 import com.hc.pdb.hcc.meta.MetaInfo;
 import com.hc.pdb.hcc.meta.MetaReader;
 import junit.framework.TestCase;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
@@ -17,11 +19,12 @@ import java.util.List;
 public class MetaReaderTest extends TestCase {
     private RandomAccessFile randomAccessFile;
 
+    private String hccFileName;
     @Before
     public void setUp() throws IOException {
 
         Configuration configuration = new Configuration();
-        configuration.put(Constants.DB_PATH_KEY, "/Users/momo/software/pdb");
+        configuration.put(Constants.DB_PATH_KEY, MetaReaderTest.class.getClassLoader().getResource("").getPath());
 
         HCCWriter hccWriter = new HCCWriter(configuration);
         List<Cell> cells = new ArrayList<Cell>();
@@ -40,7 +43,18 @@ public class MetaReaderTest extends TestCase {
     @Test
     public void testMetaReader() throws IOException {
         MetaInfo info = new MetaReader().read(randomAccessFile);
-        assertEquals(info.getIndexStartIndex(), 1281);
-        assertEquals(info.getBloomStartIndex(), 1291);
+        assertEquals(info.getIndexStartIndex(), 1384);
+        assertEquals(info.getBloomStartIndex(), 1397);
+    }
+
+    @After
+    public void after() throws IOException {
+        if(randomAccessFile != null){
+            randomAccessFile.close();
+        }
+        if(hccFileName != null){
+            File file = new File(hccFileName);
+            file.delete();
+        }
     }
 }

@@ -11,6 +11,7 @@ import com.hc.pdb.util.Bytes;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
+import java.util.Map;
 import java.util.TreeMap;
 
 
@@ -39,6 +40,7 @@ public class HCCReader implements IHCCReader {
 
     private int blockStartIndex;
     private int blockEndIndex;
+    private byte[] endKey;
     private ByteBuffer currentBlock;
 
     /**
@@ -64,7 +66,9 @@ public class HCCReader implements IHCCReader {
     private void seekToFirst() throws IOException {
         //1 找到key所定义的index
         blockStartIndex = this.key2index.firstEntry().getValue();
-        blockEndIndex = this.key2index.lowerEntry(this.metaInfo.getStartKey()).getValue();
+        Map.Entry<byte[],Integer> entry = this.key2index.lowerEntry(this.metaInfo.getStartKey());
+        endKey = entry.getKey();
+        blockEndIndex = entry.getValue();
         readBlock(blockStartIndex,blockEndIndex);
     }
 
@@ -72,7 +76,9 @@ public class HCCReader implements IHCCReader {
         int startIndex = metaInfo.getIndexStartIndex();
         int endIndex = metaInfo.getBloomStartIndex();
         ByteBuffer indexBuffer = ByteBuffer.allocate((endIndex - startIndex));
+        indexBuffer.mark();
         file.getChannel().read(indexBuffer, startIndex);
+        indexBuffer.reset();
         while (indexBuffer.position() < indexBuffer.limit()) {
             int keyL = indexBuffer.getInt();
             byte[] key = new byte[keyL];
@@ -132,7 +138,11 @@ public class HCCReader implements IHCCReader {
     @Override
     public Cell next() throws IOException {
         if(this.currentBlock.position() == this.currentBlock.limit()){
-            //读另一个block
+            blockStartIndex = blockEndIndex + 1;
+            Map.Entry<byte[],Integer> entry = key2index.lowerEntry(endKey);
+            blockEndIndex = entry.getValue();
+            endKey =  entry.getKey();
+            readBlock(blockStartIndex,blockEndIndex);
         }
         return Cell.toCell(currentBlock);
     }

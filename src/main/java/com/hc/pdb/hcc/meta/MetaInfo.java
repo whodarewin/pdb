@@ -11,13 +11,21 @@ import java.io.IOException;
  */
 public class MetaInfo {
     public static final int META_SIZE = 8;
-    //整个hcc的startKey
+    /**
+     * 整个hcc的startKey
+     */
     private byte[] startKey;
-    //整个hcc的endKey
+    /**
+     * 整个hcc的endKey
+     */
     private byte[] endKey;
-    //索引的startKey
+    /**
+     * 索引的startKey
+     */
     private int indexStartIndex;
-    //不聋过滤器的startKey
+    /**
+     * 不聋过滤器的startKey
+     */
     private int bloomStartIndex;
 
     /**
@@ -111,5 +119,11 @@ public class MetaInfo {
         int bloomStartIndex = Bytes.toInt(bloomStartBytes);
 
         return new MetaInfo(startK, endK, indexStartIndex, bloomStartIndex);
+    }
+
+    @Override
+    public String toString(){
+        return "index start at " + indexStartIndex
+                + "bloom start at " + bloomStartIndex;
     }
 }
