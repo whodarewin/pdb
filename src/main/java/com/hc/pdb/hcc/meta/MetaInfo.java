@@ -10,7 +10,6 @@ import java.io.IOException;
  * meta 信息
  */
 public class MetaInfo {
-    public static final int META_SIZE = 8;
     /**
      * 整个hcc的startKey
      */
@@ -124,6 +123,12 @@ public class MetaInfo {
     @Override
     public String toString(){
         return "index start at " + indexStartIndex
-                + "bloom start at " + bloomStartIndex;
+                + "\nbloom start at " + bloomStartIndex;
+    }
+
+    public int size(){
+        int startKeyLength = startKey == null ? 0 : startKey.length;
+        int endKeyLength = endKey == null ? 0 : endKey.length;
+        return startKeyLength  + endKeyLength + 8;
     }
 }

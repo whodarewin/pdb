@@ -7,6 +7,8 @@ import com.hc.pdb.file.FileConstants;
 import com.hc.pdb.hcc.WriteContext;
 import com.hc.pdb.util.ByteBloomFilter;
 import com.hc.pdb.util.Bytes;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
@@ -14,8 +16,9 @@ import java.io.IOException;
 import java.util.List;
 
 public class BlockWriter implements IBlockWriter {
+    private static final Logger LOGGER = LoggerFactory.getLogger(BlockWriter.class);
     private Configuration conf;
-    private int indexShift = FileConstants.HCC_WRITE_PREFIX.length;
+    private int indexShift = FileConstants.HCC_WRITE_PREFIX.length - 1;
 
     public BlockWriter(Configuration conf) {
         this.conf = conf;
@@ -30,14 +33,14 @@ public class BlockWriter implements IBlockWriter {
         byte[] preKey = null;
         int blockCurSize = 0;
         int index = indexShift;
-        writeIndex(context.getIndex(), cells.iterator().next().getKey(), index);
+        writeIndex(context.getIndex(), cells.iterator().next().getKey(), index + 1);
         for (Cell cell : cells) {
             if (preKey == null) {
                 preKey = cell.getKey();
             } else if (Bytes.compare(preKey, cell.getKey()) > 0) {
                 throw new CellWrongOrderException();
             }
-            byte[] bytes = cell.toByte();
+            byte[] bytes = cell.toBytes();
 
             blockCurSize = blockCurSize + bytes.length;
             index = index + bytes.length;
@@ -60,9 +63,11 @@ public class BlockWriter implements IBlockWriter {
         filter.add(key);
     }
 
-    private void writeIndex(ByteArrayOutputStream indexStream, byte[] key, long index) throws IOException {
+    private void writeIndex(ByteArrayOutputStream indexStream, byte[] key, int index) throws IOException {
+        LOGGER.info("begin write key length {}",key.length);
         indexStream.write(Bytes.toBytes(key.length));
         indexStream.write(key);
+        LOGGER.info("begin write index {}",index);
         indexStream.write(Bytes.toBytes(index));
     }
 }

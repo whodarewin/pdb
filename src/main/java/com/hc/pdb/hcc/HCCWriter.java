@@ -51,6 +51,8 @@ public class HCCWriter implements IHCCWriter {
 
 
         String fileName = path + UUID.randomUUID().toString() + FileConstants.DATA_FILE_SUFFIX;
+        LOGGER.info("begin to write hcc file,fileName is {}",fileName);
+
         File file = new File(fileName);
         while(file.exists()) {
             fileName = path + UUID.randomUUID().toString() + FileConstants.DATA_FILE_SUFFIX;
@@ -61,18 +63,19 @@ public class HCCWriter implements IHCCWriter {
 
         try (FileOutputStream fileOutputStream = new FileOutputStream(file)) {
             //写prefix
+            LOGGER.info("first,write hcc prefix");
             fileOutputStream.write(FileConstants.HCC_WRITE_PREFIX);
             //创建bloom filter
 
             ByteBloomFilter filter = new ByteBloomFilter(cells.size(), errorRate, 1, 1);
             filter.allocBloom();
             WriteContext context = new WriteContext(filter);
-
+            LOGGER.info("second,write block,index is {}", FileConstants.HCC_WRITE_PREFIX.length );
             //2 开始写block
             int blockFinishIndex = blockWriter.writeBlock(cells, fileOutputStream, context);
-
+            LOGGER.info("block write finish,index is {}",blockFinishIndex);
             int indexStartIndex = blockFinishIndex + 1;
-
+            LOGGER.info("third, write index, index is {}",indexStartIndex);
             //3 开始写index
             //todo:优化掉toByteArray的copy
             ByteArrayOutputStream indexStream = context.getIndex();
@@ -81,8 +84,9 @@ public class HCCWriter implements IHCCWriter {
 
             //4 开始写bloomFilter
             ByteBloomFilter bloomFilter = context.getBloom();
-
+            LOGGER.info("index write finished at {}",blockFinishIndex + context.getIndex().size());
             int bloomStartIndex = blockFinishIndex + context.getIndex().size() + 1;
+            LOGGER.info("fourth,write bloom, index is {}",bloomStartIndex);
             bloomFilter.writeBloom(fileOutputStream);
 
             //4 开始写meta
@@ -90,6 +94,7 @@ public class HCCWriter implements IHCCWriter {
             byte[] endK = cells.get(cells.size() - 1).getKey();
 
             MetaInfo metaInfo = new MetaInfo(startK, endK, indexStartIndex, bloomStartIndex);
+            LOGGER.info("fifth,write meta info {}",metaInfo);
             byte[] bytes = metaInfo.serialize();
             fileOutputStream.write(bytes);
             fileOutputStream.write(Bytes.toBytes(bytes.length));

@@ -43,15 +43,16 @@ public class HCCTest extends TestCase {
     @Test
     public void test() throws IOException {
         HCCReader reader = new HCCReader(hccFileName,new MetaReader());
-        reader.seek(Bytes.toBytes(55));
+        reader.seek(Bytes.toBytes(2));
         Cell cell = reader.next();
-        Assert.assertEquals(55,Bytes.toInt(cell.getValue()));
+        Assert.assertEquals(2,Bytes.toInt(cell.getValue()));
     }
 
     @After
     public void after(){
         if(hccFileName != null){
             File file = new File(hccFileName);
+            LOGGER.info("begin to delete file {}",hccFileName);
             file.delete();
         }
     }
