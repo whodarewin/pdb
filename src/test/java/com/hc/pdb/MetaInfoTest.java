@@ -11,7 +11,7 @@ import java.io.IOException;
  */
 public class MetaInfoTest extends TestCase{
     public void testMetaInfo() throws IOException {
-        MetaInfo metaInfo1 = new MetaInfo("1".getBytes(),"10".getBytes(),1,2);
+        MetaInfo metaInfo1 = new MetaInfo(System.currentTimeMillis(), "1".getBytes(),"10".getBytes(),1,2);
         byte[] metaBytes = metaInfo1.serialize();
         MetaInfo metaInfo2 = MetaInfo.deSerialize(metaBytes);
         Assert.assertEquals(new String(metaInfo1.getStartKey()),new String(metaInfo2.getStartKey()));

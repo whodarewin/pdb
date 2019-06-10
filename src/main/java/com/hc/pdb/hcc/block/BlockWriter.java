@@ -15,6 +15,14 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
 
+
+/**
+ * BlockWriter
+ * block 的写入
+ * @author han.congcong
+ * @date 2019/6/10
+ */
+
 public class BlockWriter implements IBlockWriter {
     private static final Logger LOGGER = LoggerFactory.getLogger(BlockWriter.class);
     private Configuration conf;
@@ -32,8 +40,9 @@ public class BlockWriter implements IBlockWriter {
 
         byte[] preKey = null;
         int blockCurSize = 0;
-        int index = indexShift;
-        writeIndex(context.getIndex(), cells.iterator().next().getKey(), index + 1);
+        // 后面第一个可写的位置
+        int index = indexShift + 1;
+        writeIndex(context.getIndex(), cells.iterator().next().getKey(), index);
         for (Cell cell : cells) {
             if (preKey == null) {
                 preKey = cell.getKey();

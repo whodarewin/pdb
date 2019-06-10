@@ -11,6 +11,10 @@ import java.io.IOException;
  */
 public class MetaInfo {
     /**
+     * 创建时间
+     */
+    private long createTime;
+    /**
      * 整个hcc的startKey
      */
     private byte[] startKey;
@@ -30,12 +34,14 @@ public class MetaInfo {
     /**
      * 创建metainfo
      *
+     * @param createTime
      * @param startKey
      * @param endKey
      * @param indexStartIndex
      * @param bloomStartIndex
      */
-    public MetaInfo(byte[] startKey, byte[] endKey, int indexStartIndex, int bloomStartIndex) {
+    public MetaInfo(long createTime, byte[] startKey, byte[] endKey, int indexStartIndex, int bloomStartIndex) {
+        this.createTime = createTime;
         this.startKey = startKey;
         this.endKey = endKey;
         this.indexStartIndex = indexStartIndex;
@@ -83,6 +89,7 @@ public class MetaInfo {
      */
     public byte[] serialize() throws IOException {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        outputStream.write(Bytes.toBytes(createTime));
         outputStream.write(Bytes.toBytes(startKey.length));
         outputStream.write(startKey);
         outputStream.write(Bytes.toBytes(endKey.length));
@@ -100,6 +107,9 @@ public class MetaInfo {
      */
     public static MetaInfo deSerialize(byte[] bytes) throws IOException {
         ByteArrayInputStream byteInputStream = new ByteArrayInputStream(bytes);
+        byte[] createTimeBytes = new byte[8];
+        byteInputStream.read(createTimeBytes);
+        long createTime = Bytes.toLong(createTimeBytes);
         byte[] sklBytes = new byte[4];
         byteInputStream.read(sklBytes);
         int skl = Bytes.toInt(sklBytes);
@@ -117,7 +127,7 @@ public class MetaInfo {
         int indexStartIndex = Bytes.toInt(indexStartBytes);
         int bloomStartIndex = Bytes.toInt(bloomStartBytes);
 
-        return new MetaInfo(startK, endK, indexStartIndex, bloomStartIndex);
+        return new MetaInfo(createTime, startK, endK, indexStartIndex, bloomStartIndex);
     }
 
     @Override

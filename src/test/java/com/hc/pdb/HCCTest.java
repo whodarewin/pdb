@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * hcc 读写测试，TODO：打log日志
@@ -32,8 +33,8 @@ public class HCCTest extends TestCase {
         configuration.put(Constants.DB_PATH_KEY,HCCTest.class.getClassLoader().getResource("").getPath());
         HCCWriter writer = new HCCWriter(configuration);
         List<Cell> cells = new ArrayList<>();
-        for (int i = 0; i < 10000 ; i++) {
-            Cell cell = new Cell(Bytes.toBytes(i),Bytes.toBytes(i),20l);
+        for (int i = 0; i < 100000 ; i++) {
+            Cell cell = new Cell(Bytes.toBytes(i), UUID.randomUUID().toString().getBytes(),20l);
             cells.add(cell);
         }
         hccFileName = writer.writeHCC(cells);
@@ -43,9 +44,10 @@ public class HCCTest extends TestCase {
     @Test
     public void test() throws IOException {
         HCCReader reader = new HCCReader(hccFileName,new MetaReader());
-        reader.seek(Bytes.toBytes(2));
+        reader.seek(Bytes.toBytes(50000));
         Cell cell = reader.next();
-        Assert.assertEquals(2,Bytes.toInt(cell.getValue()));
+        LOGGER.info(new String(cell.getValue()));
+        Assert.assertEquals(50000,Bytes.toInt(cell.getKey()));
     }
 
     @After
