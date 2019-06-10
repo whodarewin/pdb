@@ -3,6 +3,7 @@ package com.hc.pdb.hcc;
 import com.google.common.base.Preconditions;
 import com.hc.pdb.conf.Configuration;
 import com.hc.pdb.conf.Constants;
+import com.hc.pdb.exception.DBPathNotSetException;
 import com.hc.pdb.file.FileConstants;
 
 import java.io.File;

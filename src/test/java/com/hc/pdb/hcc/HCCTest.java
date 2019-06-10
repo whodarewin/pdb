@@ -1,12 +1,10 @@
-package com.hc.pdb;
+package com.hc.pdb.hcc;
 
+import com.hc.pdb.Cell;
 import com.hc.pdb.conf.Configuration;
 import com.hc.pdb.conf.Constants;
-import com.hc.pdb.hcc.HCCReader;
-import com.hc.pdb.hcc.HCCWriter;
 import com.hc.pdb.hcc.meta.MetaReader;
 import com.hc.pdb.util.Bytes;
-import junit.framework.TestCase;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -23,7 +21,7 @@ import java.util.UUID;
 /**
  * hcc 读写测试，TODO：打log日志
  */
-public class HCCTest extends TestCase {
+public class HCCTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(HCCTest.class);
     private Configuration configuration;
     private String hccFileName;
@@ -38,7 +36,6 @@ public class HCCTest extends TestCase {
             cells.add(cell);
         }
         hccFileName = writer.writeHCC(cells);
-
     }
 
     @Test
@@ -48,14 +45,22 @@ public class HCCTest extends TestCase {
         Cell cell = reader.next();
         LOGGER.info(new String(cell.getValue()));
         Assert.assertEquals(50000,Bytes.toInt(cell.getKey()));
+
+        int readedCellCount = 50001;
+        while((cell = reader.next()) != null){
+            Assert.assertEquals(readedCellCount,Bytes.toInt(cell.getKey()));
+            readedCellCount ++;
+        }
+        LOGGER.info("readed {} ",readedCellCount);
     }
 
     @After
     public void after(){
         if(hccFileName != null){
             File file = new File(hccFileName);
-            LOGGER.info("begin to delete file {}",hccFileName);
+            LOGGER.info("begin to delete file {}", hccFileName);
             file.delete();
+            LOGGER.info("success deleted file {}", hccFileName);
         }
     }
 }

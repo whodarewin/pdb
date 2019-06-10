@@ -5,6 +5,14 @@ import com.hc.pdb.util.Bytes;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
+
+/**
+ * MetaReader
+ * meta 的reader
+ * @author han.congcong
+ * @date 2019/6/10
+ */
+
 public class MetaReader implements IMetaReader {
 
     @Override

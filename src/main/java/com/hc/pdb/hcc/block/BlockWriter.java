@@ -63,8 +63,8 @@ public class BlockWriter implements IBlockWriter {
             }
             writeBloom(context.getBloom(), cell.getKey());
         }
-
-
+        //写endkey的index 形成闭环
+        writeIndex(context.getIndex(),cells.get(cells.size() - 1).getKey(), index);
         return index;
     }
 

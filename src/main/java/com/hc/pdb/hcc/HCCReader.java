@@ -29,6 +29,8 @@ import java.util.TreeMap;
 public class HCCReader implements IHCCReader {
     private static final Logger LOGGER  = LoggerFactory.getLogger(HCCReader.class);
 
+    private String filePath;
+
     private MetaInfo metaInfo;
     /**
      * bloom filter
@@ -54,9 +56,10 @@ public class HCCReader implements IHCCReader {
      * @param path hcc 的地址
      */
     public HCCReader(String path, MetaReader metaReader) throws IOException {
+        this.filePath = path;
         file = new RandomAccessFile(path, "r");
         metaInfo = metaReader.read(file);
-        LOGGER.info("meta info readed {}",metaInfo);
+        LOGGER.info("meta info {}",metaInfo);
         preLoad();
     }
 
@@ -79,6 +82,7 @@ public class HCCReader implements IHCCReader {
             endKey = null;
             blockEndIndex = metaInfo.getIndexStartIndex() - 1;
         }
+        LOGGER.info("seek to first {} {}", blockStartIndex, blockEndIndex);
         readBlock(blockStartIndex,blockEndIndex);
     }
 
@@ -127,24 +131,29 @@ public class HCCReader implements IHCCReader {
 
     @Override
     public void seek(byte[] key) throws IOException {
-        if (Bytes.compare(key, metaInfo.getEndKey()) > 0) {
+        if (Bytes.compare(key, metaInfo.getEndKey()) > 0
+            || Bytes.compare(key, metaInfo.getStartKey()) < 0) {
             throw new KeyOutofRangeException();
         }
+
         //1 找到key所定义的index
         Map.Entry<byte[],Integer> startEntry = this.key2index.lowerEntry(key);
         Map.Entry<byte[],Integer> endEntry = this.key2index.higherEntry(key);
 
         if(startEntry == null){
+            //不可能的，永远不会为null
             blockStartIndex = FileConstants.HCC_WRITE_PREFIX.length;
         }else{
             blockStartIndex = startEntry.getValue();
         }
         if(endEntry == null){
+            // 也是不可能的，永远不会为null
             blockEndIndex = metaInfo.getIndexStartIndex() - 1;
         }else{
             blockEndIndex = endEntry.getValue();
+            endKey = endEntry.getKey();
         }
-
+        LOGGER.info("seek to block {} {}", blockStartIndex, blockEndIndex);
         readBlock(blockStartIndex,blockEndIndex);
         seekBlock(key);
     }
@@ -166,7 +175,7 @@ public class HCCReader implements IHCCReader {
     }
 
     private void readBlock(int blockStartIndex, int blockEndIndex) throws IOException {
-        this.currentBlock = ByteBuffer.allocate(blockEndIndex - blockStartIndex);
+        this.currentBlock = ByteBuffer.allocateDirect(blockEndIndex - blockStartIndex);
         this.currentBlock.mark();
         file.getChannel().read(this.currentBlock, blockStartIndex);
         this.currentBlock.reset();
@@ -176,10 +185,15 @@ public class HCCReader implements IHCCReader {
     @Override
     public Cell next() throws IOException {
         if(this.currentBlock.position() == this.currentBlock.limit()){
-            blockStartIndex = blockEndIndex + 1;
-            Map.Entry<byte[],Integer> entry = key2index.lowerEntry(endKey);
+            blockStartIndex = blockEndIndex ;
+            Map.Entry<byte[],Integer> entry = key2index.higherEntry(endKey);
+            if(entry == null){
+                LOGGER.info("hcc read over {}",filePath);
+                return null;
+            }
             blockEndIndex = entry.getValue();
             endKey =  entry.getKey();
+            LOGGER.info("current block read over,read next begin {} end {}", blockStartIndex, blockEndIndex);
             readBlock(blockStartIndex,blockEndIndex);
         }
         return Cell.toCell(currentBlock);

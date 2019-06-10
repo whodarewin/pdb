@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import com.hc.pdb.Cell;
 import com.hc.pdb.conf.Configuration;
 import com.hc.pdb.conf.Constants;
+import com.hc.pdb.exception.DBPathNotSetException;
 import com.hc.pdb.file.FileConstants;
 import com.hc.pdb.hcc.block.BlockWriter;
 import com.hc.pdb.hcc.meta.MetaInfo;

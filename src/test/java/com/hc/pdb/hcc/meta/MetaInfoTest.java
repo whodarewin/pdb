@@ -1,15 +1,16 @@
-package com.hc.pdb;
+package com.hc.pdb.hcc.meta;
 
-import com.hc.pdb.hcc.meta.MetaInfo;
-import junit.framework.TestCase;
 import org.junit.Assert;
+import org.junit.Test;
 
 import java.io.IOException;
 
 /**
  * Created by congcong.han on 2019/6/1.
  */
-public class MetaInfoTest extends TestCase{
+public class MetaInfoTest {
+
+    @Test
     public void testMetaInfo() throws IOException {
         MetaInfo metaInfo1 = new MetaInfo(System.currentTimeMillis(), "1".getBytes(),"10".getBytes(),1,2);
         byte[] metaBytes = metaInfo1.serialize();
