@@ -1,4 +1,4 @@
-package com.hc.pdb.exception;
+package com.hc.pdb.hcc;
 
 public class DBPathNotSetException extends RuntimeException {
 

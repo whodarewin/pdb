@@ -1,6 +1,6 @@
 package com.hc.pdb;
 
-import com.hc.pdb.exception.NoEnoughByteException;
+import com.hc.pdb.hcc.NoEnoughByteException;
 import com.hc.pdb.util.Bytes;
 
 import java.io.ByteArrayOutputStream;

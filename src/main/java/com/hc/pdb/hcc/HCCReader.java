@@ -1,9 +1,6 @@
 package com.hc.pdb.hcc;
 
 import com.hc.pdb.Cell;
-import com.hc.pdb.conf.Constants;
-import com.hc.pdb.exception.KeyOutofRangeException;
-import com.hc.pdb.exception.SeekOutofRangeException;
 import com.hc.pdb.file.FileConstants;
 import com.hc.pdb.hcc.meta.MetaInfo;
 import com.hc.pdb.hcc.meta.MetaReader;

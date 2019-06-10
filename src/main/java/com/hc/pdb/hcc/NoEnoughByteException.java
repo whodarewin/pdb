@@ -1,4 +1,4 @@
-package com.hc.pdb.exception;
+package com.hc.pdb.hcc;
 
 /**
  * 在构建cell的时候没有足够的byte可以使用
