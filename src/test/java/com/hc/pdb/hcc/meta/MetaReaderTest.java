@@ -2,7 +2,7 @@ package com.hc.pdb.hcc.meta;
 
 import com.hc.pdb.Cell;
 import com.hc.pdb.conf.Configuration;
-import com.hc.pdb.conf.Constants;
+import com.hc.pdb.conf.PDBConstants;
 import com.hc.pdb.hcc.HCCWriter;
 import junit.framework.TestCase;
 import org.junit.After;
@@ -24,7 +24,7 @@ public class MetaReaderTest{
     public void setUp() throws IOException {
 
         Configuration configuration = new Configuration();
-        configuration.put(Constants.DB_PATH_KEY, MetaReaderTest.class.getClassLoader().getResource("").getPath());
+        configuration.put(PDBConstants.DB_PATH_KEY, MetaReaderTest.class.getClassLoader().getResource("").getPath());
 
         HCCWriter hccWriter = new HCCWriter(configuration);
         List<Cell> cells = new ArrayList<Cell>();

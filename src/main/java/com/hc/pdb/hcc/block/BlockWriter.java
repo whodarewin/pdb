@@ -2,7 +2,7 @@ package com.hc.pdb.hcc.block;
 
 import com.hc.pdb.Cell;
 import com.hc.pdb.conf.Configuration;
-import com.hc.pdb.conf.Constants;
+import com.hc.pdb.conf.PDBConstants;
 import com.hc.pdb.file.FileConstants;
 import com.hc.pdb.hcc.WriteContext;
 import com.hc.pdb.util.ByteBloomFilter;
@@ -35,7 +35,7 @@ public class BlockWriter implements IBlockWriter {
     @Override
     public int writeBlock(List<Cell> cells, FileOutputStream outputStream, WriteContext context)
             throws IOException {
-        long blockSize = conf.getLong(Constants.BLOCK_SIZE_KEY, Constants.BLOCK_SIZE);
+        long blockSize = conf.getLong(PDBConstants.BLOCK_SIZE_KEY, PDBConstants.DEFAULT_BLOCK_SIZE);
         blockSize = blockSize * 1024;
 
         byte[] preKey = null;

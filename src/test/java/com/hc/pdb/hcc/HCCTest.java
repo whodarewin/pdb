@@ -2,7 +2,7 @@ package com.hc.pdb.hcc;
 
 import com.hc.pdb.Cell;
 import com.hc.pdb.conf.Configuration;
-import com.hc.pdb.conf.Constants;
+import com.hc.pdb.conf.PDBConstants;
 import com.hc.pdb.hcc.meta.MetaReader;
 import com.hc.pdb.util.Bytes;
 import org.junit.After;
@@ -28,7 +28,7 @@ public class HCCTest {
     @Before
     public void setUp() throws IOException {
         configuration = new Configuration();
-        configuration.put(Constants.DB_PATH_KEY,HCCTest.class.getClassLoader().getResource("").getPath());
+        configuration.put(PDBConstants.DB_PATH_KEY,HCCTest.class.getClassLoader().getResource("").getPath());
         HCCWriter writer = new HCCWriter(configuration);
         List<Cell> cells = new ArrayList<>();
         for (int i = 0; i < 100000 ; i++) {

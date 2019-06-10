@@ -1,11 +1,16 @@
 package com.hc.pdb;
 
 import com.hc.pdb.conf.Configuration;
-import com.hc.pdb.conf.Constants;
+import com.hc.pdb.conf.PDBConstants;
+
 
 /**
- * 创建pdb
+ * PDBBuilder
+ * pdb 创建者
+ * @author han.congcong
+ * @date 2019/6/10
  */
+
 public class PDBBuilder {
 
     private Configuration configuration = new Configuration();
@@ -15,12 +20,22 @@ public class PDBBuilder {
     }
 
     public PDBBuilder path(String path) {
-        configuration.put(Constants.DB_PATH_KEY, path);
+        configuration.put(PDBConstants.DB_PATH_KEY, path);
         return this;
     }
 
     public PDBBuilder flusherThreadSize(int flushThreadSize) {
-        configuration.put(Constants.FLUSHER_THREAD_SIZE_KEY, flushThreadSize);
+        configuration.put(PDBConstants.FLUSHER_THREAD_SIZE_KEY, flushThreadSize);
+        return this;
+    }
+
+    public PDBBuilder memCacheSize(int size){
+        configuration.put(PDBConstants.MEM_CACHE_MAX_SIZE_KEY,size);
+        return this;
+    }
+
+    public PDBBuilder blockSize(int size){
+        configuration.put(PDBConstants.BLOCK_SIZE_KEY, size);
         return this;
     }
 }

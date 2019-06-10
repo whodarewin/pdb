@@ -61,6 +61,7 @@ public class HCCReader implements IHCCReader {
     }
 
     private void preLoad() throws IOException {
+        //todo:check prefix
         //读取bloom过滤器
         loadBloom();
         //读取索引

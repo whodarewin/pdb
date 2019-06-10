@@ -2,7 +2,7 @@ package com.hc.pdb.hcc;
 
 import com.google.common.base.Preconditions;
 import com.hc.pdb.conf.Configuration;
-import com.hc.pdb.conf.Constants;
+import com.hc.pdb.conf.PDBConstants;
 import com.hc.pdb.file.FileConstants;
 
 import java.io.File;
@@ -21,7 +21,7 @@ public class HCCManager {
     }
 
     private void loadInfo() {
-        String path = configuration.get(Constants.DB_PATH_KEY);
+        String path = configuration.get(PDBConstants.DB_PATH_KEY);
         if (path == null) {
             throw new DBPathNotSetException();
         }
@@ -51,6 +51,5 @@ public class HCCManager {
         }
         return false;
     }
-
 
 }

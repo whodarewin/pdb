@@ -3,7 +3,7 @@ package com.hc.pdb.flusher;
 import com.google.common.base.Preconditions;
 import com.hc.pdb.Cell;
 import com.hc.pdb.conf.Configuration;
-import com.hc.pdb.conf.Constants;
+import com.hc.pdb.conf.PDBConstants;
 import com.hc.pdb.hcc.HCCWriter;
 import com.hc.pdb.mem.MemCache;
 import com.hc.pdb.util.NamedThreadFactory;
@@ -18,6 +18,9 @@ import java.util.concurrent.*;
 /**
  * Flusher
  * flush memCache 到磁盘
+ * 流程：
+ * 1. 如果MemCache达到了限定的大小，则flush到磁盘
+ * 2. 如果所有的flush线程全部在用，则阻塞写入。
  * @author han.congcong
  * @date 2019/6/3
  */
@@ -31,11 +34,11 @@ public class Flusher implements IFlusher {
     public Flusher(Configuration configuration, HCCWriter hccWriter) {
         Preconditions.checkNotNull(configuration);
         this.configuration = configuration;
-        int flushThreadNum = configuration.getInt(Constants.FLUSHER_THREAD_SIZE_KEY,
-                Constants.DEFAULT_FLUSHER_THREAD_SIZE);
+        int flushThreadNum = configuration.getInt(PDBConstants.FLUSHER_THREAD_SIZE_KEY,
+                PDBConstants.DEFAULT_FLUSHER_THREAD_SIZE);
         executor = new ThreadPoolExecutor(flushThreadNum, flushThreadNum,
                 0L, TimeUnit.MILLISECONDS,
-                new SynchronousQueue<Runnable>(),
+                new SynchronousQueue<>(),
                 new NamedThreadFactory("pdb-flusher"));
         this.hccWriter = hccWriter;
     }

@@ -3,7 +3,7 @@ package com.hc.pdb.hcc;
 import com.google.common.base.Preconditions;
 import com.hc.pdb.Cell;
 import com.hc.pdb.conf.Configuration;
-import com.hc.pdb.conf.Constants;
+import com.hc.pdb.conf.PDBConstants;
 import com.hc.pdb.file.FileConstants;
 import com.hc.pdb.hcc.block.BlockWriter;
 import com.hc.pdb.hcc.meta.MetaInfo;
@@ -32,8 +32,8 @@ public class HCCWriter implements IHCCWriter {
     public HCCWriter(Configuration configuration) {
         Preconditions.checkNotNull(configuration, "configuration can not be null");
         this.configuration = configuration;
-        path = configuration.get(Constants.DB_PATH_KEY);
-        errorRate = configuration.getDouble(Constants.ERROR_RATE_KEY, Constants.DEFAULT_ERROR_RATE);
+        path = configuration.get(PDBConstants.DB_PATH_KEY);
+        errorRate = configuration.getDouble(PDBConstants.ERROR_RATE_KEY, PDBConstants.DEFAULT_ERROR_RATE);
         this.manager = new HCCManager(configuration);
         this.blockWriter = new BlockWriter(configuration);
     }

@@ -8,7 +8,7 @@ import java.io.RandomAccessFile;
 
 /**
  * MetaReader
- * meta 的reader
+ * meta 的reader，从file中拿到数组
  * @author han.congcong
  * @date 2019/6/10
  */
