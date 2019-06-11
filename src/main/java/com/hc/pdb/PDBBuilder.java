@@ -3,7 +3,8 @@ package com.hc.pdb;
 import com.hc.pdb.conf.Configuration;
 import com.hc.pdb.conf.PDBConstants;
 import com.hc.pdb.util.FileUtils;
-import com.sun.javafx.scene.shape.PathUtils;
+
+import java.io.IOException;
 
 
 /**
@@ -17,7 +18,7 @@ public class PDBBuilder {
 
     private Configuration configuration = new Configuration();
 
-    public PDB build() {
+    public PDB build() throws IOException {
         return new PDB(configuration);
     }
 

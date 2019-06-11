@@ -35,4 +35,10 @@ public class DefaultWalWriter implements IWalWriter {
     public void close() throws IOException {
         this.output.close();
     }
+
+    @Override
+    public void delete() throws IOException {
+        this.close();
+        new File(path).delete();
+    }
 }

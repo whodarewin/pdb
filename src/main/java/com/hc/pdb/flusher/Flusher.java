@@ -7,6 +7,7 @@ import com.hc.pdb.conf.PDBConstants;
 import com.hc.pdb.hcc.HCCWriter;
 import com.hc.pdb.mem.MemCache;
 import com.hc.pdb.util.NamedThreadFactory;
+import com.hc.pdb.wal.IWalWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,8 +45,8 @@ public class Flusher implements IFlusher {
     }
 
     @Override
-    public Future<Boolean> flush(MemCache cache) {
-        Future<Boolean> ret = executor.submit(new FlushWorker(cache, hccWriter));
+    public Future<Boolean> flush(FlushEntry entry) {
+        Future<Boolean> ret = executor.submit(new FlushWorker(entry, hccWriter));
         return ret;
     }
 
@@ -58,12 +59,15 @@ public class Flusher implements IFlusher {
         private static final Logger LOGGER = LoggerFactory.getLogger(FlushWorker.class);
         private MemCache cache;
         private HCCWriter hccWriter;
+        private IWalWriter walWriter;
 
-        public FlushWorker(MemCache cache, HCCWriter hccWriter) {
-            Preconditions.checkNotNull(cache, "MemCache can not be null");
-            Preconditions.checkNotNull(hccWriter, "hccWriter can not be null");
-            this.cache = cache;
-            this.hccWriter = hccWriter;
+        public FlushWorker(FlushEntry entry,HCCWriter writer) {
+            Preconditions.checkNotNull(entry.getMemCache(), "MemCache can not be null");
+            Preconditions.checkNotNull(entry.getWalWriter(),"WalWriter can not be null");
+            Preconditions.checkNotNull(writer, "hccWriter can not be null");
+            this.cache = entry.getMemCache();
+            this.hccWriter = writer;
+            this.walWriter = entry.getWalWriter();
         }
 
         @Override
@@ -71,6 +75,7 @@ public class Flusher implements IFlusher {
             try {
                 List<Cell> cells = new ArrayList<>(cache.getAllCells());
                 hccWriter.writeHCC(cells);
+                walWriter.delete();
                 return true;
             } catch (Exception e) {
                 LOGGER.error("flush error", e);

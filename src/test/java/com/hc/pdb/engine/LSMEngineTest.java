@@ -6,6 +6,7 @@ import com.hc.pdb.util.Bytes;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.UUID;
 
 /**
@@ -19,7 +20,7 @@ public class LSMEngineTest {
     private LSMEngine engine;
 
     @Before
-    public void init(){
+    public void init() throws IOException {
         String path = LSMEngineTest.class.getClassLoader().getResource("").getPath();
         Configuration configuration = new Configuration();
         configuration.put(PDBConstants.DB_PATH_KEY,path);
@@ -27,8 +28,8 @@ public class LSMEngineTest {
     }
 
     @Test
-    public void test(){
-        for (int i = 0; i < 100000; i++) {
+    public void test() throws IOException {
+        for (int i = 0; i < 10000000; i++) {
             engine.put(Bytes.toBytes(i), UUID.randomUUID().toString().getBytes(),20);
         }
     }

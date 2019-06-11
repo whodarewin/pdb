@@ -5,6 +5,8 @@ import com.hc.pdb.Cell;
 import com.hc.pdb.conf.Configuration;
 import com.hc.pdb.util.Bytes;
 import com.hc.pdb.util.CellUtil;
+import com.hc.pdb.wal.DefaultWalWriter;
+import com.hc.pdb.wal.IWalWriter;
 
 import java.util.Collection;
 import java.util.Comparator;

@@ -4,6 +4,7 @@ import com.hc.pdb.conf.Configuration;
 import com.hc.pdb.engine.IEngine;
 import com.hc.pdb.engine.LSMEngine;
 
+import java.io.IOException;
 import java.util.Iterator;
 
 /**
@@ -15,7 +16,7 @@ public class PDB {
     private IEngine engine;
 
 
-    public PDB(Configuration configuration) {
+    public PDB(Configuration configuration) throws IOException {
         this.configuration = configuration;
         this.engine = new LSMEngine(configuration);
     }
@@ -26,7 +27,7 @@ public class PDB {
     }
 
 
-    public void put(byte[] key, byte[] value) {
+    public void put(byte[] key, byte[] value) throws IOException {
         this.engine.put(key, value, -1);
     }
 

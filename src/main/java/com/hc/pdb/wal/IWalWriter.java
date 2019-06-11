@@ -16,4 +16,6 @@ public interface IWalWriter {
     void write(ISerializable serializable) throws IOException;
 
     void close() throws IOException;
+
+    void delete() throws IOException;
 }
