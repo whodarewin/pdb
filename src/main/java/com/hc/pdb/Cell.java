@@ -7,6 +7,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+
+/**
+ * Cell
+ * todo:如何做delete
+ * @author han.congcong
+ * @date 2019/6/11
+ */
+
 public class Cell implements ISerializable{
 
     private byte[] key;
