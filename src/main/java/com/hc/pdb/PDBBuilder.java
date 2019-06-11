@@ -2,6 +2,8 @@ package com.hc.pdb;
 
 import com.hc.pdb.conf.Configuration;
 import com.hc.pdb.conf.PDBConstants;
+import com.hc.pdb.util.FileUtils;
+import com.sun.javafx.scene.shape.PathUtils;
 
 
 /**
@@ -20,6 +22,7 @@ public class PDBBuilder {
     }
 
     public PDBBuilder path(String path) {
+        path = FileUtils.reformatDirPath(path);
         configuration.put(PDBConstants.DB_PATH_KEY, path);
         return this;
     }

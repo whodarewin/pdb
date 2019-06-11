@@ -152,7 +152,7 @@ public class MetaInfo implements ISerializable {
     @Override
     public String toString(){
         return "index start at " + indexStartIndex
-                + "\nbloom start at " + bloomStartIndex;
+                + ",bloom start at " + bloomStartIndex;
     }
 
     public int size(){

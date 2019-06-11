@@ -2,6 +2,8 @@ package com.hc.pdb.wal;
 
 import com.hc.pdb.ISerializable;
 
+import java.io.IOException;
+
 /**
  * IWalWriter
  * 前缀：cell：cell。。。。
@@ -11,5 +13,7 @@ import com.hc.pdb.ISerializable;
  */
 public interface IWalWriter {
 
-    void write(ISerializable serializable);
+    void write(ISerializable serializable) throws IOException;
+
+    void close() throws IOException;
 }
