@@ -49,7 +49,7 @@ public class BlockWriter implements IBlockWriter {
             } else if (Bytes.compare(preKey, cell.getKey()) > 0) {
                 throw new CellWrongOrderException();
             }
-            byte[] bytes = cell.toBytes();
+            byte[] bytes = cell.serialize();
 
             blockCurSize = blockCurSize + bytes.length;
             index = index + bytes.length;

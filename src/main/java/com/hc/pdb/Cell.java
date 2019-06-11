@@ -1,23 +1,31 @@
 package com.hc.pdb;
 
-import com.hc.pdb.hcc.NoEnoughByteException;
+import com.hc.pdb.exception.NoEnoughByteException;
 import com.hc.pdb.util.Bytes;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-public class Cell {
+public class Cell implements ISerializable{
 
     private byte[] key;
     private byte[] value;
     private long ttl;
+
+    public Cell(){}
 
     public Cell(byte[] key, byte[] value, long ttl) {
         this.key = key;
         this.value = value;
         this.ttl = ttl;
 
+    }
+
+    public static Cell toCell(ByteBuffer currentBlock) {
+        Cell cell = new Cell();
+        cell.deSerialize(currentBlock);
+        return cell;
     }
 
     public byte[] getKey() {
@@ -32,8 +40,11 @@ public class Cell {
         return ttl;
     }
 
-    //key length + key timeToDrop + value
-    public byte[] toBytes() throws IOException {
+    /**
+     * key length + key timeToDrop + value
+     */
+    @Override
+    public byte[] serialize() throws IOException{
         //todo:抛弃output stream 的写法，写到文件里要增加version字段。
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         outputStream.write(Bytes.toBytes(key.length + value.length + Long.BYTES));
@@ -44,9 +55,10 @@ public class Cell {
         return outputStream.toByteArray();
     }
 
-    public static Cell toCell(ByteBuffer byteBuffer) {
+    @Override
+    public void deSerialize(ByteBuffer byteBuffer) {
         if (byteBuffer.position() == byteBuffer.limit()) {
-            return null;
+            throw new NoEnoughByteException();
         }
         byte[] bytes = new byte[4];
         byteBuffer.get(bytes);
@@ -64,6 +76,8 @@ public class Cell {
         byte[] longBytes = new byte[8];
         byteBuffer.get(longBytes);
         long ttl = Bytes.toLong(longBytes);
-        return new Cell(key, value, ttl);
+        this.key = key;
+        this.value = value;
+        this.ttl = ttl;
     }
 }

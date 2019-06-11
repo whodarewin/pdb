@@ -1,6 +1,6 @@
 package com.hc.pdb.wal;
 
-import com.hc.pdb.Cell;
+import com.hc.pdb.ISerializable;
 
 /**
  * IWalWriter
@@ -10,5 +10,6 @@ import com.hc.pdb.Cell;
  * @date 2019/6/10
  */
 public interface IWalWriter {
-    void write(Cell cell);
+
+    void write(ISerializable serializable);
 }

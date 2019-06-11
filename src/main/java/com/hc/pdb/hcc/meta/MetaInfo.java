@@ -1,15 +1,17 @@
 package com.hc.pdb.hcc.meta;
 
+import com.hc.pdb.ISerializable;
 import com.hc.pdb.util.Bytes;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  * meta 信息
  */
-public class MetaInfo {
+public class MetaInfo implements ISerializable {
     /**
      * 创建时间
      */
@@ -30,6 +32,8 @@ public class MetaInfo {
      * 不聋过滤器的startKey
      */
     private int bloomStartIndex;
+
+    public MetaInfo(){}
 
     /**
      * 创建metainfo
@@ -87,6 +91,7 @@ public class MetaInfo {
      * start key length | start key | end key length | end key | index start index | bloom start index
      * @return
      */
+    @Override
     public byte[] serialize() throws IOException {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         outputStream.write(Bytes.toBytes(createTime));
@@ -101,33 +106,47 @@ public class MetaInfo {
 
     /**
      *
-     * @param bytes
+     * @param buffer
      * @return
      * @throws IOException
      */
-    public static MetaInfo deSerialize(byte[] bytes) throws IOException {
-        ByteArrayInputStream byteInputStream = new ByteArrayInputStream(bytes);
+    @Override
+    public void deSerialize(ByteBuffer buffer) {
+
         byte[] createTimeBytes = new byte[8];
-        byteInputStream.read(createTimeBytes);
+        buffer.get(createTimeBytes);
         long createTime = Bytes.toLong(createTimeBytes);
         byte[] sklBytes = new byte[4];
-        byteInputStream.read(sklBytes);
+        buffer.get(sklBytes);
         int skl = Bytes.toInt(sklBytes);
         byte[] startK = new byte[skl];
-        byteInputStream.read(startK);
+        buffer.get(startK);
         byte[] eklBytes = new byte[4];
-        byteInputStream.read(eklBytes);
+        buffer.get(eklBytes);
         int ekl = Bytes.toInt(eklBytes);
         byte[] endK = new byte[ekl];
-        byteInputStream.read(endK);
+        buffer.get(endK);
         byte[] indexStartBytes = new byte[4];
         byte[] bloomStartBytes = new byte[4];
-        byteInputStream.read(indexStartBytes);
-        byteInputStream.read(bloomStartBytes);
+        buffer.get(indexStartBytes);
+        buffer.get(bloomStartBytes);
         int indexStartIndex = Bytes.toInt(indexStartBytes);
         int bloomStartIndex = Bytes.toInt(bloomStartBytes);
+        this.createTime = createTime;
+        this.startKey = startK;
+        this.endKey = endK;
+        this.indexStartIndex = indexStartIndex;
+        this.bloomStartIndex = bloomStartIndex;
+    }
 
-        return new MetaInfo(createTime, startK, endK, indexStartIndex, bloomStartIndex);
+    public static MetaInfo toMetaInfo(byte[] bytes){
+        ByteBuffer buffer = ByteBuffer.allocateDirect(bytes.length);
+        buffer.mark();
+        buffer.put(bytes);
+        buffer.reset();
+        MetaInfo info = new MetaInfo();
+        info.deSerialize(buffer);
+        return info;
     }
 
     @Override
