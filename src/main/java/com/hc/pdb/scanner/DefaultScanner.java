@@ -29,11 +29,19 @@ public class DefaultScanner implements IScanner {
 
     @Override
     public Cell next() throws IOException {
-        IScanner scanner = queue.poll();
-        current = scanner.peek();
-        if(scanner.next() != null){
-            queue.add(scanner);
+        while(true) {
+            IScanner scanner = queue.poll();
+            Cell cell = scanner.peek();
+            if(current != null && Bytes.compare(cell.getKey(),current.getKey()) == 0){
+                if(scanner.next() != null){
+                    queue.add(scanner);
+                }
+                //key 相同，选择第一个,todo:抽离此逻辑，并增加delete逻辑
+                continue;
+            }
+            break;
         }
+
         return current;
     }
 

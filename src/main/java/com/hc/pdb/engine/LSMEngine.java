@@ -84,6 +84,7 @@ public class LSMEngine implements IEngine {
 
     @Override
     public IScanner scan(byte[] start, byte[] end) {
+
         return null;
     }
 
