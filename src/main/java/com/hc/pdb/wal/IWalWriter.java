@@ -18,4 +18,6 @@ public interface IWalWriter {
     void close() throws IOException;
 
     void delete() throws IOException;
+
+    String getWalFileName();
 }

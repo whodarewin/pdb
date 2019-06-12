@@ -17,11 +17,13 @@ import java.util.UUID;
 
 public class DefaultWalWriter implements IWalWriter {
     private String path;
+    private String fileName;
     private FileOutputStream output;
 
     public DefaultWalWriter(String path) throws IOException {
         this.path = path;
-        File file = new File(path + UUID.randomUUID().toString() + FileConstants.WAL_FILE_SUFFIX);
+        this.fileName = path + UUID.randomUUID().toString() + FileConstants.WAL_FILE_SUFFIX;
+        File file = new File(fileName);
         file.createNewFile();
         this.output = new FileOutputStream(file);
     }
@@ -40,5 +42,10 @@ public class DefaultWalWriter implements IWalWriter {
     public void delete() throws IOException {
         this.close();
         new File(path).delete();
+    }
+
+    @Override
+    public String getWalFileName() {
+        return fileName;
     }
 }

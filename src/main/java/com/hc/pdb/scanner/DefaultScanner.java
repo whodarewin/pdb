@@ -1,6 +1,7 @@
 package com.hc.pdb.scanner;
 
 import com.hc.pdb.Cell;
+import com.hc.pdb.util.Bytes;
 
 import java.io.IOException;
 import java.util.List;
@@ -10,27 +11,34 @@ import java.util.PriorityQueue;
  * 最上层的scanner
  */
 public class DefaultScanner implements IScanner {
-    private PriorityQueue<IScanner> cells = new PriorityQueue<>();
+    private PriorityQueue<IScanner> queue;
+    private Cell current = null;
 
     public DefaultScanner(List<IScanner> scanners) {
-
+        queue = new PriorityQueue<>((o1, o2) -> Bytes.compare(o1.peek().getKey(),o2.peek().getKey()));
+        scanners.forEach((o) -> {
+            try {
+                o.next();
+                queue.add(o);
+            }catch (IOException e){
+                throw new RuntimeException(e);
+            }
+        });
     }
 
-    @Override
-    public boolean hasNext() {
-        return false;
-    }
 
     @Override
     public Cell next() throws IOException {
-        IScanner scanner = cells.poll();
-        Cell ret = scanner.next();
-        cells.add(scanner);
-        return ret;
+        IScanner scanner = queue.poll();
+        current = scanner.peek();
+        if(scanner.next() != null){
+            queue.add(scanner);
+        }
+        return current;
     }
 
     @Override
-    public Cell current() throws IOException {
-        return cells.peek().current();
+    public Cell peek() {
+        return current;
     }
 }

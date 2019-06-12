@@ -4,11 +4,11 @@ import com.google.common.base.Preconditions;
 import com.hc.pdb.Cell;
 import com.hc.pdb.conf.Configuration;
 import com.hc.pdb.conf.PDBConstants;
-import com.hc.pdb.file.FileConstants;
 import com.hc.pdb.flusher.Flusher;
 import com.hc.pdb.flusher.IFlusher;
 import com.hc.pdb.hcc.HCCWriter;
 import com.hc.pdb.mem.MemCache;
+import com.hc.pdb.scanner.IScanner;
 import com.hc.pdb.wal.DefaultWalWriter;
 import com.hc.pdb.wal.IWalWriter;
 
@@ -72,12 +72,19 @@ public class LSMEngine implements IEngine {
         }
     }
 
-    public Cell get(byte[] key) {
+    @Override
+    public byte[] get(byte[] key) {
         return null;
     }
 
+    @Override
     public void delete(byte[] key) {
 
+    }
+
+    @Override
+    public IScanner scan(byte[] start, byte[] end) {
+        return null;
     }
 
 }

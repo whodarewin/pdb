@@ -15,11 +15,12 @@ import java.nio.ByteBuffer;
  * @date 2019/6/11
  */
 
-public class Cell implements ISerializable{
+public class Cell implements ISerializable,Comparable<Cell>{
 
     private byte[] key;
     private byte[] value;
     private long ttl;
+    private long timeStamp;
 
     public Cell(){}
 
@@ -27,7 +28,7 @@ public class Cell implements ISerializable{
         this.key = key;
         this.value = value;
         this.ttl = ttl;
-
+        this.timeStamp = System.currentTimeMillis();
     }
 
     public static Cell toCell(ByteBuffer currentBlock) {
@@ -55,10 +56,11 @@ public class Cell implements ISerializable{
     public byte[] serialize() throws IOException{
         //todo:抛弃output stream 的写法，写到文件里要增加version字段。
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        outputStream.write(Bytes.toBytes(key.length + value.length + Long.BYTES));
+        outputStream.write(Bytes.toBytes(key.length + value.length + Long.BYTES * 2));
         outputStream.write(Bytes.toBytes(key.length));
         outputStream.write(key);
         outputStream.write(value);
+        outputStream.write(Bytes.toBytes(timeStamp));
         outputStream.write(Bytes.toBytes(ttl));
         return outputStream.toByteArray();
     }
@@ -83,9 +85,19 @@ public class Cell implements ISerializable{
         byteBuffer.get(value);
         byte[] longBytes = new byte[8];
         byteBuffer.get(longBytes);
-        long ttl = Bytes.toLong(longBytes);
+        timeStamp = Bytes.toLong(longBytes);
+        byteBuffer.get(longBytes);
+        ttl = Bytes.toLong(longBytes);
         this.key = key;
         this.value = value;
-        this.ttl = ttl;
+    }
+
+    @Override
+    public int compareTo(Cell o) {
+        int keyCompareResult = Bytes.compare(this.key, o.getKey());
+        if(keyCompareResult == 0){
+            return this.timeStamp - o.timeStamp > 0 ? 0 : 1;
+        }
+        return keyCompareResult;
     }
 }

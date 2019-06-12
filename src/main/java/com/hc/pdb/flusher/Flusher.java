@@ -76,6 +76,7 @@ public class Flusher implements IFlusher {
                 List<Cell> cells = new ArrayList<>(cache.getAllCells());
                 hccWriter.writeHCC(cells);
                 walWriter.delete();
+                LOGGER.info("delete wal success {}", walWriter.getWalFileName());
                 return true;
             } catch (Exception e) {
                 LOGGER.error("flush error", e);

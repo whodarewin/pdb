@@ -3,17 +3,29 @@ package com.hc.pdb.mem;
 import com.google.common.base.Preconditions;
 import com.hc.pdb.Cell;
 import com.hc.pdb.conf.Configuration;
+import com.hc.pdb.scanner.IScanner;
 import com.hc.pdb.util.Bytes;
 import com.hc.pdb.util.CellUtil;
 import com.hc.pdb.wal.DefaultWalWriter;
 import com.hc.pdb.wal.IWalWriter;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class MemCache {
+
+/**
+ * MemCache
+ *
+ * @author han.congcong
+ * @date 2019/6/12
+ */
+
+public class MemCache{
     private ConcurrentSkipListMap<byte[], Cell> memValue = new ConcurrentSkipListMap<>(new Comparator<byte[]>() {
         @Override
         public int compare(byte[] o1, byte[] o2) {
@@ -40,5 +52,9 @@ public class MemCache {
 
     public long size() {
         return size.get();
+    }
+
+    public Iterator<Map.Entry<byte[],Cell>> iterator(){
+        return memValue.entrySet().iterator();
     }
 }

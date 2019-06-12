@@ -12,16 +12,10 @@ import java.io.IOException;
  */
 
 public interface IScanner {
-    /**
-     * 是否还有下一个
-     * @return
-     */
-    boolean hasNext();
 
     /**
      * 找到下一个并移动指针位置
      * @return
-     * @throws IOException
      */
     Cell next() throws IOException;
 
@@ -29,5 +23,5 @@ public interface IScanner {
      * 返回当前位置的Cell，不移动指针位置
      * @return
      */
-    Cell current() throws IOException;
+    Cell peek();
 }
