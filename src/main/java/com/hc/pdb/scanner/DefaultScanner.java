@@ -32,13 +32,19 @@ public class DefaultScanner implements IScanner {
         while(true) {
             IScanner scanner = queue.poll();
             Cell cell = scanner.peek();
-            if(current != null && Bytes.compare(cell.getKey(),current.getKey()) == 0){
+            // 两种情况继续读下一个
+            // 1 key和上一个相同
+            // 2 为deleteCell
+            if((current != null && Bytes.compare(cell.getKey(),current.getKey()) == 0)
+                    || cell.getDelete()){
                 if(scanner.next() != null){
                     queue.add(scanner);
                 }
                 //key 相同，选择第一个,todo:抽离此逻辑，并增加delete逻辑
                 continue;
             }
+
+            this.current = cell;
             break;
         }
 

@@ -131,4 +131,8 @@ public class Cell implements ISerializable, Comparable<Cell>{
     public long getTtl() {
         return ttl;
     }
+
+    public boolean getDelete(){
+        return delete;
+    }
 }
