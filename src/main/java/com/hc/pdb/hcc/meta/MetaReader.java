@@ -4,6 +4,15 @@ import com.hc.pdb.util.Bytes;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
+
+
+/**
+ * MetaReader
+ * meta 的reader，从file中拿到数组
+ * @author han.congcong
+ * @date 2019/6/10
+ */
 
 public class MetaReader implements IMetaReader {
 
@@ -14,10 +23,10 @@ public class MetaReader implements IMetaReader {
         file.seek(file.length() - 4);
         file.readFully(metaLengthBytes);
         int metaL = Bytes.toInt(metaLengthBytes);
-        byte[] metaByte = new byte[metaL];
+        byte[] bytes = new byte[metaL];
         file.seek(file.length() - 4 - metaL);
-        file.readFully(metaByte);
+        file.read(bytes);
 
-        return MetaInfo.deSerialize(metaByte);
+        return MetaInfo.toMetaInfo(bytes);
     }
 }

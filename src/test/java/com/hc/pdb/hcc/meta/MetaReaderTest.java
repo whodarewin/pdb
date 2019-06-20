@@ -1,12 +1,12 @@
-package com.hc.pdb;
+package com.hc.pdb.hcc.meta;
 
+import com.hc.pdb.Cell;
 import com.hc.pdb.conf.Configuration;
-import com.hc.pdb.conf.Constants;
+import com.hc.pdb.conf.PDBConstants;
 import com.hc.pdb.hcc.HCCWriter;
-import com.hc.pdb.hcc.meta.MetaInfo;
-import com.hc.pdb.hcc.meta.MetaReader;
 import junit.framework.TestCase;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -16,7 +16,7 @@ import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MetaReaderTest extends TestCase {
+public class MetaReaderTest{
     private RandomAccessFile randomAccessFile;
 
     private String hccFileName;
@@ -24,7 +24,7 @@ public class MetaReaderTest extends TestCase {
     public void setUp() throws IOException {
 
         Configuration configuration = new Configuration();
-        configuration.put(Constants.DB_PATH_KEY, MetaReaderTest.class.getClassLoader().getResource("").getPath());
+        configuration.put(PDBConstants.DB_PATH_KEY, MetaReaderTest.class.getClassLoader().getResource("").getPath());
 
         HCCWriter hccWriter = new HCCWriter(configuration);
         List<Cell> cells = new ArrayList<Cell>();
@@ -43,8 +43,8 @@ public class MetaReaderTest extends TestCase {
     @Test
     public void testMetaReader() throws IOException {
         MetaInfo info = new MetaReader().read(randomAccessFile);
-        assertEquals(info.getIndexStartIndex(), 1384);
-        assertEquals(info.getBloomStartIndex(), 1397);
+        Assert.assertEquals(info.getIndexStartIndex(), 1384);
+        Assert.assertEquals(info.getBloomStartIndex(), 1397);
     }
 
     @After
