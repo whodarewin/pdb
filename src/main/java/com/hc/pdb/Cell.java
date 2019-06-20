@@ -54,6 +54,7 @@ public class Cell implements ISerializable, Comparable<Cell>{
         byteBuffer.get(key);
         this.delete = true;
         this.key = key;
+        this.ttl = NO_TTL;
     }
 
     private void createNormalCell(ByteBuffer byteBuffer) {
