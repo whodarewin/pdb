@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * hcc 读写测试，TODO：打log日志
+ * hcc 读写测试
  */
 public class HCCTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(HCCTest.class);

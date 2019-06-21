@@ -1,6 +1,7 @@
 package com.hc.pdb;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 
 /**
@@ -12,7 +13,7 @@ import java.nio.ByteBuffer;
 
 public interface ISerializable {
 
-    void deSerialize(ByteBuffer byteBuffer);
+    void deSerialize(ByteBuffer byteBuffer) throws Exception;
 
     byte[] serialize() throws IOException;
 }

@@ -7,10 +7,10 @@ import java.util.Comparator;
 /**
  * hcc 的内存排列顺序，按照start key 进行排序
  */
-public class HCCComparator implements Comparator<HCCInfo> {
+public class HCCComparator implements Comparator<HCCFile> {
 
     @Override
-    public int compare(HCCInfo o1, HCCInfo o2) {
+    public int compare(HCCFile o1, HCCFile o2) {
         byte[] start1 = o1.getStart();
         byte[] start2 = o2.getStart();
 

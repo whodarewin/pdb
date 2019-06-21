@@ -34,4 +34,8 @@ public class PDBConstants {
     public static final String MEM_CACHE_MAX_SIZE_KEY = "mem.cache.max.size.key";
 
     public static final long DEFAULT_MEM_CACHE_MAX_SIZE = 1024 * 1024 * 100;
+
+    public static final class Charset{
+        public static String UTF_8 = "utf-8";
+    }
 }
