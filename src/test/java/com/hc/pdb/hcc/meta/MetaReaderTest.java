@@ -30,7 +30,7 @@ public class MetaReaderTest{
         List<Cell> cells = new ArrayList<Cell>();
 
         for (int i = 0; i < 100; i++) {
-            Cell cell = new Cell((i + "").getBytes(), (i + "").getBytes(), 0l);
+            Cell cell = new Cell((i + "").getBytes(), (i + "").getBytes(), 0l, false);
             cells.add(cell);
         }
 

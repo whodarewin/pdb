@@ -15,7 +15,6 @@ import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.TreeMap;
 
-
 /**
  * HCCReader
  * 读取一个hcc文件
@@ -40,7 +39,7 @@ public class HCCReader implements IHCCReader {
     /**
      * 索引 block的开始key和blcok的开始index
      */
-    private TreeMap<byte[], Integer> key2index = new TreeMap<>(Bytes::compare);
+    private TreeMap<byte[], Integer> key2index;
 
     private int blockStartIndex;
     private int blockEndIndex;
@@ -52,71 +51,29 @@ public class HCCReader implements IHCCReader {
      *
      * @param path hcc 的地址
      */
-    public HCCReader(String path, MetaReader metaReader) throws IOException {
+    public HCCReader(String path, TreeMap<byte[], Integer> key2index,
+                     ByteBloomFilter byteBloomFilter,MetaInfo metaInfo) throws IOException {
         this.filePath = path;
         file = new RandomAccessFile(path, "r");
-        metaInfo = metaReader.read(file);
-        LOGGER.info("meta info {}",metaInfo);
-        preLoad();
-    }
-
-    private void preLoad() throws IOException {
-        //todo:check prefix
-        //读取bloom过滤器
-        loadBloom();
-        //读取索引
-        loadIndex();
+        this.key2index = key2index;
+        this.byteBloomFilter = byteBloomFilter;
+        this.metaInfo = metaInfo;
         seekToFirst();
     }
 
     private void seekToFirst() throws IOException {
         //1 找到key所定义的index
         blockStartIndex = this.key2index.firstEntry().getValue();
-        Map.Entry<byte[],Integer> entry = this.key2index.higherEntry(this.metaInfo.getStartKey());
-        if(entry != null) {
+        Map.Entry<byte[], Integer> entry = this.key2index.higherEntry(this.metaInfo.getStartKey());
+        if (entry != null) {
             endKey = entry.getKey();
             blockEndIndex = entry.getValue();
-        }else{
+        } else {
             endKey = null;
             blockEndIndex = metaInfo.getIndexStartIndex() - 1;
         }
         LOGGER.info("seek to first {} {}", blockStartIndex, blockEndIndex);
-        readBlock(blockStartIndex,blockEndIndex);
-    }
-
-    private void loadIndex() throws IOException {
-        int startIndex = metaInfo.getIndexStartIndex();
-        int endIndex = metaInfo.getBloomStartIndex();
-        LOGGER.info("begin to load index start {} end {}",startIndex, endIndex);
-        ByteBuffer indexBuffer = ByteBuffer.allocate((endIndex - startIndex));
-        indexBuffer.mark();
-        file.getChannel().read(indexBuffer, startIndex);
-        indexBuffer.reset();
-        while (indexBuffer.position() < indexBuffer.limit()) {
-            byte[] bytes = new byte[4];
-            indexBuffer.get(bytes);
-            int keyL = Bytes.toInt(bytes);
-            byte[] key = new byte[keyL];
-            indexBuffer.get(key);
-            indexBuffer.get(bytes);
-            int index = Bytes.toInt(bytes);
-            this.key2index.put(key, index);
-        }
-    }
-
-    private void loadBloom() throws IOException {
-        //todo: 和meta的代码一致，合并成一个
-        byte[] metaLengthBytes = new byte[4];
-        file.seek(file.length() - 4);
-        file.readFully(metaLengthBytes);
-        int metaL = Bytes.toInt(metaLengthBytes);
-
-        int bloomStartIndex = metaInfo.getBloomStartIndex();
-        int metaIndex = (int) file.length() - metaL - 4;
-        LOGGER.info("begin to read bloom start {} end {}",bloomStartIndex, metaIndex);
-        ByteBuffer bloomBytes = ByteBuffer.allocate(metaIndex - bloomStartIndex);
-        file.getChannel().read(bloomBytes, bloomStartIndex);
-        this.byteBloomFilter = new ByteBloomFilter(1, bloomBytes);
+        readBlock(blockStartIndex, blockEndIndex);
     }
 
     @Override

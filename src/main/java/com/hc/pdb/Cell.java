@@ -42,8 +42,9 @@ public class Cell implements ISerializable, Comparable<Cell>{
         byte type = byteBuffer.get();
         if(type == NORMAL_BYTE){
             createNormalCell(byteBuffer);
+        }else {
+            createDeleteCell(byteBuffer);
         }
-        createDeleteCell(byteBuffer);
     }
 
     private void createDeleteCell(ByteBuffer byteBuffer) {
@@ -69,7 +70,7 @@ public class Cell implements ISerializable, Comparable<Cell>{
         int keyL = Bytes.toInt(bytes);
         this.key = new byte[keyL];
         byteBuffer.get(key);
-        this.value = new byte[allL - keyL - Long.BYTES * 2];
+        this.value = new byte[allL - keyL - Long.BYTES * 2 - Integer.BYTES];
         byteBuffer.get(value);
         byte[] longBytes = new byte[8];
         byteBuffer.get(longBytes);
@@ -101,12 +102,12 @@ public class Cell implements ISerializable, Comparable<Cell>{
         //todo:抛弃output stream 的写法，写到文件里要增加version字段。
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         outputStream.write(NORMAL_BYTE);
-        outputStream.write(Bytes.toBytes(key.length + value.length + Long.BYTES * 2));
+        outputStream.write(Bytes.toBytes(key.length + value.length + Long.BYTES * 2 + Integer.BYTES));
         outputStream.write(Bytes.toBytes(key.length));
         outputStream.write(key);
         outputStream.write(value);
-        outputStream.write(Bytes.toBytes(timeStamp));
         outputStream.write(Bytes.toBytes(ttl));
+        outputStream.write(Bytes.toBytes(timeStamp));
         return outputStream.toByteArray();
     }
 

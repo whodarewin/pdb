@@ -40,7 +40,6 @@ public class DefaultScanner implements IScanner {
                 if(scanner.next() != null){
                     queue.add(scanner);
                 }
-                //key 相同，选择第一个,todo:抽离此逻辑，并增加delete逻辑
                 continue;
             }
 

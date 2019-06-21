@@ -25,7 +25,7 @@ public interface IEngine {
      * 删除
      * @param key 需要删除的cell的key
      */
-    void delete(byte[] key);
+    void delete(byte[] key) throws IOException;
 
     /**
      * scan 检索方式

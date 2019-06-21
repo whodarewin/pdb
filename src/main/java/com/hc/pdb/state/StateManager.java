@@ -10,6 +10,7 @@ import java.io.RandomAccessFile;
 /**
  * StateManager
  * 整个db状态的管理者，做成通用状态管理器
+ * 总长度
  * @author han.congcong
  * @date 2019/6/12
  */

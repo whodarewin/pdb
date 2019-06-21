@@ -43,7 +43,7 @@ public class LSMEngine implements IEngine {
 
     @Override
     public void put(byte[] key, byte[] value, long ttl) throws IOException {
-        Cell cell = new Cell(key, value, ttl);
+        Cell cell = new Cell(key, value, ttl,false);
         walWriter.write(cell);
         this.memCache.put(cell);
         //flush
@@ -78,8 +78,12 @@ public class LSMEngine implements IEngine {
     }
 
     @Override
-    public void delete(byte[] key) {
-
+    public void delete(byte[] key) throws IOException {
+        Cell cell = new Cell(key, null, Cell.NO_TTL, false);
+        walWriter.write(cell);
+        this.memCache.put(cell);
+        //flush
+        flushIfOK();
     }
 
     @Override

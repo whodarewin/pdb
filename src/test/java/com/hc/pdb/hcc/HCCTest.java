@@ -32,7 +32,7 @@ public class HCCTest {
         HCCWriter writer = new HCCWriter(configuration);
         List<Cell> cells = new ArrayList<>();
         for (int i = 0; i < 100000 ; i++) {
-            Cell cell = new Cell(Bytes.toBytes(i), UUID.randomUUID().toString().getBytes(),20l);
+            Cell cell = new Cell(Bytes.toBytes(i), UUID.randomUUID().toString().getBytes(),20l, false);
             cells.add(cell);
         }
         hccFileName = writer.writeHCC(cells);
@@ -40,7 +40,8 @@ public class HCCTest {
 
     @Test
     public void test() throws IOException {
-        HCCReader reader = new HCCReader(hccFileName,new MetaReader());
+        HCCFile file = new HCCFile(hccFileName,new MetaReader());
+        HCCReader reader = file.createReader();
         reader.seek(Bytes.toBytes(50000));
         Cell cell = reader.next();
         LOGGER.info(new String(cell.getValue()));
