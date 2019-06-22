@@ -54,7 +54,7 @@ public class MemCache{
         return size.get();
     }
 
-    public Iterator<Map.Entry<byte[],Cell>> iterator(){
-        return memValue.entrySet().iterator();
+    public Iterator<Map.Entry<byte[],Cell>> iterator(byte[] startKey, byte[] endKey){
+        return memValue.subMap(startKey,true,endKey,false).entrySet().iterator();
     }
 }

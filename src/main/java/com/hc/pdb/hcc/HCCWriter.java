@@ -7,9 +7,11 @@ import com.hc.pdb.conf.PDBConstants;
 import com.hc.pdb.file.FileConstants;
 import com.hc.pdb.hcc.block.BlockWriter;
 import com.hc.pdb.hcc.meta.MetaInfo;
+import com.hc.pdb.state.FileMeta;
 import com.hc.pdb.util.ByteBloomFilter;
 import com.hc.pdb.util.Bytes;
 import com.hc.pdb.util.FileUtils;
+import com.hc.pdb.util.MD5Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +41,7 @@ public class HCCWriter implements IHCCWriter {
     }
 
     @Override
-    public String writeHCC(List<Cell> cells) throws IOException {
+    public FileMeta writeHCC(List<Cell> cells) throws IOException {
         //1 创建文件
 
         if (path == null) {
@@ -60,6 +62,7 @@ public class HCCWriter implements IHCCWriter {
 
         file.createNewFile();
         long createTime = System.currentTimeMillis();
+        String md5 = null;
         try (FileOutputStream fileOutputStream = new FileOutputStream(file)) {
             //写prefix
             LOGGER.info("first,write hcc prefix");
@@ -97,8 +100,9 @@ public class HCCWriter implements IHCCWriter {
             byte[] bytes = metaInfo.serialize();
             fileOutputStream.write(bytes);
             fileOutputStream.write(Bytes.toBytes(bytes.length));
+            md5 = MD5Utils.getMD5(fileOutputStream.getChannel());
         }
 
-        return fileName;
+        return new FileMeta(fileName,md5);
     }
 }

@@ -9,6 +9,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 public class HCCManager {
     private Configuration configuration;
@@ -22,5 +23,9 @@ public class HCCManager {
 
     private void loadHCCFile() {
 
+    }
+
+    public Set<HCCFile> searchHCCFile(byte[] startKey, byte[] endKey){
+        return null;
     }
 }

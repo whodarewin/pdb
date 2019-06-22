@@ -9,6 +9,7 @@ import com.hc.pdb.flusher.IFlusher;
 import com.hc.pdb.hcc.HCCWriter;
 import com.hc.pdb.mem.MemCache;
 import com.hc.pdb.scanner.IScanner;
+import com.hc.pdb.state.StateManager;
 import com.hc.pdb.wal.DefaultWalWriter;
 import com.hc.pdb.wal.IWalWriter;
 
@@ -30,15 +31,17 @@ public class LSMEngine implements IEngine {
     private HCCWriter hccWriter;
     private IFlusher flusher;
     private IWalWriter walWriter;
+    private StateManager stateManager;
+
 
     public LSMEngine(Configuration configuration) throws IOException {
         Preconditions.checkNotNull(configuration);
         this.configuration = configuration;
         memCache = new MemCache(configuration);
         hccWriter = new HCCWriter(configuration);
-        flusher = new Flusher(configuration, hccWriter);
+        flusher = new Flusher(configuration, hccWriter, stateManager);
         this.walWriter = new DefaultWalWriter(configuration.get(PDBConstants.DB_PATH_KEY));
-
+        this.stateManager = new StateManager(configuration.get(PDBConstants.DB_PATH_KEY));
     }
 
     @Override

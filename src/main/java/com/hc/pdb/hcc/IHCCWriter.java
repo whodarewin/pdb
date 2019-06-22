@@ -1,6 +1,7 @@
 package com.hc.pdb.hcc;
 
 import com.hc.pdb.Cell;
+import com.hc.pdb.state.FileMeta;
 
 import java.io.IOException;
 import java.util.List;
@@ -16,6 +17,6 @@ public interface IHCCWriter {
      * @return
      * @throws IOException
      */
-    String writeHCC(List<Cell> cells) throws IOException;
+    FileMeta writeHCC(List<Cell> cells) throws IOException;
 
 }

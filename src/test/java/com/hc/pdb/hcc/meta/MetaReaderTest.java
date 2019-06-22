@@ -4,6 +4,7 @@ import com.hc.pdb.Cell;
 import com.hc.pdb.conf.Configuration;
 import com.hc.pdb.conf.PDBConstants;
 import com.hc.pdb.hcc.HCCWriter;
+import com.hc.pdb.state.FileMeta;
 import junit.framework.TestCase;
 import org.junit.After;
 import org.junit.Assert;
@@ -34,8 +35,8 @@ public class MetaReaderTest{
             cells.add(cell);
         }
 
-        String hccFileName = hccWriter.writeHCC(cells);
-
+        FileMeta fileMeta = hccWriter.writeHCC(cells);
+        this.hccFileName = fileMeta.getFileName();
         randomAccessFile =
                 new RandomAccessFile(hccFileName, "r");
     }

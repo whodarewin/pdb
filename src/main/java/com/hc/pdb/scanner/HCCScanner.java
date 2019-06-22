@@ -2,6 +2,7 @@ package com.hc.pdb.scanner;
 
 import com.hc.pdb.Cell;
 import com.hc.pdb.hcc.HCCReader;
+import com.hc.pdb.util.Bytes;
 
 import java.io.IOException;
 
@@ -12,22 +13,29 @@ public class HCCScanner implements IScanner {
     private HCCReader reader;
     private byte[] end;
     private Cell current;
-    private Cell next;
+    private boolean scanEnd;
 
     public HCCScanner(HCCReader reader, byte[] start, byte[] end) throws IOException {
         this.reader = reader;
         reader.seek(start);
-        next = reader.next();
+        this.end = end;
     }
 
 
     @Override
     public Cell next() throws IOException {
-        Cell cell = reader.next();
-        if(cell == null){
+        if(scanEnd){
             return null;
         }
-        current = cell;
+        Cell cell = reader.next();
+        if(end == null || Bytes.compare(cell.getKey(),end) <= 0){
+            if(cell != null) {
+                current = cell;
+                return current;
+            }
+        }
+        current = null;
+        scanEnd = true;
         return current;
     }
 

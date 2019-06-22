@@ -6,6 +6,8 @@ import com.hc.pdb.conf.Configuration;
 import com.hc.pdb.conf.PDBConstants;
 import com.hc.pdb.hcc.HCCWriter;
 import com.hc.pdb.mem.MemCache;
+import com.hc.pdb.state.FileMeta;
+import com.hc.pdb.state.StateManager;
 import com.hc.pdb.util.NamedThreadFactory;
 import com.hc.pdb.wal.IWalWriter;
 import org.slf4j.Logger;
@@ -30,8 +32,9 @@ public class Flusher implements IFlusher {
     private Configuration configuration;
     private ThreadPoolExecutor executor;
     private HCCWriter hccWriter;
+    private StateManager manager;
 
-    public Flusher(Configuration configuration, HCCWriter hccWriter) {
+    public Flusher(Configuration configuration, HCCWriter hccWriter, StateManager manager) {
         Preconditions.checkNotNull(configuration);
         this.configuration = configuration;
         int flushThreadNum = configuration.getInt(PDBConstants.FLUSHER_THREAD_SIZE_KEY,
@@ -41,11 +44,12 @@ public class Flusher implements IFlusher {
                 new SynchronousQueue<>(),
                 new NamedThreadFactory("pdb-flusher"));
         this.hccWriter = hccWriter;
+        this.manager = manager;
     }
 
     @Override
     public Future<Boolean> flush(FlushEntry entry) {
-        Future<Boolean> ret = executor.submit(new FlushWorker(entry, hccWriter));
+        Future<Boolean> ret = executor.submit(new FlushWorker(entry, hccWriter, manager));
         return ret;
     }
 
@@ -59,23 +63,26 @@ public class Flusher implements IFlusher {
         private MemCache cache;
         private HCCWriter hccWriter;
         private IWalWriter walWriter;
+        private StateManager manager;
 
-        public FlushWorker(FlushEntry entry,HCCWriter writer) {
+        public FlushWorker(FlushEntry entry,HCCWriter writer, StateManager manager) {
             Preconditions.checkNotNull(entry.getMemCache(), "MemCache can not be null");
             Preconditions.checkNotNull(entry.getWalWriter(),"WalWriter can not be null");
             Preconditions.checkNotNull(writer, "hccWriter can not be null");
             this.cache = entry.getMemCache();
             this.hccWriter = writer;
             this.walWriter = entry.getWalWriter();
+            this.manager = manager;
         }
 
         @Override
         public Boolean call() {
             try {
                 List<Cell> cells = new ArrayList<>(cache.getAllCells());
-                hccWriter.writeHCC(cells);
+                FileMeta fileMeta = hccWriter.writeHCC(cells);
                 walWriter.delete();
                 LOGGER.info("delete wal success {}", walWriter.getWalFileName());
+                manager.add(fileMeta);
                 return true;
             } catch (Exception e) {
                 LOGGER.error("flush error", e);

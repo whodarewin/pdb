@@ -4,6 +4,7 @@ import com.hc.pdb.Cell;
 import com.hc.pdb.conf.Configuration;
 import com.hc.pdb.conf.PDBConstants;
 import com.hc.pdb.hcc.meta.MetaReader;
+import com.hc.pdb.state.FileMeta;
 import com.hc.pdb.util.Bytes;
 import org.junit.After;
 import org.junit.Assert;
@@ -24,7 +25,7 @@ import java.util.UUID;
 public class HCCTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(HCCTest.class);
     private Configuration configuration;
-    private String hccFileName;
+    private FileMeta fileMeta;
     @Before
     public void setUp() throws IOException {
         configuration = new Configuration();
@@ -35,12 +36,12 @@ public class HCCTest {
             Cell cell = new Cell(Bytes.toBytes(i), UUID.randomUUID().toString().getBytes(),20l, false);
             cells.add(cell);
         }
-        hccFileName = writer.writeHCC(cells);
+        fileMeta = writer.writeHCC(cells);
     }
 
     @Test
     public void test() throws IOException {
-        HCCFile file = new HCCFile(hccFileName,new MetaReader());
+        HCCFile file = new HCCFile(fileMeta.getFileName(), new MetaReader());
         HCCReader reader = file.createReader();
         reader.seek(Bytes.toBytes(50000));
         Cell cell = reader.next();
@@ -57,11 +58,11 @@ public class HCCTest {
 
     @After
     public void after(){
-        if(hccFileName != null){
-            File file = new File(hccFileName);
-            LOGGER.info("begin to delete file {}", hccFileName);
+        if(fileMeta != null){
+            File file = new File(fileMeta.getFileName());
+            LOGGER.info("begin to delete file {}", fileMeta.getFileName());
             file.delete();
-            LOGGER.info("success deleted file {}", hccFileName);
+            LOGGER.info("success deleted file {}", fileMeta.getFileName());
         }
     }
 }

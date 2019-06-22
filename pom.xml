@@ -12,6 +12,7 @@
         <logback.version>1.2.3</logback.version>
         <guava.version>27.0.1-jre</guava.version>
         <junit.version>4.12</junit.version>
+        <protostuff.version>1.6.0</protostuff.version>
     </properties>
     <description>a local db</description>
 
@@ -46,6 +47,18 @@
             <scope>${junit.version}</scope>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/io.protostuff/protostuff-core -->
+        <dependency>
+            <groupId>io.protostuff</groupId>
+            <artifactId>protostuff-core</artifactId>
+            <version>${protostuff.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.protostuff</groupId>
+            <artifactId>protostuff-runtime</artifactId>
+            <version>${protostuff.version}</version>
+        </dependency>
 
     </dependencies>
 

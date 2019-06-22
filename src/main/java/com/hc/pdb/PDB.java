@@ -32,7 +32,7 @@ public class PDB {
         return null;
     }
 
-    public void delete(byte[] key) {
-        
+    public void delete(byte[] key) throws IOException {
+        this.engine.delete(key);
     }
 }
