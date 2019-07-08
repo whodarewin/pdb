@@ -33,16 +33,18 @@ public interface IEngine {
      * @param end end key
      * @return
      */
-    IScanner scan(byte[] start, byte[] end);
+    IScanner scan(byte[] start, byte[] end) throws IOException;
 
     /**
      * get 操作
      * @param key 需要get的key
      * @return 返回key所对应的值
      */
-    byte[] get(byte[] key);
+    byte[] get(byte[] key) throws IOException;
     /**
      * 清空数据库
      */
-    void clean();
+    void clean() throws IOException;
+
+    void close();
 }

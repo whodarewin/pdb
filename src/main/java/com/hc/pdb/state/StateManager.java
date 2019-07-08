@@ -1,9 +1,13 @@
 package com.hc.pdb.state;
 
 import com.hc.pdb.file.FileConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.nio.ByteBuffer;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * StateManager
@@ -14,31 +18,41 @@ import java.nio.ByteBuffer;
  */
 
 public class StateManager {
+    private static final Logger LOGGER = LoggerFactory.getLogger(StateManager.class);
     private static final String STATE_FILE_NAME = "state";
     private static final String STATE_BAK_FILE_NAME = "bak";
     private String path;
     private RandomAccessFile file;
     private State state;
+    private List<StateChangeListener> listeners = new CopyOnWriteArrayList<>();
 
     public StateManager(String path) throws IOException {
         String stateFileName = path + STATE_FILE_NAME + FileConstants.META_FILE_SUFFIX;
         try {
             file = new RandomAccessFile(stateFileName, "r");
         } catch (FileNotFoundException e) {
-            File f = new File(path);
+            LOGGER.info("no meta found,new db,create one, path {}", stateFileName);
+            File f = new File(stateFileName);
+            //todo:check dir.
             f.createNewFile();
             file = new RandomAccessFile(stateFileName, "r");
         }
         load();
     }
-    public void add(FileMeta fileMeta) throws IOException {
+    public void add(HCCFileMeta fileMeta) throws IOException {
         state.addFileName(fileMeta);
         sync();
+        notifyListener();
     }
 
     public void delete(String fileName) throws IOException {
         state.delete(fileName);
         sync();
+        notifyListener();
+    }
+
+    private void notifyListener() {
+        listeners.forEach((listener) -> listener.onChange(this.state));
     }
 
     private void sync() throws IOException {
@@ -67,6 +81,7 @@ public class StateManager {
         State state = new State();
         state.deSerialize(buffer);
         this.state = state;
+        notifyListener();
     }
 
 

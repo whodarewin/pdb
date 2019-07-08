@@ -11,7 +11,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -19,13 +21,15 @@ import java.util.Set;
  * Created by congcong.han on 2019/6/20.
  */
 public class State implements ISerializable{
-    private Schema<FileMeta> schema = RuntimeSchema.getSchema(FileMeta.class);
+    private Schema<HCCFileMeta> schema = RuntimeSchema.getSchema(HCCFileMeta.class);
 
     private LinkedBuffer buffer = LinkedBuffer.allocate(LinkedBuffer.DEFAULT_BUFFER_SIZE);
 
-    private Set<FileMeta> fileMetas = new HashSet<>();
+    private Set<HCCFileMeta> fileMetas = new HashSet<>();
+    
+    private List<WALFileMeta> walFileMeta = new ArrayList<>();
 
-    public void addFileName(FileMeta fileMeta){
+    public void addFileName(HCCFileMeta fileMeta){
         this.fileMetas.add(fileMeta);
     }
 
@@ -33,12 +37,15 @@ public class State implements ISerializable{
         this.fileMetas.remove(fileName);
     }
 
-    public Set<FileMeta> getHccFileNames(){
+    public Set<HCCFileMeta> getHccFileMetas(){
         return fileMetas;
     }
 
     @Override
-    public void deSerialize(ByteBuffer byteBuffer) throws UnsupportedEncodingException {
+    public void deSerialize(ByteBuffer byteBuffer) {
+        if(byteBuffer.limit() == 0){
+            return;
+        }
         byte[] fileCountBytes = new byte[4];
         byteBuffer.get(fileCountBytes);
         int fileCount = Bytes.toInt(fileCountBytes);
@@ -47,7 +54,7 @@ public class State implements ISerializable{
             int length = Bytes.toInt(fileCountBytes);
             byte[] metaBytes = new byte[length];
             byteBuffer.get(metaBytes);
-            FileMeta meta = schema.newMessage();
+            HCCFileMeta meta = schema.newMessage();
             ProtostuffIOUtil.mergeFrom(metaBytes, meta, schema);
             fileMetas.add(meta);
         }
@@ -61,7 +68,7 @@ public class State implements ISerializable{
     public byte[] serialize() throws IOException {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         outputStream.write(Bytes.toBytes(fileMetas.size()));
-        for(FileMeta fileMeta : fileMetas){
+        for(HCCFileMeta fileMeta : fileMetas){
             byte[] data;
             try {
                 data = ProtostuffIOUtil.toByteArray(fileMeta, schema, buffer);

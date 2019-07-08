@@ -4,17 +4,17 @@ import com.google.common.base.Preconditions;
 import com.hc.pdb.Cell;
 import com.hc.pdb.conf.Configuration;
 import com.hc.pdb.conf.PDBConstants;
-import com.hc.pdb.flusher.Flusher;
-import com.hc.pdb.flusher.IFlusher;
-import com.hc.pdb.hcc.HCCWriter;
-import com.hc.pdb.mem.MemCache;
+import com.hc.pdb.hcc.HCCManager;
+import com.hc.pdb.hcc.meta.MetaReader;
+import com.hc.pdb.mem.MemCacheManager;
 import com.hc.pdb.scanner.IScanner;
+import com.hc.pdb.scanner.ScannerMechine;
 import com.hc.pdb.state.StateManager;
-import com.hc.pdb.wal.DefaultWalWriter;
-import com.hc.pdb.wal.IWalWriter;
+import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Scanner;
 
 /**
  * LSMEngine
@@ -27,72 +27,60 @@ import java.io.IOException;
 public class LSMEngine implements IEngine {
 
     private Configuration configuration;
-    private volatile MemCache memCache;
-    private HCCWriter hccWriter;
-    private IFlusher flusher;
-    private IWalWriter walWriter;
+    private MemCacheManager memCacheManager;
+    private ScannerMechine scannerMechine;
     private StateManager stateManager;
-
 
     public LSMEngine(Configuration configuration) throws IOException {
         Preconditions.checkNotNull(configuration);
+        createDirIfNotExist(configuration.get(PDBConstants.DB_PATH_KEY));
         this.configuration = configuration;
-        memCache = new MemCache(configuration);
-        hccWriter = new HCCWriter(configuration);
-        flusher = new Flusher(configuration, hccWriter, stateManager);
-        this.walWriter = new DefaultWalWriter(configuration.get(PDBConstants.DB_PATH_KEY));
         this.stateManager = new StateManager(configuration.get(PDBConstants.DB_PATH_KEY));
+        memCacheManager = new MemCacheManager(configuration,stateManager);
+        MetaReader reader = new MetaReader();
+        HCCManager hccManager = new HCCManager(configuration,reader);
+        scannerMechine = new ScannerMechine(hccManager,memCacheManager);
+    }
+
+    private void createDirIfNotExist(String path) {
+        File file = new File(path);
+        file.mkdirs();
     }
 
     @Override
     public void put(byte[] key, byte[] value, long ttl) throws IOException {
         Cell cell = new Cell(key, value, ttl,false);
-        walWriter.write(cell);
-        this.memCache.put(cell);
-        //flush
-        flushIfOK();
+        this.memCacheManager.addCell(cell);
     }
     //todo:同步问题
     @Override
-    public void clean() {
+    public void clean() throws IOException {
         String path = configuration.get(PDBConstants.DB_PATH_KEY);
-        File dir = new File(path);
-        dir.delete();
-    }
-
-    private void flushIfOK() throws IOException {
-        if (memCache.size() > configuration.getLong(PDBConstants.MEM_CACHE_MAX_SIZE_KEY,
-                PDBConstants.DEFAULT_MEM_CACHE_MAX_SIZE)) {
-            synchronized (this) {
-                if (memCache.size() > configuration.getLong(PDBConstants.MEM_CACHE_MAX_SIZE_KEY,
-                        PDBConstants.DEFAULT_MEM_CACHE_MAX_SIZE)) {
-                    MemCache tmpCache = memCache;
-                    IWalWriter tmpWalWriter = new DefaultWalWriter(configuration.get(PDBConstants.DB_PATH_KEY));
-                    memCache = new MemCache(configuration);
-                    flusher.flush(new IFlusher.FlushEntry(tmpCache,tmpWalWriter));
-                }
-            }
-        }
+        FileUtils.deleteDirectory(new File(path));
     }
 
     @Override
-    public byte[] get(byte[] key) {
-        return null;
+    public void close() {
+
+    }
+
+
+    @Override
+    public byte[] get(byte[] key) throws IOException {
+        IScanner scanner = scannerMechine.createScanner(key,key);
+        return scanner.next().getValue();
     }
 
     @Override
     public void delete(byte[] key) throws IOException {
         Cell cell = new Cell(key, null, Cell.NO_TTL, false);
-        walWriter.write(cell);
-        this.memCache.put(cell);
-        //flush
-        flushIfOK();
+        this.memCacheManager.addCell(cell);
     }
 
     @Override
-    public IScanner scan(byte[] start, byte[] end) {
-
-        return null;
+    public IScanner scan(byte[] start, byte[] end) throws IOException {
+        IScanner scanner = scannerMechine.createScanner(start,end);
+        return scanner;
     }
 
 }

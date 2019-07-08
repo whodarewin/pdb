@@ -1,6 +1,7 @@
 package com.hc.pdb.flusher;
 
 import com.hc.pdb.mem.MemCache;
+import com.hc.pdb.state.StateManager;
 import com.hc.pdb.wal.IWalWriter;
 
 import java.util.concurrent.Future;
@@ -30,6 +31,7 @@ public interface IFlusher {
         private MemCache memCache;
         private IWalWriter walWriter;
 
+
         public FlushEntry(MemCache memCache, IWalWriter walWriter) {
             this.memCache = memCache;
             this.walWriter = walWriter;
@@ -50,5 +52,6 @@ public interface IFlusher {
         public void setWalWriter(IWalWriter walWriter) {
             this.walWriter = walWriter;
         }
+
     }
 }

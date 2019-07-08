@@ -8,12 +8,10 @@ import com.hc.pdb.util.Bytes;
 import com.hc.pdb.util.CellUtil;
 import com.hc.pdb.wal.DefaultWalWriter;
 import com.hc.pdb.wal.IWalWriter;
+import org.checkerframework.common.util.report.qual.ReportOverride;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -26,6 +24,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 
 public class MemCache{
+
     private ConcurrentSkipListMap<byte[], Cell> memValue = new ConcurrentSkipListMap<>(new Comparator<byte[]>() {
         @Override
         public int compare(byte[] o1, byte[] o2) {
@@ -56,5 +55,13 @@ public class MemCache{
 
     public Iterator<Map.Entry<byte[],Cell>> iterator(byte[] startKey, byte[] endKey){
         return memValue.subMap(startKey,true,endKey,false).entrySet().iterator();
+    }
+
+    public byte[] getStart(){
+        return memValue.firstKey();
+    }
+
+    public byte[] getEnd(){
+        return memValue.lastKey();
     }
 }

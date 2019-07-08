@@ -93,7 +93,15 @@ public class HCCFile {
         return new HCCReader(filePath,key2index,byteBloomFilter,metaInfo);
     }
 
+    public String getFilePath(){
+        return filePath;
+    }
+
     public byte[] getStart() {
-        return null;
+        return metaInfo.getStartKey();
+    }
+
+    public byte[] getEnd(){
+        return metaInfo.getEndKey();
     }
 }

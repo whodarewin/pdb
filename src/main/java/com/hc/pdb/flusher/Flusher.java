@@ -6,7 +6,7 @@ import com.hc.pdb.conf.Configuration;
 import com.hc.pdb.conf.PDBConstants;
 import com.hc.pdb.hcc.HCCWriter;
 import com.hc.pdb.mem.MemCache;
-import com.hc.pdb.state.FileMeta;
+import com.hc.pdb.state.HCCFileMeta;
 import com.hc.pdb.state.StateManager;
 import com.hc.pdb.util.NamedThreadFactory;
 import com.hc.pdb.wal.IWalWriter;
@@ -79,7 +79,7 @@ public class Flusher implements IFlusher {
         public Boolean call() {
             try {
                 List<Cell> cells = new ArrayList<>(cache.getAllCells());
-                FileMeta fileMeta = hccWriter.writeHCC(cells);
+                HCCFileMeta fileMeta = hccWriter.writeHCC(cells);
                 walWriter.delete();
                 LOGGER.info("delete wal success {}", walWriter.getWalFileName());
                 manager.add(fileMeta);

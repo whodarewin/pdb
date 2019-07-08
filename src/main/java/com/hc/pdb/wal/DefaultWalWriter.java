@@ -19,13 +19,14 @@ public class DefaultWalWriter implements IWalWriter {
     private String path;
     private String fileName;
     private FileOutputStream output;
+    private File walFile;
 
     public DefaultWalWriter(String path) throws IOException {
         this.path = path;
         this.fileName = path + UUID.randomUUID().toString() + FileConstants.WAL_FILE_SUFFIX;
-        File file = new File(fileName);
-        file.createNewFile();
-        this.output = new FileOutputStream(file);
+        File walFile = new File(fileName);
+        walFile.createNewFile();
+        this.output = new FileOutputStream(walFile);
     }
 
     @Override
@@ -47,5 +48,10 @@ public class DefaultWalWriter implements IWalWriter {
     @Override
     public String getWalFileName() {
         return fileName;
+    }
+
+    @Override
+    public void markFlush() {
+        walFile.renameTo(new File(fileName + ".flush"));
     }
 }

@@ -7,7 +7,8 @@ import com.hc.pdb.conf.PDBConstants;
 import com.hc.pdb.file.FileConstants;
 import com.hc.pdb.hcc.block.BlockWriter;
 import com.hc.pdb.hcc.meta.MetaInfo;
-import com.hc.pdb.state.FileMeta;
+import com.hc.pdb.hcc.meta.MetaReader;
+import com.hc.pdb.state.HCCFileMeta;
 import com.hc.pdb.util.ByteBloomFilter;
 import com.hc.pdb.util.Bytes;
 import com.hc.pdb.util.FileUtils;
@@ -36,12 +37,12 @@ public class HCCWriter implements IHCCWriter {
         this.configuration = configuration;
         path = configuration.get(PDBConstants.DB_PATH_KEY);
         errorRate = configuration.getDouble(PDBConstants.ERROR_RATE_KEY, PDBConstants.DEFAULT_ERROR_RATE);
-        this.manager = new HCCManager(configuration);
+        this.manager = new HCCManager(configuration, new MetaReader());
         this.blockWriter = new BlockWriter(configuration);
     }
 
     @Override
-    public FileMeta writeHCC(List<Cell> cells) throws IOException {
+    public HCCFileMeta writeHCC(List<Cell> cells) throws IOException {
         //1 创建文件
 
         if (path == null) {
@@ -103,6 +104,6 @@ public class HCCWriter implements IHCCWriter {
             md5 = MD5Utils.getMD5(fileOutputStream.getChannel());
         }
 
-        return new FileMeta(fileName,md5);
+        return new HCCFileMeta(fileName,md5);
     }
 }

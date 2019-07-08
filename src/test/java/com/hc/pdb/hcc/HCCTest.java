@@ -4,7 +4,7 @@ import com.hc.pdb.Cell;
 import com.hc.pdb.conf.Configuration;
 import com.hc.pdb.conf.PDBConstants;
 import com.hc.pdb.hcc.meta.MetaReader;
-import com.hc.pdb.state.FileMeta;
+import com.hc.pdb.state.HCCFileMeta;
 import com.hc.pdb.util.Bytes;
 import org.junit.After;
 import org.junit.Assert;
@@ -25,7 +25,7 @@ import java.util.UUID;
 public class HCCTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(HCCTest.class);
     private Configuration configuration;
-    private FileMeta fileMeta;
+    private HCCFileMeta fileMeta;
     @Before
     public void setUp() throws IOException {
         configuration = new Configuration();

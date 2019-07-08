@@ -1,6 +1,7 @@
 package com.hc.pdb.util;
 
 public class Bytes {
+
     public static byte[] toBytes(long val) {
         byte[] b = new byte[8];
         for (int i = 7; i > 0; i--) {
@@ -54,5 +55,4 @@ public class Bytes {
         }
         return 0;
     }
-
 }

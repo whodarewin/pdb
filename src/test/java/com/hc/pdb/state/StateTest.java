@@ -13,15 +13,15 @@ public class StateTest {
     @Test
     public void testStateSerialize() throws IOException {
         State state = new State();
-        state.addFileName(new FileMeta("fileName1","md5"));
-        state.addFileName(new FileMeta("fileName2","md52"));
+        state.addFileName(new HCCFileMeta("fileName1","md5"));
+        state.addFileName(new HCCFileMeta("fileName2","md52"));
         ByteBuffer buffer = ByteBuffer.allocate(state.serialize().length);
         buffer.mark();
         buffer.put(state.serialize());
         buffer.reset();
         State testState = new State();
         testState.deSerialize(buffer);
-        Assert.assertEquals(state.getHccFileNames().iterator().next().getFileName(),
-                testState.getHccFileNames().iterator().next().getFileName());
+        Assert.assertEquals(state.getHccFileMetas().iterator().next().getFileName(),
+                testState.getHccFileMetas().iterator().next().getFileName());
     }
 }

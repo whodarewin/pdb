@@ -21,6 +21,13 @@ public class ScannerMechine {
     private HCCManager hccManager;
 
     private MemCacheManager memCacheManager;
+
+    public ScannerMechine(HCCManager hccManager,MemCacheManager memCacheManager){
+        this.hccManager = hccManager;
+        this.memCacheManager = memCacheManager;
+    }
+
+
     /**
      * 创建scanner
      * @param startKey 开始key
