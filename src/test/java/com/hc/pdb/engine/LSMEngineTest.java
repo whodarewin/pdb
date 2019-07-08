@@ -20,7 +20,7 @@ public class LSMEngineTest {
     private LSMEngine engine;
 
     @Before
-    public void init() throws IOException {
+    public void init() throws Exception {
         String path = LSMEngineTest.class.getClassLoader().getResource("").getPath();
         Configuration configuration = new Configuration();
         configuration.put(PDBConstants.DB_PATH_KEY,path);

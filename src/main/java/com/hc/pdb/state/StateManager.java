@@ -26,8 +26,9 @@ public class StateManager {
     private State state;
     private List<StateChangeListener> listeners = new CopyOnWriteArrayList<>();
 
-    public StateManager(String path) throws IOException {
+    public StateManager(String path) throws Exception {
         String stateFileName = path + STATE_FILE_NAME + FileConstants.META_FILE_SUFFIX;
+        this.path = path;
         try {
             file = new RandomAccessFile(stateFileName, "r");
         } catch (FileNotFoundException e) {
@@ -40,9 +41,13 @@ public class StateManager {
         load();
     }
     public void add(HCCFileMeta fileMeta) throws IOException {
-        state.addFileName(fileMeta);
+        state.addFileMeta(fileMeta);
         sync();
         notifyListener();
+    }
+
+    public void add(WALFileMeta walFileMeta){
+        state.addWalFileMeta(walFileMeta);
     }
 
     public void delete(String fileName) throws IOException {
@@ -65,8 +70,8 @@ public class StateManager {
         }
         String metaFileName = path + STATE_FILE_NAME + FileConstants.META_FILE_SUFFIX;
         File metaFile = new File(metaFileName);
-        if(metaFile.delete()){
-            throw new RuntimeException();
+        if(!metaFile.delete()){
+            throw new RuntimeException("can not delete meta file");
         }
 
         if(!bakFile.renameTo(metaFile)){
@@ -74,7 +79,7 @@ public class StateManager {
         }
     }
 
-    private void load() throws IOException {
+    private void load() throws Exception{
         long length = file.length();
         ByteBuffer buffer = ByteBuffer.allocateDirect((int)length);
         file.getChannel().read(buffer);

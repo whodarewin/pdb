@@ -11,10 +11,10 @@ import java.nio.ByteBuffer;
  */
 public class StateTest {
     @Test
-    public void testStateSerialize() throws IOException {
+    public void testStateSerialize() throws IOException, InstantiationException, IllegalAccessException, ClassNotFoundException {
         State state = new State();
-        state.addFileName(new HCCFileMeta("fileName1","md5"));
-        state.addFileName(new HCCFileMeta("fileName2","md52"));
+        state.addFileMeta(new HCCFileMeta("fileName1","md5"));
+        state.addFileMeta(new HCCFileMeta("fileName2","md52"));
         ByteBuffer buffer = ByteBuffer.allocate(state.serialize().length);
         buffer.mark();
         buffer.put(state.serialize());

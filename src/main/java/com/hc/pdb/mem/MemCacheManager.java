@@ -34,10 +34,10 @@ public class MemCacheManager {
 
     public MemCacheManager(Configuration configuration,StateManager manager) throws IOException {
         hccWriter = new HCCWriter(configuration);
+        this.stateManager = manager;
         flusher = new Flusher(configuration, hccWriter, stateManager);
         this.walWriter = new DefaultWalWriter(configuration.get(PDBConstants.DB_PATH_KEY));
         current = new MemCache(configuration);
-        this.stateManager = manager;
         this.configuration = configuration;
     }
 

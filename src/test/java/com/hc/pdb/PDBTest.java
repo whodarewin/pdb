@@ -18,7 +18,7 @@ import java.io.IOException;
 public class PDBTest {
     private PDB pdb;
     @Before
-    public void init() throws IOException {
+    public void init() throws Exception {
         String path = HCCTest.class.getClassLoader().getResource("").getPath() + "pdb";
         PDBBuilder builder = new PDBBuilder();
         builder.path(path);

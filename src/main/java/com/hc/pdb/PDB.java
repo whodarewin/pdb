@@ -17,7 +17,7 @@ public class PDB {
     private Configuration configuration;
     private IEngine engine;
 
-    public PDB(Configuration configuration) throws IOException {
+    public PDB(Configuration configuration) throws Exception {
         this.configuration = configuration;
         this.engine = new LSMEngine(configuration);
     }

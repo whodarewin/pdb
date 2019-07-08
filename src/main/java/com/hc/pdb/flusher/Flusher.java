@@ -69,6 +69,7 @@ public class Flusher implements IFlusher {
             Preconditions.checkNotNull(entry.getMemCache(), "MemCache can not be null");
             Preconditions.checkNotNull(entry.getWalWriter(),"WalWriter can not be null");
             Preconditions.checkNotNull(writer, "hccWriter can not be null");
+            Preconditions.checkNotNull(manager,"state manager can not be null");
             this.cache = entry.getMemCache();
             this.hccWriter = writer;
             this.walWriter = entry.getWalWriter();

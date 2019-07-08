@@ -18,7 +18,7 @@ public class PDBBuilder {
 
     private Configuration configuration = new Configuration();
 
-    public PDB build() throws IOException {
+    public PDB build() throws Exception {
         return new PDB(configuration);
     }
 

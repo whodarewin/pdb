@@ -11,6 +11,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -25,9 +26,9 @@ public class ProtostuffUtils {
     private static ThreadLocal<LinkedBuffer> buffer = ThreadLocal.withInitial(() -> LinkedBuffer.allocate(LinkedBuffer.DEFAULT_BUFFER_SIZE));
     private static final String UTF_8= "utf-8";
 
-    public static byte[] serialize(List list) throws IOException {
+    public static byte[] serialize(Collection collection) throws IOException {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        for (Object o : list) {
+        for (Object o : collection) {
             String className = o.getClass().getName();
             byte[] classNameBytes = className.getBytes(UTF_8);
             Schema schema = RuntimeSchema.getSchema(o.getClass());
@@ -48,7 +49,7 @@ public class ProtostuffUtils {
     }
 
 
-    public static List<Object> unSerialize(byte[] bytes) throws UnsupportedEncodingException, ClassNotFoundException, IllegalAccessException, InstantiationException {
+    public static Collection unSerialize(byte[] bytes) throws UnsupportedEncodingException, ClassNotFoundException, IllegalAccessException, InstantiationException {
         int index = 0;
         List<Object> rets = new ArrayList<>();
         while(true){

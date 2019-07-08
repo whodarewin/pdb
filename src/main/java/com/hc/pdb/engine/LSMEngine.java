@@ -31,7 +31,7 @@ public class LSMEngine implements IEngine {
     private ScannerMechine scannerMechine;
     private StateManager stateManager;
 
-    public LSMEngine(Configuration configuration) throws IOException {
+    public LSMEngine(Configuration configuration) throws Exception {
         Preconditions.checkNotNull(configuration);
         createDirIfNotExist(configuration.get(PDBConstants.DB_PATH_KEY));
         this.configuration = configuration;

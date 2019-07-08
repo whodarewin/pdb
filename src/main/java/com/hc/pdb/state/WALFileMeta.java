@@ -1,6 +1,7 @@
 package com.hc.pdb.state;
 
-import java.util.List;
+
+import java.util.Objects;
 
 /**
  * WALFileMeta
@@ -10,27 +11,36 @@ import java.util.List;
  */
 
 public class WALFileMeta {
-    private String currentWal;
-    private List<String> flushWal;
+    private String walPath;
+    private boolean flushing;
 
-    public WALFileMeta(String currentWal, List<String> flushWal) {
-        this.currentWal = currentWal;
-        this.flushWal = flushWal;
+    public String getWalPath() {
+        return walPath;
     }
 
-    public String getCurrentWal() {
-        return currentWal;
+    public void setWalPath(String walPath) {
+        this.walPath = walPath;
     }
 
-    public void setCurrentWal(String currentWal) {
-        this.currentWal = currentWal;
+    public boolean getFlushing() {
+        return flushing;
     }
 
-    public List<String> getFlushWal() {
-        return flushWal;
+    public void setFlushing(boolean flushing) {
+        this.flushing = flushing;
     }
 
-    public void setFlushWal(List<String> flushWal) {
-        this.flushWal = flushWal;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        WALFileMeta that = (WALFileMeta) o;
+        return flushing == that.flushing &&
+                Objects.equals(walPath, that.walPath);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(walPath, flushing);
     }
 }

@@ -44,8 +44,8 @@ public class MetaReaderTest{
     @Test
     public void testMetaReader() throws IOException {
         MetaInfo info = new MetaReader().read(randomAccessFile);
-        Assert.assertEquals(info.getIndexStartIndex(), 1384);
-        Assert.assertEquals(info.getBloomStartIndex(), 1397);
+        Assert.assertEquals(info.getIndexStartIndex(), 2883);
+        Assert.assertEquals(info.getBloomStartIndex(), 2902);
     }
 
     @After

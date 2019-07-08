@@ -15,11 +15,7 @@ import com.hc.pdb.util.FileUtils;
 import com.hc.pdb.util.MD5Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.List;
 import java.util.UUID;
 
@@ -50,7 +46,6 @@ public class HCCWriter implements IHCCWriter {
         }
 
         path = FileUtils.reformatDirPath(path);
-
 
         String fileName = path + UUID.randomUUID().toString() + FileConstants.DATA_FILE_SUFFIX;
         LOGGER.info("begin to write hcc file,fileName is {}",fileName);
@@ -101,9 +96,11 @@ public class HCCWriter implements IHCCWriter {
             byte[] bytes = metaInfo.serialize();
             fileOutputStream.write(bytes);
             fileOutputStream.write(Bytes.toBytes(bytes.length));
-            md5 = MD5Utils.getMD5(fileOutputStream.getChannel());
         }
 
+        try (FileInputStream inputStream = new FileInputStream(fileName)){
+            md5 = MD5Utils.getMD5(inputStream.getChannel());
+        }
         return new HCCFileMeta(fileName,md5);
     }
 }
