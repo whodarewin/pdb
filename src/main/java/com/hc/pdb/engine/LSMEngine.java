@@ -10,11 +10,10 @@ import com.hc.pdb.mem.MemCacheManager;
 import com.hc.pdb.scanner.IScanner;
 import com.hc.pdb.scanner.ScannerMechine;
 import com.hc.pdb.state.StateManager;
-import org.apache.commons.io.FileUtils;
+import com.hc.pdb.util.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Scanner;
 
 /**
  * LSMEngine
@@ -33,19 +32,18 @@ public class LSMEngine implements IEngine {
 
     public LSMEngine(Configuration configuration) throws Exception {
         Preconditions.checkNotNull(configuration);
-        createDirIfNotExist(configuration.get(PDBConstants.DB_PATH_KEY));
+        FileUtils.createDirIfNotExist(configuration.get(PDBConstants.DB_PATH_KEY));
         this.configuration = configuration;
         this.stateManager = new StateManager(configuration.get(PDBConstants.DB_PATH_KEY));
         memCacheManager = new MemCacheManager(configuration,stateManager);
         MetaReader reader = new MetaReader();
         HCCManager hccManager = new HCCManager(configuration,reader);
         scannerMechine = new ScannerMechine(hccManager,memCacheManager);
+        stateManager.addListener(hccManager);
+        stateManager.load();
     }
 
-    private void createDirIfNotExist(String path) {
-        File file = new File(path);
-        file.mkdirs();
-    }
+
 
     @Override
     public void put(byte[] key, byte[] value, long ttl) throws IOException {
@@ -56,7 +54,7 @@ public class LSMEngine implements IEngine {
     @Override
     public void clean() throws IOException {
         String path = configuration.get(PDBConstants.DB_PATH_KEY);
-        FileUtils.deleteDirectory(new File(path));
+        org.apache.commons.io.FileUtils.deleteDirectory(new File(path));
     }
 
     @Override
@@ -68,6 +66,9 @@ public class LSMEngine implements IEngine {
     @Override
     public byte[] get(byte[] key) throws IOException {
         IScanner scanner = scannerMechine.createScanner(key,key);
+        if(scanner == null){
+            return null;
+        }
         return scanner.next().getValue();
     }
 

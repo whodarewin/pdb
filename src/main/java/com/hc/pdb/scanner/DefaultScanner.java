@@ -36,8 +36,9 @@ public class DefaultScanner implements IScanner {
             // 两种情况继续读下一个
             // 1 key和上一个相同
             // 2 为deleteCell
-            if((current != null && Bytes.compare(cell.getKey(),current.getKey()) == 0)
-                    || cell.getDelete()){
+            if((current != null &&
+                    (Bytes.compare(cell.getKey(),current.getKey()) == 0)
+                    || cell.getDelete())){
                 if(scanner.next() != null){
                     queue.add(scanner);
                 }

@@ -33,7 +33,6 @@ public class HCCManager implements StateChangeListener {
         Preconditions.checkNotNull(reader,"MetaReader can not be null");
         this.configuration = configuration;
         this.metaReader = reader;
-        loadHCCFile();
     }
 
     private void loadHCCFile() {

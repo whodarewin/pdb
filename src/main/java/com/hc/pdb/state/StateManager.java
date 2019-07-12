@@ -3,7 +3,6 @@ package com.hc.pdb.state;
 import com.hc.pdb.file.FileConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.util.List;
@@ -38,7 +37,6 @@ public class StateManager {
             f.createNewFile();
             file = new RandomAccessFile(stateFileName, "r");
         }
-        load();
     }
     public void add(HCCFileMeta fileMeta) throws IOException {
         state.addFileMeta(fileMeta);
@@ -79,15 +77,19 @@ public class StateManager {
         }
     }
 
-    private void load() throws Exception{
+    public void load() throws Exception{
         long length = file.length();
         ByteBuffer buffer = ByteBuffer.allocateDirect((int)length);
+        buffer.mark();
         file.getChannel().read(buffer);
+        buffer.reset();
         State state = new State();
         state.deSerialize(buffer);
         this.state = state;
         notifyListener();
     }
 
-
+    public void addListener(StateChangeListener listener){
+        this.listeners.add(listener);
+    }
 }

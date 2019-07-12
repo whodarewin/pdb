@@ -15,6 +15,8 @@
         <protostuff.version>1.6.0</protostuff.version>
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.source>1.8</maven.compiler.source>
+        <commons.collection>3.2.2</commons.collection>
+        <commons.io>2.6</commons.io>
     </properties>
     <description>a local db</description>
 
@@ -66,7 +68,13 @@
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.6</version>
+            <version>${commons.io}</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/commons-collections/commons-collections -->
+        <dependency>
+            <groupId>commons-collections</groupId>
+            <artifactId>commons-collections</artifactId>
+            <version>${commons.collection}</version>
         </dependency>
 
 

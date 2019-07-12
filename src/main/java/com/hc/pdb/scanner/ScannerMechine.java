@@ -4,6 +4,7 @@ import com.hc.pdb.hcc.HCCFile;
 import com.hc.pdb.hcc.HCCManager;
 import com.hc.pdb.mem.MemCache;
 import com.hc.pdb.mem.MemCacheManager;
+import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,6 +45,9 @@ public class ScannerMechine {
 
         for(MemCache memCache : memCaches){
             scanners.add(new MemCacheScanner(memCache,startKey,endKey));
+        }
+        if(CollectionUtils.isEmpty(scanners)){
+            return null;
         }
         DefaultScanner scanner = new DefaultScanner(scanners);
         return scanner;

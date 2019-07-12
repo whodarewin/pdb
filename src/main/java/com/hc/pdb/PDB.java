@@ -26,7 +26,7 @@ public class PDB {
         Preconditions.checkNotNull(key,"key can not be null");
         return engine.get(key);
     }
-
+    //todo：key和value等于null
     public void put(byte[] key, byte[] value) throws IOException {
         this.engine.put(key, value, -1);
     }
