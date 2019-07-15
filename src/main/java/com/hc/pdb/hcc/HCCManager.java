@@ -8,6 +8,7 @@ import com.hc.pdb.state.HCCFileMeta;
 import com.hc.pdb.state.State;
 import com.hc.pdb.state.StateChangeListener;
 import com.hc.pdb.util.Bytes;
+import com.hc.pdb.util.RangeUtil;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -58,13 +59,9 @@ public class HCCManager implements StateChangeListener {
     }
 
     public Set<HCCFile> searchHCCFile(byte[] startKey, byte[] endKey){
-        return fileInfos.stream().filter((Predicate<HCCFile>) file -> {
-            if(Bytes.compare(startKey,endKey) == 0){
-                return !(Bytes.compare(startKey,file.getEnd()) > 0 || Bytes.compare(endKey,file.getStart()) < 0);
-            }else{
-                return !(Bytes.compare(startKey,file.getEnd()) > 0 || Bytes.compare(endKey,file.getStart()) <= 0);
-            }
-        })
+        return fileInfos.stream().filter((Predicate<HCCFile>) file ->
+                RangeUtil.inOpenCloseInterval(file.getStart(),file.getEnd(),startKey,endKey)
+        )
                 .collect(Collectors.toSet());
     }
 

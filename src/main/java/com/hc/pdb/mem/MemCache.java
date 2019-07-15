@@ -54,6 +54,15 @@ public class MemCache{
     }
 
     public Iterator<Map.Entry<byte[],Cell>> iterator(byte[] startKey, byte[] endKey){
+        if(startKey == null && endKey == null){
+            return memValue.entrySet().iterator();
+        }
+        if(startKey == null){
+            startKey = memValue.firstKey();
+        }
+        if(endKey == null){
+            endKey = memValue.lastKey();
+        }
         if(Bytes.compare(startKey,endKey) == 0){
             return memValue.subMap(startKey,true,endKey,true).entrySet().iterator();
         }

@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
+import java.util.function.Consumer;
 
 
 /**
@@ -64,6 +65,7 @@ public class Flusher implements IFlusher {
         private HCCWriter hccWriter;
         private IWalWriter walWriter;
         private StateManager manager;
+        private Callback callback;
 
         public FlushWorker(FlushEntry entry,HCCWriter writer, StateManager manager) {
             Preconditions.checkNotNull(entry.getMemCache(), "MemCache can not be null");
@@ -74,6 +76,7 @@ public class Flusher implements IFlusher {
             this.hccWriter = writer;
             this.walWriter = entry.getWalWriter();
             this.manager = manager;
+            this.callback = entry.getCallback();
         }
 
         @Override
@@ -83,7 +86,9 @@ public class Flusher implements IFlusher {
                 HCCFileMeta fileMeta = hccWriter.writeHCC(cells);
                 walWriter.delete();
                 LOGGER.info("delete wal success {}", walWriter.getWalFileName());
+                //todo 同步读和此项
                 manager.add(fileMeta);
+                callback.callback();
                 return true;
             } catch (Exception e) {
                 LOGGER.error("flush error", e);

@@ -42,6 +42,9 @@ public class LSMEngineTest {
         while(scanner.next() != null){
             Cell cell = scanner.peek();
             int value = Bytes.toInt(cell.getValue());
+            if(i == 2016491){
+                System.out.println(value);
+            }
             Assert.assertEquals(value,i);
             i++;
         }
@@ -51,5 +54,4 @@ public class LSMEngineTest {
     public void clean() throws IOException {
         engine.clean();
     }
-
 }

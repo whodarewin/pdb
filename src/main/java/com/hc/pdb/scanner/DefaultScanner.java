@@ -42,6 +42,9 @@ public class DefaultScanner implements IScanner {
     public Cell next() throws IOException {
         while(true) {
             IScanner scanner = queue.poll();
+            if(scanner == null){
+                return null;
+            }
             Cell cell = scanner.peek();
             // 两种情况继续读下一个
             // 1 key和上一个相同
@@ -53,6 +56,9 @@ public class DefaultScanner implements IScanner {
                     queue.add(scanner);
                 }
                 continue;
+            }
+            if(scanner.next() != null){
+                queue.add(scanner);
             }
 
             this.current = cell;

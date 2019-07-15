@@ -86,6 +86,10 @@ public class HCCReader implements IHCCReader {
 
     @Override
     public void seek(byte[] key) throws IOException {
+        if(key == null){
+            seekToFirst();
+            return;
+        }
         if (Bytes.compare(key, metaInfo.getEndKey()) > 0
             || Bytes.compare(key, metaInfo.getStartKey()) < 0) {
             throw new KeyOutofRangeException();

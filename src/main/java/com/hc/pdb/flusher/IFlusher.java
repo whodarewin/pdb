@@ -4,7 +4,10 @@ import com.hc.pdb.mem.MemCache;
 import com.hc.pdb.state.StateManager;
 import com.hc.pdb.wal.IWalWriter;
 
+import java.util.List;
 import java.util.concurrent.Future;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * 将mem刷到磁盘
@@ -30,11 +33,13 @@ public interface IFlusher {
     class FlushEntry{
         private MemCache memCache;
         private IWalWriter walWriter;
+        private Callback callback;
 
 
-        public FlushEntry(MemCache memCache, IWalWriter walWriter) {
+        public FlushEntry(MemCache memCache, IWalWriter walWriter,Callback callback) {
             this.memCache = memCache;
             this.walWriter = walWriter;
+            this.callback = callback;
         }
 
         public MemCache getMemCache() {
@@ -53,5 +58,16 @@ public interface IFlusher {
             this.walWriter = walWriter;
         }
 
+        public Callback getCallback() {
+            return callback;
+        }
+
+        public void setCallback(Callback callback) {
+            this.callback = callback;
+        }
+    }
+
+    interface Callback{
+        void callback();
     }
 }

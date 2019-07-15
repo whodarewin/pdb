@@ -7,7 +7,7 @@ import com.hc.pdb.flusher.Flusher;
 import com.hc.pdb.flusher.IFlusher;
 import com.hc.pdb.hcc.HCCWriter;
 import com.hc.pdb.state.StateManager;
-import com.hc.pdb.util.Bytes;
+import com.hc.pdb.util.RangeUtil;
 import com.hc.pdb.wal.DefaultWalWriter;
 import com.hc.pdb.wal.IWalWriter;
 import java.io.IOException;
@@ -43,9 +43,9 @@ public class MemCacheManager {
 
     public Set<MemCache> searchMemCache(byte[] startKey, byte[] endKey){
         Set<MemCache> sets =  flushingList.stream().filter(cache ->
-                !(Bytes.compare(startKey,cache.getEnd()) > 0 || Bytes.compare(endKey,cache.getStart()) < 0))
+                RangeUtil.inOpenCloseInterval(cache.getStart(),cache.getEnd(),startKey,endKey))
                 .collect(Collectors.toSet());
-        if(!(Bytes.compare(startKey,current.getEnd()) < 0 || Bytes.compare(endKey, current.getStart()) > 0)){
+        if(RangeUtil.inOpenCloseInterval(current.getStart(),current.getEnd(),startKey,endKey)){
             sets.add(current);
         }
         return sets;
@@ -63,6 +63,7 @@ public class MemCacheManager {
             synchronized (this) {
                 if (current.size() > configuration.getLong(PDBConstants.MEM_CACHE_MAX_SIZE_KEY,
                         PDBConstants.DEFAULT_MEM_CACHE_MAX_SIZE)) {
+                    //todo 同步读和此项
                     MemCache tmpCache = current;
                     flushingList.add(tmpCache);
                     IWalWriter tmpWalWriter = walWriter;
@@ -71,7 +72,7 @@ public class MemCacheManager {
                     walWriter = new DefaultWalWriter(configuration.get(PDBConstants.DB_PATH_KEY));
                     current = new MemCache(configuration);
                     //todo:flush完毕后，从flushList里面删除
-                    flusher.flush(new IFlusher.FlushEntry(tmpCache,tmpWalWriter));
+                    flusher.flush(new IFlusher.FlushEntry(tmpCache,tmpWalWriter,  () -> flushingList.remove(tmpCache)));
                 }
             }
         }
