@@ -1,7 +1,9 @@
 package com.hc.pdb.engine;
 
+import com.hc.pdb.Cell;
 import com.hc.pdb.conf.Configuration;
 import com.hc.pdb.conf.PDBConstants;
+import com.hc.pdb.scanner.IScanner;
 import com.hc.pdb.util.Bytes;
 import org.junit.After;
 import org.junit.Assert;
@@ -35,6 +37,14 @@ public class LSMEngineTest {
         }
 
         Assert.assertEquals(Bytes.toInt(engine.get(Bytes.toBytes(10))), 10);
+        IScanner scanner = engine.scan(null,null);
+        int i = 0;
+        while(scanner.next() != null){
+            Cell cell = scanner.peek();
+            int value = Bytes.toInt(cell.getValue());
+            Assert.assertEquals(value,i);
+            i++;
+        }
     }
 
     @After
