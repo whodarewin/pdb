@@ -60,9 +60,9 @@ public class HCCManager implements StateChangeListener {
     public Set<HCCFile> searchHCCFile(byte[] startKey, byte[] endKey){
         return fileInfos.stream().filter((Predicate<HCCFile>) file -> {
             if(Bytes.compare(startKey,endKey) == 0){
-                return Bytes.compare(startKey,file.getEnd()) > 0 || Bytes.compare(endKey,file.getStart()) < 0;
+                return !(Bytes.compare(startKey,file.getEnd()) > 0 || Bytes.compare(endKey,file.getStart()) < 0);
             }else{
-                return Bytes.compare(startKey,file.getEnd()) > 0 || Bytes.compare(endKey,file.getStart()) <= 0;
+                return !(Bytes.compare(startKey,file.getEnd()) > 0 || Bytes.compare(endKey,file.getStart()) <= 0);
             }
         })
                 .collect(Collectors.toSet());

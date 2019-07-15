@@ -43,9 +43,9 @@ public class MemCacheManager {
 
     public Set<MemCache> searchMemCache(byte[] startKey, byte[] endKey){
         Set<MemCache> sets =  flushingList.stream().filter(cache ->
-                Bytes.compare(startKey,cache.getEnd()) > 0 && Bytes.compare(endKey,cache.getStart()) < 0)
+                !(Bytes.compare(startKey,cache.getEnd()) > 0 || Bytes.compare(endKey,cache.getStart()) < 0))
                 .collect(Collectors.toSet());
-        if(Bytes.compare(startKey,current.getEnd()) < 0 || Bytes.compare(endKey, current.getStart()) > 0){
+        if(!(Bytes.compare(startKey,current.getEnd()) < 0 || Bytes.compare(endKey, current.getStart()) > 0)){
             sets.add(current);
         }
         return sets;

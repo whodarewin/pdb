@@ -2,6 +2,8 @@ package com.hc.pdb.scanner;
 
 import com.hc.pdb.Cell;
 import com.hc.pdb.util.Bytes;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.List;
@@ -12,10 +14,18 @@ import java.util.Set;
  * 最上层的scanner
  */
 public class DefaultScanner implements IScanner {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultScanner.class);
     private PriorityQueue<IScanner> queue;
     private Cell current = null;
 
     public DefaultScanner(Set<IScanner> scanners) {
+        if(scanners == null){
+            LOGGER.error("scanners can not be null");
+            throw new RuntimeException("scanners can not be null");
+        }
+        if(scanners.size() == 0){
+            LOGGER.info("scanners is empty");
+        }
         queue = new PriorityQueue<>((o1, o2) -> Bytes.compare(o1.peek().getKey(),o2.peek().getKey()));
         scanners.forEach((o) -> {
             try {

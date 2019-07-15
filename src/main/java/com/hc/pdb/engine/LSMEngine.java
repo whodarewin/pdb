@@ -11,6 +11,8 @@ import com.hc.pdb.scanner.IScanner;
 import com.hc.pdb.scanner.ScannerMechine;
 import com.hc.pdb.state.StateManager;
 import com.hc.pdb.util.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,6 +26,7 @@ import java.io.IOException;
  */
 
 public class LSMEngine implements IEngine {
+    private static final Logger LOGGER = LoggerFactory.getLogger(LSMEngine.class);
 
     private Configuration configuration;
     private MemCacheManager memCacheManager;
@@ -32,6 +35,7 @@ public class LSMEngine implements IEngine {
 
     public LSMEngine(Configuration configuration) throws Exception {
         Preconditions.checkNotNull(configuration);
+        LOGGER.info("create lsm db at {}",configuration.get(PDBConstants.DB_PATH_KEY));
         FileUtils.createDirIfNotExist(configuration.get(PDBConstants.DB_PATH_KEY));
         this.configuration = configuration;
         this.stateManager = new StateManager(configuration.get(PDBConstants.DB_PATH_KEY));
@@ -54,6 +58,7 @@ public class LSMEngine implements IEngine {
     @Override
     public void clean() throws IOException {
         String path = configuration.get(PDBConstants.DB_PATH_KEY);
+        LOGGER.info("clean lsm db at path {}",path);
         org.apache.commons.io.FileUtils.deleteDirectory(new File(path));
     }
 
@@ -83,5 +88,4 @@ public class LSMEngine implements IEngine {
         IScanner scanner = scannerMechine.createScanner(start,end);
         return scanner;
     }
-
 }

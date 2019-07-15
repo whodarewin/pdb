@@ -3,12 +3,12 @@ package com.hc.pdb.engine;
 import com.hc.pdb.conf.Configuration;
 import com.hc.pdb.conf.PDBConstants;
 import com.hc.pdb.util.Bytes;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.UUID;
 
 /**
  * LSMEngineTest
@@ -30,11 +30,16 @@ public class LSMEngineTest {
 
     @Test
     public void test() throws IOException {
-        for (int i = 0; i < 10000; i++) {
+        for (int i = 0; i < 3000000; i++) {
             engine.put(Bytes.toBytes(i),Bytes.toBytes(i),20);
         }
 
         Assert.assertEquals(Bytes.toInt(engine.get(Bytes.toBytes(10))), 10);
+    }
+
+    @After
+    public void clean() throws IOException {
+        engine.clean();
     }
 
 }
