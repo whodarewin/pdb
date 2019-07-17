@@ -86,13 +86,12 @@ public class HCCReader implements IHCCReader {
 
     @Override
     public void seek(byte[] key) throws IOException {
-        if(key == null){
+        if(key == null || Bytes.compare(key,metaInfo.getStartKey()) <= 0){
             seekToFirst();
             return;
         }
-        if (Bytes.compare(key, metaInfo.getEndKey()) > 0
-            || Bytes.compare(key, metaInfo.getStartKey()) < 0) {
-            throw new KeyOutofRangeException();
+        if (Bytes.compare(key, metaInfo.getEndKey()) > 0) {
+            throw new KeyOutofRangeException("end key out of range,should not be here");
         }
 
         //1 找到key所定义的index

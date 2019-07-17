@@ -47,7 +47,7 @@ public class HCCManager implements StateChangeListener {
         // 删除
         List<String> deletes = have.stream().filter(fileName -> !change.contains(fileName)).collect(Collectors.toList());
         // 删除删除的
-        fileInfos = fileInfos.stream().filter(fileInfo -> deletes.contains(fileInfo.getFilePath()))
+        fileInfos = fileInfos.stream().filter(fileInfo -> !deletes.contains(fileInfo.getFilePath()))
                 .collect(Collectors.toList());
         adds.forEach(filePath -> {
             try {

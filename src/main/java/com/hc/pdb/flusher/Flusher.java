@@ -2,6 +2,7 @@ package com.hc.pdb.flusher;
 
 import com.google.common.base.Preconditions;
 import com.hc.pdb.Cell;
+import com.hc.pdb.LockContext;
 import com.hc.pdb.conf.Configuration;
 import com.hc.pdb.conf.PDBConstants;
 import com.hc.pdb.hcc.HCCWriter;
@@ -64,7 +65,7 @@ public class Flusher implements IFlusher {
         private MemCache cache;
         private HCCWriter hccWriter;
         private IWalWriter walWriter;
-        private StateManager manager;
+        private StateManager stateManager;
         private Callback callback;
 
         public FlushWorker(FlushEntry entry,HCCWriter writer, StateManager manager) {
@@ -75,7 +76,7 @@ public class Flusher implements IFlusher {
             this.cache = entry.getMemCache();
             this.hccWriter = writer;
             this.walWriter = entry.getWalWriter();
-            this.manager = manager;
+            this.stateManager = manager;
             this.callback = entry.getCallback();
         }
 
@@ -87,8 +88,15 @@ public class Flusher implements IFlusher {
                 walWriter.delete();
                 LOGGER.info("delete wal success {}", walWriter.getWalFileName());
                 //todo 同步读和此项
-                manager.add(fileMeta);
-                callback.callback();
+                try {
+                    LockContext.flushLock.readLock().lock();
+                    //hcc manager有了
+                    stateManager.add(fileMeta);
+                    //删除flush的
+                    callback.callback();
+                }finally {
+                    LockContext.flushLock.readLock().unlock();
+                }
                 return true;
             } catch (Exception e) {
                 LOGGER.error("flush error", e);

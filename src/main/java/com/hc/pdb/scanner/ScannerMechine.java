@@ -1,5 +1,6 @@
 package com.hc.pdb.scanner;
 
+import com.hc.pdb.LockContext;
 import com.hc.pdb.hcc.HCCFile;
 import com.hc.pdb.hcc.HCCManager;
 import com.hc.pdb.mem.MemCache;
@@ -36,8 +37,15 @@ public class ScannerMechine {
      * @return
      */
     public IScanner createScanner(byte[] startKey, byte[] endKey) throws IOException {
-        Set<HCCFile> hccFiles = hccManager.searchHCCFile(startKey, endKey);
-        Set<MemCache> memCaches = memCacheManager.searchMemCache(startKey, endKey);
+        Set<HCCFile> hccFiles;
+        Set<MemCache> memCaches;
+        try {
+            LockContext.flushLock.writeLock().lock();
+            hccFiles = hccManager.searchHCCFile(startKey, endKey);
+            memCaches = memCacheManager.searchMemCache(startKey, endKey);
+        }finally {
+            LockContext.flushLock.writeLock().unlock();
+        }
         Set<IScanner> scanners = new HashSet<>();
         for(HCCFile hccFile : hccFiles){
             scanners.add(new HCCScanner(hccFile.createReader(),startKey,endKey));
@@ -47,7 +55,7 @@ public class ScannerMechine {
             scanners.add(new MemCacheScanner(memCache,startKey,endKey));
         }
         if(CollectionUtils.isEmpty(scanners)){
-            return null;
+            return new NoneScanner();
         }
         DefaultScanner scanner = new DefaultScanner(scanners);
         return scanner;

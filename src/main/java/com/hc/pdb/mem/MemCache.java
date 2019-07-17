@@ -25,12 +25,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class MemCache{
 
-    private ConcurrentSkipListMap<byte[], Cell> memValue = new ConcurrentSkipListMap<>(new Comparator<byte[]>() {
-        @Override
-        public int compare(byte[] o1, byte[] o2) {
-            return Bytes.compare(o1, o2);
-        }
-    });
+    private ConcurrentSkipListMap<byte[], Cell> memValue = new ConcurrentSkipListMap<>((o1, o2) -> Bytes.compare(o1, o2));
 
     private AtomicLong size = new AtomicLong();
     private Configuration configuration;
@@ -60,13 +55,14 @@ public class MemCache{
         if(startKey == null){
             startKey = memValue.firstKey();
         }
-        if(endKey == null){
+        boolean lastInclude = false;
+        if(endKey == null || Bytes.compare(startKey,endKey) == 0 ){
+            lastInclude = true;
             endKey = memValue.lastKey();
         }
-        if(Bytes.compare(startKey,endKey) == 0){
-            return memValue.subMap(startKey,true,endKey,true).entrySet().iterator();
-        }
-        return memValue.subMap(startKey,true,endKey,false).entrySet().iterator();
+
+        return memValue.subMap(startKey,true,endKey,lastInclude).entrySet().iterator();
+
     }
 
     public byte[] getStart(){

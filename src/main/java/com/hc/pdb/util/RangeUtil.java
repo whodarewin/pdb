@@ -17,7 +17,7 @@ public class RangeUtil {
             return Bytes.compare(end,rangeStart) > 0;
         }
         if(end == null){
-            return Bytes.compare(start,rangeEnd) >= 0;
+            return Bytes.compare(start,rangeEnd) <= 0;
         }
         if(Bytes.compare(start,end) == 0){
             return !(Bytes.compare(start,rangeEnd) > 0 || Bytes.compare(end,rangeStart) < 0);

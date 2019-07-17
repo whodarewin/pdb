@@ -2,6 +2,7 @@ package com.hc.pdb.engine;
 
 import com.google.common.base.Preconditions;
 import com.hc.pdb.Cell;
+import com.hc.pdb.LockContext;
 import com.hc.pdb.conf.Configuration;
 import com.hc.pdb.conf.PDBConstants;
 import com.hc.pdb.hcc.HCCManager;
@@ -85,7 +86,7 @@ public class LSMEngine implements IEngine {
 
     @Override
     public IScanner scan(byte[] start, byte[] end) throws IOException {
-        IScanner scanner = scannerMechine.createScanner(start,end);
+        IScanner scanner = scannerMechine.createScanner(start, end);
         return scanner;
     }
 }

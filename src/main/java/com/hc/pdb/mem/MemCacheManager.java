@@ -1,6 +1,7 @@
 package com.hc.pdb.mem;
 
 import com.hc.pdb.Cell;
+import com.hc.pdb.LockContext;
 import com.hc.pdb.conf.Configuration;
 import com.hc.pdb.conf.PDBConstants;
 import com.hc.pdb.flusher.Flusher;
@@ -63,14 +64,20 @@ public class MemCacheManager {
             synchronized (this) {
                 if (current.size() > configuration.getLong(PDBConstants.MEM_CACHE_MAX_SIZE_KEY,
                         PDBConstants.DEFAULT_MEM_CACHE_MAX_SIZE)) {
-                    //todo 同步读和此项
+
                     MemCache tmpCache = current;
-                    flushingList.add(tmpCache);
+                    try {
+                        LockContext.flushLock.readLock().lock();
+                        flushingList.add(tmpCache);
+                        current = new MemCache(configuration);
+                    }finally {
+                        LockContext.flushLock.readLock().unlock();
+                    }
                     IWalWriter tmpWalWriter = walWriter;
                     walWriter.close();
                     walWriter.markFlush();
                     walWriter = new DefaultWalWriter(configuration.get(PDBConstants.DB_PATH_KEY));
-                    current = new MemCache(configuration);
+
                     //todo:flush完毕后，从flushList里面删除
                     flusher.flush(new IFlusher.FlushEntry(tmpCache,tmpWalWriter,  () -> flushingList.remove(tmpCache)));
                 }

@@ -9,7 +9,6 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
 import java.io.IOException;
 
 /**
@@ -42,11 +41,25 @@ public class LSMEngineTest {
         while(scanner.next() != null){
             Cell cell = scanner.peek();
             int value = Bytes.toInt(cell.getValue());
-            if(i == 2016491){
-                System.out.println(value);
-            }
             Assert.assertEquals(value,i);
             i++;
+        }
+
+        IScanner endNullScanner = engine.scan(Bytes.toBytes(10000),null);
+        int m = 10000;
+        while(endNullScanner.next() != null){
+            Cell cell = endNullScanner.peek();
+            int value = Bytes.toInt(cell.getValue());
+            Assert.assertEquals(m,value);
+            m++;
+        }
+        IScanner startNullScanner = engine.scan(null,Bytes.toBytes(10000));
+        int n = 0;
+        while(startNullScanner.next() != null){
+            Cell cell = startNullScanner.peek();
+            int value = Bytes.toInt(cell.getValue());
+            Assert.assertEquals(n,value);
+            n++;
         }
     }
 

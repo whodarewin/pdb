@@ -1,7 +1,7 @@
 package com.hc.pdb;
 
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * LockContext
@@ -11,5 +11,5 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 
 public class LockContext {
-    public static Lock flushLock = new ReentrantLock();
+    public static ReadWriteLock flushLock = new ReentrantReadWriteLock();
 }

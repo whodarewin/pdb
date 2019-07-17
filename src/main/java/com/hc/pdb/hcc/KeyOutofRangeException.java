@@ -8,4 +8,8 @@ package com.hc.pdb.hcc;
  */
 
 public class KeyOutofRangeException extends RuntimeException {
+
+    public KeyOutofRangeException(String msg){
+        super(msg);
+    }
 }
