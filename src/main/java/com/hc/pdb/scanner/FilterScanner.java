@@ -13,12 +13,12 @@ import java.util.Set;
 /**
  * 最上层的scanner
  */
-public class DefaultScanner implements IScanner {
-    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultScanner.class);
+public class FilterScanner implements IScanner {
+    private static final Logger LOGGER = LoggerFactory.getLogger(FilterScanner.class);
     private PriorityQueue<IScanner> queue;
     private Cell current = null;
 
-    public DefaultScanner(Set<IScanner> scanners) {
+    public FilterScanner(Set<IScanner> scanners) {
         if(scanners == null){
             LOGGER.error("scanners can not be null");
             throw new RuntimeException("scanners can not be null");

@@ -6,6 +6,7 @@ import com.hc.pdb.conf.Configuration;
 import com.hc.pdb.conf.PDBConstants;
 import com.hc.pdb.file.FileConstants;
 import com.hc.pdb.hcc.block.BlockWriter;
+import com.hc.pdb.hcc.block.IBlockWriter;
 import com.hc.pdb.hcc.meta.MetaInfo;
 import com.hc.pdb.hcc.meta.MetaReader;
 import com.hc.pdb.state.HCCFileMeta;
@@ -16,6 +17,7 @@ import com.hc.pdb.util.MD5Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.*;
+import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
@@ -38,7 +40,7 @@ public class HCCWriter implements IHCCWriter {
     }
 
     @Override
-    public HCCFileMeta writeHCC(List<Cell> cells) throws IOException {
+    public HCCFileMeta writeHCC(Iterator<Cell> cells, int size) throws IOException {
         //1 创建文件
 
         if (path == null) {
@@ -65,12 +67,13 @@ public class HCCWriter implements IHCCWriter {
             fileOutputStream.write(FileConstants.HCC_WRITE_PREFIX);
             //创建bloom filter
 
-            ByteBloomFilter filter = new ByteBloomFilter(cells.size(), errorRate, 1, 1);
+            ByteBloomFilter filter = new ByteBloomFilter(size, errorRate, 1, 1);
             filter.allocBloom();
             WriteContext context = new WriteContext(filter);
             LOGGER.info("second,write block,index is {}", FileConstants.HCC_WRITE_PREFIX.length );
             //2 开始写block
-            int blockFinishIndex = blockWriter.writeBlock(cells, fileOutputStream, context);
+            IBlockWriter.BlockWriterResult result = blockWriter.writeBlock(cells, fileOutputStream, context);
+            int blockFinishIndex = result.getIndex();
             LOGGER.info("block write finish,index is {}",blockFinishIndex);
             int indexStartIndex = blockFinishIndex ;
             LOGGER.info("third, write index, index is {}",indexStartIndex);
@@ -88,10 +91,8 @@ public class HCCWriter implements IHCCWriter {
             bloomFilter.writeBloom(fileOutputStream);
 
             //4 开始写meta
-            byte[] startK = cells.get(0).getKey();
-            byte[] endK = cells.get(cells.size() - 1).getKey();
 
-            MetaInfo metaInfo = new MetaInfo(createTime, startK, endK, indexStartIndex, bloomStartIndex);
+            MetaInfo metaInfo = new MetaInfo(createTime, result.getStart(), result.getEnd(), indexStartIndex, bloomStartIndex);
             LOGGER.info("fifth,write meta info {}",metaInfo);
             byte[] bytes = metaInfo.serialize();
             fileOutputStream.write(bytes);
@@ -101,6 +102,6 @@ public class HCCWriter implements IHCCWriter {
         try (FileInputStream inputStream = new FileInputStream(fileName)){
             md5 = MD5Utils.getMD5(inputStream.getChannel());
         }
-        return new HCCFileMeta(fileName,md5);
+        return new HCCFileMeta(fileName, md5, System.currentTimeMillis(), size);
     }
 }

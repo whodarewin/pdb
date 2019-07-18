@@ -84,7 +84,7 @@ public class Flusher implements IFlusher {
         public Boolean call() {
             try {
                 List<Cell> cells = new ArrayList<>(cache.getAllCells());
-                HCCFileMeta fileMeta = hccWriter.writeHCC(cells);
+                HCCFileMeta fileMeta = hccWriter.writeHCC(cells.iterator(),cells.size());
                 walWriter.delete();
                 LOGGER.info("delete wal success {}", walWriter.getWalFileName());
                 //todo 同步读和此项

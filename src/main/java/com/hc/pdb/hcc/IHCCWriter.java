@@ -4,6 +4,7 @@ import com.hc.pdb.Cell;
 import com.hc.pdb.state.HCCFileMeta;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -17,6 +18,6 @@ public interface IHCCWriter {
      * @return
      * @throws IOException
      */
-    HCCFileMeta writeHCC(List<Cell> cells) throws IOException;
+    HCCFileMeta writeHCC(Iterator<Cell> cells, int size) throws IOException;
 
 }

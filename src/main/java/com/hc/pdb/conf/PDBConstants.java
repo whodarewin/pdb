@@ -28,12 +28,21 @@ public class PDBConstants {
 
     public static final int DEFAULT_FLUSHER_THREAD_SIZE = Runtime.getRuntime().availableProcessors();
 
+    public static final String COMPACTOR_THREAD_SIZE_KEY = "compactor.thread.size.key";
+
+    public static final int COMPACTOR_THREAD_SIZE = Runtime.getRuntime().availableProcessors() * 2;
+
+    public static final String COMPACTOR_HCCFILE_THRESHOLD_KEY = "compactor.hccfile.threshold.key";
+
+    public static final int COMPACTOR_HCCFILE_THRESHOLD = 5;
+
     /**
      * memcache 的key
      */
     public static final String MEM_CACHE_MAX_SIZE_KEY = "mem.cache.max.size.key";
 
     public static final long DEFAULT_MEM_CACHE_MAX_SIZE = 1024 * 1024 * 100;
+
 
     public static final class Charset{
         public static String UTF_8 = "utf-8";

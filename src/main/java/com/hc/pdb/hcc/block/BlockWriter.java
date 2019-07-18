@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
 
 
@@ -33,7 +34,7 @@ public class BlockWriter implements IBlockWriter {
     }
 
     @Override
-    public int writeBlock(List<Cell> cells, FileOutputStream outputStream, WriteContext context)
+    public BlockWriterResult writeBlock(Iterator<Cell> cellIterator, FileOutputStream outputStream, WriteContext context)
             throws IOException {
         long blockSize = conf.getLong(PDBConstants.BLOCK_SIZE_KEY, PDBConstants.DEFAULT_BLOCK_SIZE);
         blockSize = blockSize * 1024;
@@ -42,8 +43,15 @@ public class BlockWriter implements IBlockWriter {
         int blockCurSize = 0;
         // 后面第一个可写的位置
         int index = indexShift + 1;
-        writeIndex(context.getIndex(), cells.iterator().next().getKey(), index);
-        for (Cell cell : cells) {
+        byte[] start = null, end = null;
+
+        while (cellIterator.hasNext()) {
+            Cell cell = cellIterator.next();
+            if(start == null){
+                start = cell.getKey();
+                writeIndex(context.getIndex(), start, index);
+            }
+            end = cell.getKey();
             if (preKey == null) {
                 preKey = cell.getKey();
             } else if (Bytes.compare(preKey, cell.getKey()) > 0) {
@@ -64,8 +72,8 @@ public class BlockWriter implements IBlockWriter {
             writeBloom(context.getBloom(), cell.getKey());
         }
         //写endkey的index 形成闭环
-        writeIndex(context.getIndex(),cells.get(cells.size() - 1).getKey(), index);
-        return index;
+        writeIndex(context.getIndex(), end, index);
+        return new BlockWriterResult(index,start,end);
     }
 
     private void writeBloom(ByteBloomFilter filter, byte[] key) {

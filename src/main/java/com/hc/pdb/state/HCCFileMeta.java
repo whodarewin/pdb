@@ -9,12 +9,20 @@ import java.util.Objects;
 public class HCCFileMeta {
     private String fileName;
     private String fileMD5;
+    private long createTime;
+    /**
+     * hcc file 重的kv数目
+     */
+
+    private long kvSize;
 
     public HCCFileMeta() {}
 
-    public HCCFileMeta(String fileName, String fileMD5){
+    public HCCFileMeta(String fileName, String fileMD5, long createTime, int kvSize){
         this.fileName = fileName;
         this.fileMD5 = fileMD5;
+        this.createTime = createTime;
+        this.kvSize = kvSize;
     }
 
     public String getFileName(){
@@ -25,17 +33,28 @@ public class HCCFileMeta {
         return fileMD5;
     }
 
+    public long getCreateTime(){
+        return createTime;
+    }
+
+    public long getKvSize(){
+        return kvSize;
+    }
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         HCCFileMeta fileMeta = (HCCFileMeta) o;
-        return Objects.equals(fileName, fileMeta.fileName) &&
+        return createTime == fileMeta.createTime &&
+                kvSize == fileMeta.kvSize &&
+                Objects.equals(fileName, fileMeta.fileName) &&
                 Objects.equals(fileMD5, fileMeta.fileMD5);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(fileName, fileMD5);
+        return Objects.hash(fileName, fileMD5, createTime, kvSize);
     }
 }

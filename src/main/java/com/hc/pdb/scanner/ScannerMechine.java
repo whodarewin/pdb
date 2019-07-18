@@ -57,7 +57,7 @@ public class ScannerMechine {
         if(CollectionUtils.isEmpty(scanners)){
             return new NoneScanner();
         }
-        DefaultScanner scanner = new DefaultScanner(scanners);
+        FilterScanner scanner = new FilterScanner(scanners);
         return scanner;
     }
 }

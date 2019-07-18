@@ -35,7 +35,7 @@ public class MetaReaderTest{
             cells.add(cell);
         }
 
-        HCCFileMeta fileMeta = hccWriter.writeHCC(cells);
+        HCCFileMeta fileMeta = hccWriter.writeHCC(cells.iterator(),cells.size());
         this.hccFileName = fileMeta.getFileName();
         randomAccessFile =
                 new RandomAccessFile(hccFileName, "r");

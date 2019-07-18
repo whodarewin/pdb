@@ -31,9 +31,13 @@ public class LSMEngineTest {
 
     @Test
     public void test() throws IOException {
-        for (int i = 0; i < 3000000; i++) {
+        for (int i = 0; i < 1500000; i++) {
             engine.put(Bytes.toBytes(i),Bytes.toBytes(i),20);
         }
+        for (int i = 0; i < 1500000; i++) {
+            engine.put(Bytes.toBytes(i),Bytes.toBytes(i),20);
+        }
+
 
         Assert.assertEquals(Bytes.toInt(engine.get(Bytes.toBytes(10))), 10);
         IScanner scanner = engine.scan(null,null);

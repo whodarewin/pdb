@@ -36,7 +36,7 @@ public class HCCTest {
             Cell cell = new Cell(Bytes.toBytes(i), UUID.randomUUID().toString().getBytes(),20l, false);
             cells.add(cell);
         }
-        fileMeta = writer.writeHCC(cells);
+        fileMeta = writer.writeHCC(cells.iterator(),cells.size());
     }
 
     @Test
