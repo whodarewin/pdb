@@ -2,10 +2,11 @@ package com.hc.pdb.engine;
 
 import com.google.common.base.Preconditions;
 import com.hc.pdb.Cell;
-import com.hc.pdb.LockContext;
+import com.hc.pdb.compactor.Compactor;
 import com.hc.pdb.conf.Configuration;
 import com.hc.pdb.conf.PDBConstants;
 import com.hc.pdb.hcc.HCCManager;
+import com.hc.pdb.hcc.HCCWriter;
 import com.hc.pdb.hcc.meta.MetaReader;
 import com.hc.pdb.mem.MemCacheManager;
 import com.hc.pdb.scanner.IScanner;
@@ -33,6 +34,8 @@ public class LSMEngine implements IEngine {
     private MemCacheManager memCacheManager;
     private ScannerMechine scannerMechine;
     private StateManager stateManager;
+    private HCCWriter hccWriter;
+    private Compactor compactor;
 
     public LSMEngine(Configuration configuration) throws Exception {
         Preconditions.checkNotNull(configuration);
@@ -40,11 +43,13 @@ public class LSMEngine implements IEngine {
         FileUtils.createDirIfNotExist(configuration.get(PDBConstants.DB_PATH_KEY));
         this.configuration = configuration;
         this.stateManager = new StateManager(configuration.get(PDBConstants.DB_PATH_KEY));
-        memCacheManager = new MemCacheManager(configuration,stateManager);
+        hccWriter = new HCCWriter(configuration);
+        memCacheManager = new MemCacheManager(configuration,stateManager,hccWriter);
         MetaReader reader = new MetaReader();
         HCCManager hccManager = new HCCManager(configuration,reader);
         scannerMechine = new ScannerMechine(hccManager,memCacheManager);
         stateManager.addListener(hccManager);
+        compactor = new Compactor(configuration,stateManager, hccWriter);
         stateManager.load();
     }
 

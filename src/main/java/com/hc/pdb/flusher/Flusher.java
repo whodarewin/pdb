@@ -89,13 +89,13 @@ public class Flusher implements IFlusher {
                 LOGGER.info("delete wal success {}", walWriter.getWalFileName());
                 //todo 同步读和此项
                 try {
-                    LockContext.flushLock.readLock().lock();
+                    LockContext.flushLock.writeLock().lock();
                     //hcc manager有了
                     stateManager.add(fileMeta);
                     //删除flush的
                     callback.callback();
                 }finally {
-                    LockContext.flushLock.readLock().unlock();
+                    LockContext.flushLock.writeLock().unlock();
                 }
                 return true;
             } catch (Exception e) {

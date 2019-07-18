@@ -25,16 +25,16 @@ import java.util.stream.Collectors;
  */
 public class MemCacheManager {
 
-    private HCCWriter hccWriter;
     private IFlusher flusher;
     private IWalWriter walWriter;
     private StateManager stateManager;
     private Configuration configuration;
     private List<MemCache> flushingList = Collections.synchronizedList(new ArrayList<>());
     private MemCache current;
+    private HCCWriter hccWriter;
 
-    public MemCacheManager(Configuration configuration,StateManager manager) throws IOException {
-        hccWriter = new HCCWriter(configuration);
+    public MemCacheManager(Configuration configuration,StateManager manager, HCCWriter hccWriter) throws IOException {
+        this.hccWriter = hccWriter;
         this.stateManager = manager;
         flusher = new Flusher(configuration, hccWriter, stateManager);
         this.walWriter = new DefaultWalWriter(configuration.get(PDBConstants.DB_PATH_KEY));
@@ -67,11 +67,11 @@ public class MemCacheManager {
 
                     MemCache tmpCache = current;
                     try {
-                        LockContext.flushLock.readLock().lock();
+                        LockContext.flushLock.writeLock().lock();
                         flushingList.add(tmpCache);
                         current = new MemCache(configuration);
                     }finally {
-                        LockContext.flushLock.readLock().unlock();
+                        LockContext.flushLock.writeLock().unlock();
                     }
                     IWalWriter tmpWalWriter = walWriter;
                     walWriter.close();

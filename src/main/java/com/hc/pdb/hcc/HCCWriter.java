@@ -21,6 +21,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
+
+/**
+ * HCCWriter
+ *
+ * @author han.congcong
+ * @date 2019/7/18
+ */
+
 public class HCCWriter implements IHCCWriter {
     private static final Logger LOGGER = LoggerFactory.getLogger(HCCWriter.class);
 

@@ -34,7 +34,7 @@ public class PDBConstants {
 
     public static final String COMPACTOR_HCCFILE_THRESHOLD_KEY = "compactor.hccfile.threshold.key";
 
-    public static final int COMPACTOR_HCCFILE_THRESHOLD = 5;
+    public static final int COMPACTOR_HCCFILE_THRESHOLD = 2;
 
     /**
      * memcache 的key

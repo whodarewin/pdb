@@ -40,11 +40,11 @@ public class ScannerMechine {
         Set<HCCFile> hccFiles;
         Set<MemCache> memCaches;
         try {
-            LockContext.flushLock.writeLock().lock();
+            LockContext.flushLock.readLock().lock();
             hccFiles = hccManager.searchHCCFile(startKey, endKey);
             memCaches = memCacheManager.searchMemCache(startKey, endKey);
         }finally {
-            LockContext.flushLock.writeLock().unlock();
+            LockContext.flushLock.readLock().unlock();
         }
         Set<IScanner> scanners = new HashSet<>();
         for(HCCFile hccFile : hccFiles){

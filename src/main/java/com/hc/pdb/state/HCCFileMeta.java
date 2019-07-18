@@ -14,7 +14,7 @@ public class HCCFileMeta {
      * hcc file 重的kv数目
      */
 
-    private long kvSize;
+    private int kvSize;
 
     public HCCFileMeta() {}
 
@@ -37,7 +37,7 @@ public class HCCFileMeta {
         return createTime;
     }
 
-    public long getKvSize(){
+    public int getKvSize(){
         return kvSize;
     }
 
