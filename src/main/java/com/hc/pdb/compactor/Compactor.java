@@ -13,7 +13,6 @@ import com.hc.pdb.state.HCCFileMeta;
 import com.hc.pdb.state.State;
 import com.hc.pdb.state.StateChangeListener;
 import com.hc.pdb.state.StateManager;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +20,6 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
@@ -36,7 +34,7 @@ import java.util.stream.Collectors;
 public class Compactor implements StateChangeListener {
     private static final Logger LOGGER = LoggerFactory.getLogger(Compactor.class);
     private ExecutorService compactorExecutor;
-    private Set<HCCFileMeta> compactHCCFiles = new ConcurrentSkipListSet<>();
+    private Set<HCCFileMeta> compactHCCFiles = new HashSet<>();
     private int compactThreshold;
     private StateManager stateManager;
     private HCCWriter hccWriter;
@@ -55,22 +53,27 @@ public class Compactor implements StateChangeListener {
 
     @Override
     public void onChange(State state) {
-        //todo:是个循环
-        Set<HCCFileMeta> metas = state.getHccFileMetas();
-        Set<HCCFileMeta> noCompactMetas = metas.stream().filter(meta -> !compactHCCFiles.contains(meta))
-                .collect(Collectors.toSet());
-        List<HCCFileMeta> toCompact = new ArrayList<>();
-        if(noCompactMetas.size() > compactThreshold){
-            LOGGER.info("choose compact file");
-            toCompact = noCompactMetas.stream().sorted((o1, o2) -> (int)(o1.getCreateTime() - o2.getCreateTime()))
-                    .limit(2).collect(Collectors.toList());
-        }
+        //todo:循环检测
+        synchronized (this) {
+            while (true) {
+                Set<HCCFileMeta> metas = state.getHccFileMetas();
+                Set<HCCFileMeta> noCompactMetas = metas.stream().filter(meta -> !compactHCCFiles.contains(meta))
+                        .collect(Collectors.toSet());
 
-        if(CollectionUtils.isEmpty(toCompact)){
-            LOGGER.info("to compact hcc file is empty");
-            return;
+                if(noCompactMetas.size() > compactThreshold) {
+                    LOGGER.info("choose compact file");
+                    List<HCCFileMeta> toCompact = noCompactMetas.stream().sorted((o1, o2) -> (int) (o1.getCreateTime() - o2.getCreateTime()))
+                            .limit(2).collect(Collectors.toList());
+                    compactHCCFiles.addAll(toCompact);
+                    compactorExecutor.submit(new CompactorWorker(toCompact, stateManager));
+                }else{
+
+                    LOGGER.info("no file to compact");
+                    return;
+
+                }
+            }
         }
-        compactorExecutor.submit(new CompactorWorker(toCompact,stateManager));
     }
 
 
@@ -117,6 +120,7 @@ public class Compactor implements StateChangeListener {
                 stateManager.add(fileMeta);
                 hccFileMetas.forEach(meta -> {
                     try {
+                        LOGGER.info("begin delete compacted file {}",meta.getFileName());
                         stateManager.delete(meta.getFileName());
                         FileUtils.forceDelete(new File(meta.getFileName()));
                     } catch (IOException e) {

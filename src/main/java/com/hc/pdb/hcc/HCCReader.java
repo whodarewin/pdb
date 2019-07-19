@@ -151,7 +151,7 @@ public class HCCReader implements IHCCReader {
             }
             blockEndIndex = entry.getValue();
             endKey =  entry.getKey();
-            LOGGER.info("current block read over,read next begin {} end {}", blockStartIndex, blockEndIndex);
+            LOGGER.debug("current block read over,read next begin {} end {}", blockStartIndex, blockEndIndex);
             readBlock(blockStartIndex,blockEndIndex);
         }
         return Cell.toCell(currentBlock);

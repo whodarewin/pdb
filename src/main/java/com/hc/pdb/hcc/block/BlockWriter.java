@@ -81,10 +81,10 @@ public class BlockWriter implements IBlockWriter {
     }
 
     private void writeIndex(ByteArrayOutputStream indexStream, byte[] key, int index) throws IOException {
-        LOGGER.info("begin write key length {}",key.length);
+        LOGGER.debug("begin write key length {}",key.length);
         indexStream.write(Bytes.toBytes(key.length));
         indexStream.write(key);
-        LOGGER.info("begin write index {}",index);
+        LOGGER.debug("begin write index {}",index);
         indexStream.write(Bytes.toBytes(index));
     }
 }

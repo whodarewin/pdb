@@ -86,8 +86,7 @@ public class Flusher implements IFlusher {
                 List<Cell> cells = new ArrayList<>(cache.getAllCells());
                 HCCFileMeta fileMeta = hccWriter.writeHCC(cells.iterator(),cells.size());
                 walWriter.delete();
-                LOGGER.info("delete wal success {}", walWriter.getWalFileName());
-                //todo 同步读和此项
+
                 try {
                     LockContext.flushLock.writeLock().lock();
                     //hcc manager有了

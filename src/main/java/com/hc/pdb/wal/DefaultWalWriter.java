@@ -2,6 +2,9 @@ package com.hc.pdb.wal;
 
 import com.hc.pdb.ISerializable;
 import com.hc.pdb.file.FileConstants;
+import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -16,6 +19,7 @@ import java.util.UUID;
  */
 
 public class DefaultWalWriter implements IWalWriter {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultWalWriter.class);
     private String path;
     private String fileName;
     private FileOutputStream output;
@@ -42,7 +46,8 @@ public class DefaultWalWriter implements IWalWriter {
     @Override
     public void delete() throws IOException {
         this.close();
-        new File(path).delete();
+        FileUtils.forceDelete(new File(fileName));
+        LOGGER.info("delete wal success {}", fileName);
     }
 
     @Override
@@ -52,6 +57,8 @@ public class DefaultWalWriter implements IWalWriter {
 
     @Override
     public void markFlush() {
-        walFile.renameTo(new File(fileName + ".flush"));
+        String flushName = fileName + ".flush";
+        walFile.renameTo(new File(flushName));
+        fileName = flushName;
     }
 }
