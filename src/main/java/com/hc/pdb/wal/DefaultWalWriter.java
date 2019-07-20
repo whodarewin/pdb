@@ -29,7 +29,10 @@ public class DefaultWalWriter implements IWalWriter {
         this.path = path;
         this.fileName = path + UUID.randomUUID().toString() + FileConstants.WAL_FILE_SUFFIX;
         walFile = new File(fileName);
-        walFile.createNewFile();
+        if(!walFile.createNewFile()) {
+            throw new RuntimeException("can not create file "+path);
+        }
+
         this.output = new FileOutputStream(walFile);
     }
 

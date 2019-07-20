@@ -2,6 +2,7 @@ package com.hc.pdb.hcc;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
+import com.hc.pdb.LockContext;
 import com.hc.pdb.conf.Configuration;
 import com.hc.pdb.hcc.meta.MetaReader;
 import com.hc.pdb.state.HCCFileMeta;
@@ -44,18 +45,26 @@ public class HCCManager implements StateChangeListener {
         fileMetas.forEach((fileMeta) -> change.add(fileMeta.getFileName()));
         // 新增
         List<String> adds = change.stream().filter((fileName) -> !have.contains(fileName)).collect(Collectors.toList());
-        // 删除
-        List<String> deletes = have.stream().filter(fileName -> !change.contains(fileName)).collect(Collectors.toList());
-        // 删除删除的
-        fileInfos = fileInfos.stream().filter(fileInfo -> !deletes.contains(fileInfo.getFilePath()))
-                .collect(Collectors.toList());
+        List<HCCFile> toAddHccFiles = new ArrayList<>();
         adds.forEach(filePath -> {
             try {
-                fileInfos.add(new HCCFile(filePath,metaReader));
+                HCCFile hccFile = new HCCFile(filePath,metaReader);
+                toAddHccFiles.add(hccFile);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         });
+
+        // 删除
+        List<String> deletes = have.stream()
+                .filter(fileName -> !change.contains(fileName))
+                .collect(Collectors.toList());
+        // 删除删除的
+        fileInfos = fileInfos.stream()
+                .filter(fileInfo -> !deletes.contains(fileInfo.getFilePath()))
+                .collect(Collectors.toList());
+
+        fileInfos.addAll(toAddHccFiles);
     }
 
     public Set<HCCFile> searchHCCFile(byte[] startKey, byte[] endKey){

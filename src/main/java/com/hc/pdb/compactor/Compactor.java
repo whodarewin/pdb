@@ -1,6 +1,7 @@
 package com.hc.pdb.compactor;
 
 import com.hc.pdb.Cell;
+import com.hc.pdb.LockContext;
 import com.hc.pdb.conf.Configuration;
 import com.hc.pdb.conf.PDBConstants;
 import com.hc.pdb.hcc.HCCFile;
@@ -117,16 +118,28 @@ public class Compactor implements StateChangeListener {
                         return scanner.peek();
                     }
                 }, size);
-                stateManager.add(fileMeta);
-                hccFileMetas.forEach(meta -> {
-                    try {
-                        LOGGER.info("begin delete compacted file {}",meta.getFileName());
-                        stateManager.delete(meta.getFileName());
-                        FileUtils.forceDelete(new File(meta.getFileName()));
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                });
+                long time = System.currentTimeMillis();
+                try {
+                    //todo:缩小锁粒度
+
+                    LOGGER.info("compact change state transaction begin");
+                    LockContext.flushLock.writeLock().lock();
+                    stateManager.add(fileMeta);
+
+                    hccFileMetas.forEach(meta -> {
+                        try {
+                            LOGGER.info("begin delete compacted file {}", meta.getFileName());
+                            stateManager.delete(meta.getFileName());
+                            FileUtils.forceDelete(new File(meta.getFileName()));
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
+                }finally {
+                    LockContext.flushLock.writeLock().unlock();
+                }
+
+                LOGGER.info("compact change state transaction end {}",System.currentTimeMillis() - time);
 
             } catch (IOException e) {
                 e.printStackTrace();
