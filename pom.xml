@@ -17,6 +17,8 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <commons.collection>3.2.2</commons.collection>
         <commons.io>2.6</commons.io>
+        <jackson.version>2.9.9</jackson.version>
+        <common.lang.version>3.9</common.lang.version>
     </properties>
     <description>a local db</description>
 
@@ -50,6 +52,29 @@
             <version>4.12</version>
             <scope>${junit.version}</scope>
         </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>${common.lang.version}</version>
+        </dependency>
+
+
+
 
         <!-- https://mvnrepository.com/artifact/io.protostuff/protostuff-core -->
         <dependency>
