@@ -39,6 +39,7 @@ public class DefaultWalWriter implements IWalWriter {
     @Override
     public void write(ISerializable serializable) throws IOException {
         output.write(serializable.serialize());
+        output.flush();
     }
 
     @Override

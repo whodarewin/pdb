@@ -15,8 +15,6 @@ import java.util.concurrent.*;
 
 public class CreashWorkerManager {
 
-    private ExecutorService service = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-
     private LogRecorder logRecorder;
 
     private WorkerCreashableFactoryManager workerCreashableFactoryManager;
@@ -40,8 +38,9 @@ public class CreashWorkerManager {
      * @param service
      * @return
      */
-    public Future doWork(IWorkerCreashable worker, ExecutorService service){
+    public Future doWork(IWorkerCreashable worker, ExecutorService service) throws JsonProcessingException {
         Recorder recorder = new Recorder(worker.getName(),logRecorder);
+        worker.preWork(recorder);
         return service.submit((Callable<Object>) () -> {
              recorder.startRecord();
              worker.doWork(recorder);
@@ -64,11 +63,14 @@ public class CreashWorkerManager {
 
             CompletableFuture.runAsync( () -> {
                 try {
-                    recorder.startRecord();
                     workerCreashable.continueWork(recorder);
                     recorder.endRecord();
                 } catch (JsonProcessingException e) {
                     throw new RuntimeException(e);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             },service);
         }
@@ -79,5 +81,6 @@ public class CreashWorkerManager {
                         throw new RuntimeException(e);
                     }
                 }).join();
+        service.shutdown();
     }
 }

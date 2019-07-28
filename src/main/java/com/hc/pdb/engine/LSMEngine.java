@@ -2,6 +2,7 @@ package com.hc.pdb.engine;
 
 import com.google.common.base.Preconditions;
 import com.hc.pdb.Cell;
+import com.hc.pdb.PDB;
 import com.hc.pdb.compactor.Compactor;
 import com.hc.pdb.conf.Configuration;
 import com.hc.pdb.conf.PDBConstants;
@@ -11,6 +12,7 @@ import com.hc.pdb.hcc.meta.MetaReader;
 import com.hc.pdb.mem.MemCacheManager;
 import com.hc.pdb.scanner.IScanner;
 import com.hc.pdb.scanner.ScannerMechine;
+import com.hc.pdb.state.CreashWorkerManager;
 import com.hc.pdb.state.StateManager;
 import com.hc.pdb.util.FileUtils;
 import org.slf4j.Logger;
@@ -36,6 +38,8 @@ public class LSMEngine implements IEngine {
     private StateManager stateManager;
     private HCCWriter hccWriter;
     private Compactor compactor;
+    private CreashWorkerManager creashWorkerManager;
+    private String path;
 
     public LSMEngine(Configuration configuration) throws Exception {
         Preconditions.checkNotNull(configuration);
@@ -43,8 +47,10 @@ public class LSMEngine implements IEngine {
         FileUtils.createDirIfNotExist(configuration.get(PDBConstants.DB_PATH_KEY));
         this.configuration = configuration;
         this.stateManager = new StateManager(configuration.get(PDBConstants.DB_PATH_KEY));
+        this.path = configuration.get(PDBConstants.DB_PATH_KEY);
         hccWriter = new HCCWriter(configuration);
-        memCacheManager = new MemCacheManager(configuration,stateManager,hccWriter);
+        creashWorkerManager = new CreashWorkerManager(path);
+        memCacheManager = new MemCacheManager(configuration,stateManager,hccWriter,creashWorkerManager);
         MetaReader reader = new MetaReader();
         HCCManager hccManager = new HCCManager(configuration,reader);
         scannerMechine = new ScannerMechine(hccManager,memCacheManager);

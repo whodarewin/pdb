@@ -26,7 +26,37 @@ public class ProtostuffUtils {
     private static ThreadLocal<LinkedBuffer> buffer = ThreadLocal.withInitial(() -> LinkedBuffer.allocate(LinkedBuffer.DEFAULT_BUFFER_SIZE));
     private static final String UTF_8= "utf-8";
 
-    public static byte[] serialize(Collection collection) throws IOException {
+    public static byte[] serializeObject(Object o) throws IOException {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        if(o == null){
+            outputStream.write('N');
+            return outputStream.toByteArray();
+        }
+        outputStream.write('Y');
+        Schema schema = RuntimeSchema.getSchema(o.getClass());
+        byte[] data;
+        try {
+            data = ProtostuffIOUtil.toByteArray(o, schema, buffer.get());
+        } finally {
+            buffer.get().clear();
+        }
+        outputStream.write(Bytes.toBytes(data.length));
+        outputStream.write(data);
+        return outputStream.toByteArray();
+    }
+
+    public static <T> T unSerializeObject(byte[] bytes,Class<T> clazz) throws IllegalAccessException, InstantiationException {
+        if(bytes[0] == 'N'){
+            return null;
+        }
+
+        Schema schema = RuntimeSchema.getSchema(clazz);
+        T t = clazz.newInstance();
+        ProtostuffIOUtil.mergeFrom(bytes, t, schema);
+        return t;
+    }
+
+    public static byte[] serializeCollection(Collection collection) throws IOException {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         for (Object o : collection) {
             String className = o.getClass().getName();
@@ -49,7 +79,7 @@ public class ProtostuffUtils {
     }
 
 
-    public static Collection unSerialize(byte[] bytes) throws UnsupportedEncodingException, ClassNotFoundException, IllegalAccessException, InstantiationException {
+    public static Collection unSerializeCollection(byte[] bytes) throws UnsupportedEncodingException, ClassNotFoundException, IllegalAccessException, InstantiationException {
         int index = 0;
         List<Object> rets = new ArrayList<>();
         while(true){

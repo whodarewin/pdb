@@ -1,5 +1,6 @@
 package com.hc.pdb.flusher;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hc.pdb.mem.MemCache;
 import com.hc.pdb.state.StateManager;
 import com.hc.pdb.wal.IWalWriter;
@@ -20,7 +21,7 @@ public interface IFlusher {
      * @param entry
      * @return
      */
-    Future<Boolean> flush(FlushEntry entry);
+    Future<Boolean> flush(FlushEntry entry) throws JsonProcessingException;
 
     /**
      * 获得正在进行flush的任务

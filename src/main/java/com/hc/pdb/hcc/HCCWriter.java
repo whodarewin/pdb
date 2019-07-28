@@ -48,7 +48,7 @@ public class HCCWriter implements IHCCWriter {
     }
 
     @Override
-    public HCCFileMeta writeHCC(Iterator<Cell> cells, int size) throws IOException {
+    public HCCFileMeta writeHCC(Iterator<Cell> cells, int size,String fileName) throws IOException {
         //1 创建文件
 
         if (path == null) {
@@ -57,7 +57,7 @@ public class HCCWriter implements IHCCWriter {
 
         path = FileUtils.reformatDirPath(path);
 
-        String fileName = path + UUID.randomUUID().toString() + FileConstants.DATA_FILE_SUFFIX;
+
         LOGGER.info("begin to write hcc file,fileName is {}",fileName);
 
         File file = new File(fileName);

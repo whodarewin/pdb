@@ -7,15 +7,16 @@ import com.hc.pdb.conf.PDBConstants;
 import com.hc.pdb.flusher.Flusher;
 import com.hc.pdb.flusher.IFlusher;
 import com.hc.pdb.hcc.HCCWriter;
+import com.hc.pdb.state.CreashWorkerManager;
 import com.hc.pdb.state.StateManager;
+import com.hc.pdb.state.WALFileMeta;
 import com.hc.pdb.util.RangeUtil;
 import com.hc.pdb.wal.DefaultWalWriter;
 import com.hc.pdb.wal.IWalWriter;
+import com.hc.pdb.wal.WalFileReader;
+
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -33,13 +34,27 @@ public class MemCacheManager {
     private MemCache current;
     private HCCWriter hccWriter;
 
-    public MemCacheManager(Configuration configuration,StateManager manager, HCCWriter hccWriter) throws IOException {
-        this.hccWriter = hccWriter;
+    public MemCacheManager(Configuration configuration,
+                           StateManager manager,
+                           HCCWriter hccWriter,
+                           CreashWorkerManager creashWorkerManager) throws IOException {
         this.stateManager = manager;
-        flusher = new Flusher(configuration, hccWriter, stateManager);
+        flushIfHaveRemainedWal();
+        this.hccWriter = hccWriter;
+        flusher = new Flusher(configuration, hccWriter, stateManager,creashWorkerManager);
         this.walWriter = new DefaultWalWriter(configuration.get(PDBConstants.DB_PATH_KEY));
-        current = new MemCache(configuration);
+        current = new MemCache();
         this.configuration = configuration;
+    }
+
+    private void flushIfHaveRemainedWal() throws IOException {
+        WALFileMeta walFileMeta = stateManager.getState().getWalFileMeta();
+        if(walFileMeta != null){
+            String walPath = walFileMeta.getWalPath();
+            WalFileReader reader = new WalFileReader(walPath);
+            MemCache cache = new MemCache(reader);
+            //todo:flush
+        }
     }
 
     public Set<MemCache> searchMemCache(byte[] startKey, byte[] endKey){
@@ -69,7 +84,7 @@ public class MemCacheManager {
                     try {
                         LockContext.flushLock.writeLock().lock();
                         flushingList.add(tmpCache);
-                        current = new MemCache(configuration);
+                        current = new MemCache();
                     }finally {
                         LockContext.flushLock.writeLock().unlock();
                     }

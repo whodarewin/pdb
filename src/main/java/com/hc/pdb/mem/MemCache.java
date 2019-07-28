@@ -7,6 +7,7 @@ import com.hc.pdb.scanner.IScanner;
 import com.hc.pdb.util.Bytes;
 import com.hc.pdb.util.CellUtil;
 import com.hc.pdb.wal.DefaultWalWriter;
+import com.hc.pdb.wal.IWalReader;
 import com.hc.pdb.wal.IWalWriter;
 import org.checkerframework.common.util.report.qual.ReportOverride;
 
@@ -14,6 +15,8 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicLong;
+
+import static com.sun.corba.se.impl.util.RepositoryId.cache;
 
 
 /**
@@ -28,11 +31,15 @@ public class MemCache{
     private ConcurrentSkipListMap<byte[], Cell> memValue = new ConcurrentSkipListMap<>((o1, o2) -> Bytes.compare(o1, o2));
 
     private AtomicLong size = new AtomicLong();
-    private Configuration configuration;
 
-    public MemCache(Configuration configuration) {
-        Preconditions.checkNotNull(configuration, "Configuration can not be null!");
-        this.configuration = configuration;
+    public MemCache(){}
+
+    public MemCache(IWalReader reader) throws IOException {
+        Iterator<Cell> iterator = reader.read();
+        while(iterator.hasNext()){
+            Cell cell = iterator.next();
+            this.put(cell);
+        }
     }
 
     public void put(Cell cell) {

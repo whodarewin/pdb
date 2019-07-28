@@ -1,12 +1,15 @@
 package com.hc.pdb.flusher;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 import com.hc.pdb.Cell;
 import com.hc.pdb.LockContext;
 import com.hc.pdb.conf.Configuration;
 import com.hc.pdb.conf.PDBConstants;
 import com.hc.pdb.hcc.HCCWriter;
 import com.hc.pdb.mem.MemCache;
+import com.hc.pdb.state.CreashWorkerManager;
 import com.hc.pdb.state.HCCFileMeta;
 import com.hc.pdb.state.StateManager;
 import com.hc.pdb.util.NamedThreadFactory;
@@ -35,23 +38,31 @@ public class Flusher implements IFlusher {
     private ThreadPoolExecutor executor;
     private HCCWriter hccWriter;
     private StateManager manager;
+    private CreashWorkerManager creashWorkerManager;
+    private String path;
 
-    public Flusher(Configuration configuration, HCCWriter hccWriter, StateManager manager) {
+    public Flusher(Configuration configuration, HCCWriter hccWriter, StateManager manager,
+                   CreashWorkerManager creashWorkerManager) {
         Preconditions.checkNotNull(configuration);
         this.configuration = configuration;
         int flushThreadNum = configuration.getInt(PDBConstants.FLUSHER_THREAD_SIZE_KEY,
                 PDBConstants.DEFAULT_FLUSHER_THREAD_SIZE);
+        this.path = configuration.get(PDBConstants.DB_PATH_KEY);
         executor = new ThreadPoolExecutor(flushThreadNum, flushThreadNum,
                 0L, TimeUnit.MILLISECONDS,
                 new SynchronousQueue<>(),
                 new NamedThreadFactory("pdb-flusher"));
         this.hccWriter = hccWriter;
         this.manager = manager;
+        this.creashWorkerManager = creashWorkerManager;
     }
 
     @Override
-    public Future<Boolean> flush(FlushEntry entry) {
-        Future<Boolean> ret = executor.submit(new FlushWorker(entry, hccWriter, manager));
+    public Future<Boolean> flush(FlushEntry entry) throws JsonProcessingException {
+        List<String> param = Lists.newArrayList(entry.getWalWriter().getWalFileName());
+        Future<Boolean> ret = creashWorkerManager.doWork(new FlusherCrashable(
+                path,entry,hccWriter,manager
+        ),param,executor);
         return ret;
     }
 
@@ -60,48 +71,4 @@ public class Flusher implements IFlusher {
         return executor.getQueue().size();
     }
 
-    public static class FlushWorker implements Callable<Boolean> {
-        private static final Logger LOGGER = LoggerFactory.getLogger(FlushWorker.class);
-        private MemCache cache;
-        private HCCWriter hccWriter;
-        private IWalWriter walWriter;
-        private StateManager stateManager;
-        private Callback callback;
-
-        public FlushWorker(FlushEntry entry,HCCWriter writer, StateManager manager) {
-            Preconditions.checkNotNull(entry.getMemCache(), "MemCache can not be null");
-            Preconditions.checkNotNull(entry.getWalWriter(),"WalWriter can not be null");
-            Preconditions.checkNotNull(writer, "hccWriter can not be null");
-            Preconditions.checkNotNull(manager,"state manager can not be null");
-            this.cache = entry.getMemCache();
-            this.hccWriter = writer;
-            this.walWriter = entry.getWalWriter();
-            this.stateManager = manager;
-            this.callback = entry.getCallback();
-        }
-
-        @Override
-        public Boolean call() {
-            try {
-                List<Cell> cells = new ArrayList<>(cache.getAllCells());
-                HCCFileMeta fileMeta = hccWriter.writeHCC(cells.iterator(),cells.size());
-                walWriter.delete();
-
-                try {
-                    LockContext.flushLock.writeLock().lock();
-                    //hcc manager有了
-                    stateManager.add(fileMeta);
-                    //删除flush的
-                    callback.callback();
-                }finally {
-                    LockContext.flushLock.writeLock().unlock();
-                }
-                return true;
-            } catch (Exception e) {
-                LOGGER.error("flush error", e);
-                return false;
-            }
-
-        }
-    }
 }

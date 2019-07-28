@@ -1,5 +1,6 @@
 package com.hc.pdb.state;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hc.pdb.file.FileConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +46,7 @@ public class StateManager {
     }
 
     public void add(WALFileMeta walFileMeta){
-        state.addWalFileMeta(walFileMeta);
+        state.setCurrentWalFileMeta(walFileMeta);
     }
 
     public void delete(String fileName) throws IOException {
@@ -54,8 +55,32 @@ public class StateManager {
         notifyListener();
     }
 
+    public boolean exist(String fileName){
+        for (HCCFileMeta hccFileMeta : state.getHccFileMetas()) {
+            if(hccFileMeta.getFileName().equals(fileName)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public HCCFileMeta getHccFileMeta(String name){
+        for (HCCFileMeta hccFileMeta : state.getHccFileMetas()) {
+            if(hccFileMeta.getFileName().equals(name)){
+                return hccFileMeta;
+            }
+        }
+        return null;
+    }
+
     private void notifyListener() {
-        listeners.forEach((listener) -> listener.onChange(this.state));
+        listeners.forEach((listener) -> {
+            try {
+                listener.onChange(this.state);
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     private void sync() throws IOException {
@@ -92,4 +117,8 @@ public class StateManager {
     public void addListener(StateChangeListener listener){
         this.listeners.add(listener);
     }
+
+     public State getState(){
+         return state;
+     }
 }

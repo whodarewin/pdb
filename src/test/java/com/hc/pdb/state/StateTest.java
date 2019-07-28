@@ -11,7 +11,7 @@ import java.nio.ByteBuffer;
  */
 public class StateTest {
     @Test
-    public void testStateSerialize() throws IOException, InstantiationException, IllegalAccessException, ClassNotFoundException {
+    public void testStateSerialize() throws Exception {
         State state = new State();
         state.addFileMeta(new HCCFileMeta("fileName1","md5",System.currentTimeMillis(),0));
         state.addFileMeta(new HCCFileMeta("fileName2","md52",System.currentTimeMillis(),0));

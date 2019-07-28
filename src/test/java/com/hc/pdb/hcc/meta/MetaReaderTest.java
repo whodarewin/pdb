@@ -3,6 +3,7 @@ package com.hc.pdb.hcc.meta;
 import com.hc.pdb.Cell;
 import com.hc.pdb.conf.Configuration;
 import com.hc.pdb.conf.PDBConstants;
+import com.hc.pdb.file.FileConstants;
 import com.hc.pdb.hcc.HCCWriter;
 import com.hc.pdb.state.HCCFileMeta;
 import junit.framework.TestCase;
@@ -16,6 +17,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class MetaReaderTest{
     private RandomAccessFile randomAccessFile;
@@ -26,7 +28,7 @@ public class MetaReaderTest{
 
         Configuration configuration = new Configuration();
         configuration.put(PDBConstants.DB_PATH_KEY, MetaReaderTest.class.getClassLoader().getResource("").getPath());
-
+        String path = configuration.get(PDBConstants.DB_PATH_KEY);
         HCCWriter hccWriter = new HCCWriter(configuration);
         List<Cell> cells = new ArrayList<Cell>();
 
@@ -34,8 +36,8 @@ public class MetaReaderTest{
             Cell cell = new Cell((i + "").getBytes(), (i + "").getBytes(), 0l, false);
             cells.add(cell);
         }
-
-        HCCFileMeta fileMeta = hccWriter.writeHCC(cells.iterator(),cells.size());
+        String fileName = path + UUID.randomUUID().toString() + FileConstants.DATA_FILE_SUFFIX;
+        HCCFileMeta fileMeta = hccWriter.writeHCC(cells.iterator(),cells.size(),path);
         this.hccFileName = fileMeta.getFileName();
         randomAccessFile =
                 new RandomAccessFile(hccFileName, "r");

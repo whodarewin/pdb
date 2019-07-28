@@ -18,6 +18,6 @@ public interface IHCCWriter {
      * @return
      * @throws IOException
      */
-    HCCFileMeta writeHCC(Iterator<Cell> cells, int size) throws IOException;
+    HCCFileMeta writeHCC(Iterator<Cell> cells, int size, String fileName) throws IOException;
 
 }

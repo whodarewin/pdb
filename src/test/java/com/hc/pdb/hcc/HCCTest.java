@@ -3,6 +3,7 @@ package com.hc.pdb.hcc;
 import com.hc.pdb.Cell;
 import com.hc.pdb.conf.Configuration;
 import com.hc.pdb.conf.PDBConstants;
+import com.hc.pdb.file.FileConstants;
 import com.hc.pdb.hcc.meta.MetaReader;
 import com.hc.pdb.state.HCCFileMeta;
 import com.hc.pdb.util.Bytes;
@@ -30,13 +31,15 @@ public class HCCTest {
     public void setUp() throws IOException {
         configuration = new Configuration();
         configuration.put(PDBConstants.DB_PATH_KEY,HCCTest.class.getClassLoader().getResource("").getPath());
+        String path = configuration.get(PDBConstants.DB_PATH_KEY);
         HCCWriter writer = new HCCWriter(configuration);
         List<Cell> cells = new ArrayList<>();
         for (int i = 0; i < 100000 ; i++) {
             Cell cell = new Cell(Bytes.toBytes(i), UUID.randomUUID().toString().getBytes(),20l, false);
             cells.add(cell);
         }
-        fileMeta = writer.writeHCC(cells.iterator(),cells.size());
+        String fileName = path + UUID.randomUUID().toString() + FileConstants.DATA_FILE_SUFFIX;
+        fileMeta = writer.writeHCC(cells.iterator(),cells.size(), fileName);
     }
 
     @Test

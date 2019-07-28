@@ -38,7 +38,6 @@ public class Recorder {
         log.setWorkerName(workerName);
         log.setProcessStage("none");
         log.setRecordStage(RecordStage.BEGIN);
-        log.setParams(null);
         logRecorder.append(log);
     }
 

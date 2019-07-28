@@ -22,14 +22,13 @@ public class State implements ISerializable{
 
     private Set<HCCFileMeta> fileMetas = new HashSet<>();
 
-    private List<WALFileMeta> walFileMeta = new ArrayList<>();
+    private WALFileMeta walFileMeta;
 
     public void addFileMeta(HCCFileMeta fileMeta){
         this.fileMetas.add(fileMeta);
     }
 
     public void delete(String fileName){
-
         Iterator<HCCFileMeta> fileMetaIterator = fileMetas.iterator();
         while(fileMetaIterator.hasNext()){
             if(fileMetaIterator.next().getFileName().equals(fileName)){
@@ -38,18 +37,20 @@ public class State implements ISerializable{
         }
     }
 
-    public void addWalFileMeta(WALFileMeta meta){
-        walFileMeta.add(meta);
+    public void setCurrentWalFileMeta(WALFileMeta meta){
+        this.walFileMeta = meta;
     }
-
-
 
     public Set<HCCFileMeta> getHccFileMetas(){
         return fileMetas;
     }
 
+    public WALFileMeta getWalFileMeta(){
+        return this.walFileMeta;
+    }
+
     @Override
-    public void deSerialize(ByteBuffer byteBuffer) throws ClassNotFoundException, InstantiationException, IllegalAccessException, UnsupportedEncodingException {
+    public void deSerialize(ByteBuffer byteBuffer) throws Exception {
         if(byteBuffer.limit() == 0){
             return;
         }
@@ -60,7 +61,7 @@ public class State implements ISerializable{
         int dataLength = Bytes.toInt(intBytes);
         byte[] datas = new byte[dataLength];
         byteBuffer.get(datas);
-        Collection collection = ProtostuffUtils.unSerialize(datas);
+        Collection collection = ProtostuffUtils.unSerializeCollection(datas);
         fileMetas = new HashSet<>();
         fileMetas.addAll(collection);
         if(fileCount != fileMetas.size()){
@@ -68,30 +69,23 @@ public class State implements ISerializable{
                     "match,header " + fileCount + " real " + fileMetas.size());
         }
 
-        byteBuffer.get(intBytes);
-        int walCount = Bytes.toInt(intBytes);
-        byteBuffer.get(intBytes);
-        int walDataLength = Bytes.toInt(intBytes);
-        byte[] walDatas = new byte[walDataLength];
+        byte[] walDatas = new byte[byteBuffer.remaining()];
         byteBuffer.get(walDatas);
-        walFileMeta = (List<WALFileMeta>) ProtostuffUtils.unSerialize(walDatas);
-
-        if(walCount != walFileMeta.size()){
-            throw new FileCountNotMatchException("file count in state file not " +
-                    "match,header " + fileCount + " real " + walFileMeta.size());
-        }
+        WALFileMeta walFileMeta = new WALFileMeta();
+        ProtostuffUtils.unSerializeObject(walDatas, walFileMeta.getClass());
+        this.walFileMeta = walFileMeta;
     }
 
     @Override
     public byte[] serialize() throws IOException {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        //写filemeta
         outputStream.write(Bytes.toBytes(fileMetas.size()));
-        byte[] metaBytes = ProtostuffUtils.serialize(fileMetas);
+        byte[] metaBytes = ProtostuffUtils.serializeCollection(fileMetas);
         outputStream.write(Bytes.toBytes(metaBytes.length));
         outputStream.write(metaBytes);
-        outputStream.write(Bytes.toBytes(walFileMeta.size()));
-        byte[] walBytes = ProtostuffUtils.serialize(walFileMeta);
-        outputStream.write(Bytes.toBytes(walBytes.length));
+        //写wal
+        byte[] walBytes = ProtostuffUtils.serializeObject(walFileMeta);
         outputStream.write(walBytes);
         return outputStream.toByteArray();
     }
