@@ -26,7 +26,7 @@ public class PDBTest {
     }
 
     @Test
-    public void testPDB() throws IOException {
+    public void testPDB() throws Exception {
         for(int i = 0; i < 1000; i ++){
             pdb.put(Bytes.toBytes(i), Bytes.toBytes(i));
         }

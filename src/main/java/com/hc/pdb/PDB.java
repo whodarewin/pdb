@@ -27,7 +27,7 @@ public class PDB {
         return engine.get(key);
     }
     //todo：key和value等于null
-    public void put(byte[] key, byte[] value) throws IOException {
+    public void put(byte[] key, byte[] value) throws Exception {
         this.engine.put(key, value, -1);
     }
 
@@ -35,7 +35,7 @@ public class PDB {
         return this.engine.scan(start,end);
     }
 
-    public void delete(byte[] key) throws IOException {
+    public void delete(byte[] key) throws Exception {
         this.engine.delete(key);
     }
 

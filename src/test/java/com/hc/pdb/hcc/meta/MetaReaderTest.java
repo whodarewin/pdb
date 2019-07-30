@@ -38,7 +38,7 @@ public class MetaReaderTest{
         }
         String fileName = path + UUID.randomUUID().toString() + FileConstants.DATA_FILE_SUFFIX;
         HCCFileMeta fileMeta = hccWriter.writeHCC(cells.iterator(),cells.size(),path);
-        this.hccFileName = fileMeta.getFileName();
+        this.hccFileName = fileMeta.getFilePath();
         randomAccessFile =
                 new RandomAccessFile(hccFileName, "r");
     }

@@ -7,7 +7,10 @@ import java.util.Objects;
  * Created by congcong.han on 2019/6/22.
  */
 public class HCCFileMeta {
-    private String fileName;
+    /**
+     * file的path
+     */
+    private String filePath;
     private String fileMD5;
     private long createTime;
     /**
@@ -18,15 +21,15 @@ public class HCCFileMeta {
 
     public HCCFileMeta() {}
 
-    public HCCFileMeta(String fileName, String fileMD5, long createTime, int kvSize){
-        this.fileName = fileName;
+    public HCCFileMeta(String filePath, String fileMD5, long createTime, int kvSize){
+        this.filePath = filePath;
         this.fileMD5 = fileMD5;
         this.createTime = createTime;
         this.kvSize = kvSize;
     }
 
-    public String getFileName(){
-        return fileName;
+    public String getFilePath(){
+        return filePath;
     }
 
     public String getFileMD5(){
@@ -49,12 +52,12 @@ public class HCCFileMeta {
         HCCFileMeta fileMeta = (HCCFileMeta) o;
         return createTime == fileMeta.createTime &&
                 kvSize == fileMeta.kvSize &&
-                Objects.equals(fileName, fileMeta.fileName) &&
+                Objects.equals(filePath, fileMeta.filePath) &&
                 Objects.equals(fileMD5, fileMeta.fileMD5);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(fileName, fileMD5, createTime, kvSize);
+        return Objects.hash(filePath, fileMD5, createTime, kvSize);
     }
 }

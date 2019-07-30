@@ -42,7 +42,7 @@ public class HCCManager implements StateChangeListener {
         List<String> have = new ArrayList<>();
         fileInfos.forEach((fileInfo) -> have.add(fileInfo.getFilePath()));
         List<String> change = new ArrayList<>();
-        fileMetas.forEach((fileMeta) -> change.add(fileMeta.getFileName()));
+        fileMetas.forEach((fileMeta) -> change.add(fileMeta.getFilePath()));
         // 新增
         List<String> adds = change.stream().filter((fileName) -> !have.contains(fileName)).collect(Collectors.toList());
         List<HCCFile> toAddHccFiles = new ArrayList<>();

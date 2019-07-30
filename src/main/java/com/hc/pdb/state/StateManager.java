@@ -2,6 +2,8 @@ package com.hc.pdb.state;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hc.pdb.file.FileConstants;
+import com.hc.pdb.hcc.HCCFile;
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.*;
@@ -11,8 +13,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * StateManager
- * 整个db状态的管理者，做成通用状态管理器
- * 总长度
+ * 整个db状态的管理者，做成通用状态管理器。
+ * 这个类的增加删除接口都是幂等操作。
  * @author han.congcong
  * @date 2019/6/12
  */
@@ -26,38 +28,81 @@ public class StateManager {
     private State state;
     private List<StateChangeListener> listeners = new CopyOnWriteArrayList<>();
 
+    /**
+     * 初始化函数，保证数据的一致性。
+     * @param path
+     * @throws Exception
+     */
     public StateManager(String path) throws Exception {
-        String stateFileName = path + STATE_FILE_NAME + FileConstants.META_FILE_SUFFIX;
         this.path = path;
+        String stateFileName = getStateFileName();
+        String bakFileName = getStateBakFileName();
+        File stateFile = new File(stateFileName);
+        File bakFile = new File(bakFileName);
+
+        //重新整理硬盘数据
+        if(stateFile.exists()){
+            if(bakFile.exists()) {
+                FileUtils.forceDelete(bakFile);
+            }
+        }
+
+        if((!stateFile.exists()) && bakFile.exists()){
+            bakFile.renameTo(stateFile);
+        }
+
         try {
             file = new RandomAccessFile(stateFileName, "r");
         } catch (FileNotFoundException e) {
             LOGGER.info("no meta found,new db,create one, path {}", stateFileName);
             File f = new File(stateFileName);
-            //todo:check dir.
             f.createNewFile();
             file = new RandomAccessFile(stateFileName, "r");
         }
     }
-    public void add(HCCFileMeta fileMeta) throws IOException {
+
+    public synchronized void add(HCCFileMeta fileMeta) throws IOException {
         state.addFileMeta(fileMeta);
         sync();
         notifyListener();
     }
 
-    public void add(WALFileMeta walFileMeta){
+    public synchronized void setCurrentWalFileMeta(WALFileMeta walFileMeta) throws IOException {
         state.setCurrentWalFileMeta(walFileMeta);
-    }
-
-    public void delete(String fileName) throws IOException {
-        state.delete(fileName);
         sync();
         notifyListener();
     }
 
+    public synchronized void delete(String filePath) throws IOException {
+        state.delete(filePath);
+        sync();
+        notifyListener();
+    }
+
+    public synchronized void deleteCompactingFile(String filePath) throws IOException {
+        state.deleteCompacting(filePath);
+        sync();
+        notifyListener();
+    }
+
+    public synchronized void addCompactingFile(HCCFileMeta hccFileMeta) throws IOException {
+        state.getCompactingFileMeta().add(hccFileMeta);
+        sync();
+        notifyListener();
+    }
+
+    public boolean isCompactingFile(HCCFileMeta hccFileMeta){
+        for (HCCFileMeta fileMeta : state.getCompactingFileMeta()) {
+            if(fileMeta.equals(hccFileMeta)){
+                return true;
+            }
+        }
+        return false;
+    }
+
     public boolean exist(String fileName){
         for (HCCFileMeta hccFileMeta : state.getHccFileMetas()) {
-            if(hccFileMeta.getFileName().equals(fileName)){
+            if(hccFileMeta.getFilePath().equals(fileName)){
                 return true;
             }
         }
@@ -66,7 +111,7 @@ public class StateManager {
 
     public HCCFileMeta getHccFileMeta(String name){
         for (HCCFileMeta hccFileMeta : state.getHccFileMetas()) {
-            if(hccFileMeta.getFileName().equals(name)){
+            if(hccFileMeta.getFilePath().equals(name)){
                 return hccFileMeta;
             }
         }
@@ -79,6 +124,10 @@ public class StateManager {
                 listener.onChange(this.state);
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         });
     }
@@ -86,6 +135,9 @@ public class StateManager {
     private void sync() throws IOException {
         String bakFileName = path + STATE_FILE_NAME + FileConstants.META_FILE_SUFFIX + STATE_BAK_FILE_NAME;
         File bakFile = new File(bakFileName);
+        if(bakFile.exists()){
+            FileUtils.deleteDirectory(bakFile);
+        }
         bakFile.createNewFile();
 
         try(FileOutputStream outputStream = new FileOutputStream(bakFile)) {
@@ -120,5 +172,21 @@ public class StateManager {
 
      public State getState(){
          return state;
+     }
+
+    /**
+     * 获得stateFile的名字
+     * @return
+     */
+    private String getStateFileName(){
+        return path + STATE_FILE_NAME + FileConstants.META_FILE_SUFFIX;
+     }
+
+    /**
+     * 获得state file bak的名字
+     * @return
+     */
+    private String getStateBakFileName(){
+        return path + STATE_FILE_NAME + FileConstants.META_FILE_SUFFIX + STATE_BAK_FILE_NAME;
      }
 }

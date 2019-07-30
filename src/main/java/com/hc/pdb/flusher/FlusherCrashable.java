@@ -1,5 +1,6 @@
 package com.hc.pdb.flusher;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.hc.pdb.Cell;
@@ -8,7 +9,7 @@ import com.hc.pdb.file.FileConstants;
 import com.hc.pdb.hcc.HCCWriter;
 import com.hc.pdb.mem.MemCache;
 import com.hc.pdb.state.HCCFileMeta;
-import com.hc.pdb.state.IWorkerCreashable;
+import com.hc.pdb.state.IWorkerCrashable;
 import com.hc.pdb.state.Recorder;
 import com.hc.pdb.state.StateManager;
 import com.hc.pdb.wal.IWalWriter;
@@ -24,9 +25,10 @@ import java.util.*;
 /**
  * Created by congcong.han on 2019/7/27.
  */
-public class FlusherCrashable implements IWorkerCreashable{
+public class FlusherCrashable implements IWorkerCrashable {
     private static final Logger LOGGER = LoggerFactory.getLogger(FlusherCrashable.class);
-    private static final String FLUSHER = "flusher";
+    public static final String FLUSHER = "flusher";
+    private static final String PRE_RECORD = "pre_record";
     private static final String FLUSH_BEGIN = "flush_begin";
     private static final String FLUSH_END = "flush_end";
     private static final String CHANGE_METE_BEGIN = "change_meta_begin";
@@ -39,6 +41,7 @@ public class FlusherCrashable implements IWorkerCreashable{
     private IFlusher.Callback callback;
     private String path;
 
+    public FlusherCrashable(){}
     public FlusherCrashable(String path,IFlusher.FlushEntry entry, HCCWriter writer, StateManager manager) {
         Preconditions.checkNotNull(entry.getMemCache(), "MemCache can not be null");
         Preconditions.checkNotNull(entry.getWalWriter(),"WalWriter can not be null");
@@ -58,6 +61,10 @@ public class FlusherCrashable implements IWorkerCreashable{
         return FLUSHER;
     }
 
+    @Override
+    public void recordConstructParam(Recorder recorder) throws JsonProcessingException {
+        recorder.recordMsg(PRE_RECORD,Lists.newArrayList(walWriter.getWalFileName()));
+    }
     @Override
     public void doWork(Recorder recorder) {
         try {

@@ -7,8 +7,11 @@ import java.util.Iterator;
 
 /**
  * Created by congcong.han on 2019/7/27.
+ * @author han.congcong
  */
 public interface IWalReader {
+
     Iterator<Cell> read() throws IOException;
+
     void close() throws IOException;
 }

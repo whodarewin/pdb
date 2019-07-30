@@ -30,7 +30,7 @@ public class LSMEngineTest {
     }
 
     @Test
-    public void test() throws IOException {
+    public void test() throws Exception {
         for (int i = 0; i < 10000000; i++) {
             engine.put(Bytes.toBytes(i),Bytes.toBytes(i),20);
         }

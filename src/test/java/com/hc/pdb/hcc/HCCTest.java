@@ -44,7 +44,7 @@ public class HCCTest {
 
     @Test
     public void test() throws IOException {
-        HCCFile file = new HCCFile(fileMeta.getFileName(), new MetaReader());
+        HCCFile file = new HCCFile(fileMeta.getFilePath(), new MetaReader());
         HCCReader reader = file.createReader();
         reader.seek(Bytes.toBytes(50000));
         Cell cell = reader.next();
@@ -62,10 +62,10 @@ public class HCCTest {
     @After
     public void after(){
         if(fileMeta != null){
-            File file = new File(fileMeta.getFileName());
-            LOGGER.info("begin to delete file {}", fileMeta.getFileName());
+            File file = new File(fileMeta.getFilePath());
+            LOGGER.info("begin to delete file {}", fileMeta.getFilePath());
             file.delete();
-            LOGGER.info("success deleted file {}", fileMeta.getFileName());
+            LOGGER.info("success deleted file {}", fileMeta.getFilePath());
         }
     }
 }

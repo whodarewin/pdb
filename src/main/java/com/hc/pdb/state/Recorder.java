@@ -20,6 +20,7 @@ public class Recorder {
     private String workerName;
     private LogRecorder logRecorder;
     private RecordLog current;
+    private RecordLog constructLog;
 
     public Recorder(String workerName, LogRecorder logRecorder) {
         this.workerName = workerName;
@@ -70,6 +71,14 @@ public class Recorder {
         this.current = current;
     }
 
+    public RecordLog getConstructLog() {
+        return constructLog;
+    }
+
+    public void setConstructLog(RecordLog constructLog) {
+        this.constructLog = constructLog;
+    }
+
     /**
      * define enum start,processing,end.
      */
@@ -80,7 +89,9 @@ public class Recorder {
         private String workerName;
         private String processStage;
         private RecordStage recordStage;
+        private List<String> constructParam;
         private List<String> params;
+
 
         public String getId() {
             return id;
@@ -122,9 +133,18 @@ public class Recorder {
             this.recordStage = recordStage;
         }
 
+        public List<String> getConstructParam() {
+            return constructParam;
+        }
+
+        public void setConstructParam(List<String> constructParam) {
+            this.constructParam = constructParam;
+        }
+
         public String serialize() throws JsonProcessingException {
             return id + SPLIT + workerName + SPLIT + recordStage +
                     SPLIT + processStage +
+                    SPLIT + mapper.writeValueAsString(constructParam)+
                     SPLIT + mapper.writeValueAsString(params);
         }
 
@@ -136,7 +156,8 @@ public class Recorder {
                 log.setWorkerName(strs[1]);
                 log.setRecordStage(RecordStage.valueOf(strs[2]));
                 log.setProcessStage(strs[3]);
-                log.setParams(mapper.readValue(strs[4],List.class));
+                log.setConstructParam(mapper.readValue(strs[4],List.class));
+                log.setParams(mapper.readValue(strs[5],List.class));
             }else{
                 throw new RuntimeException("log format error");
             }
@@ -144,7 +165,7 @@ public class Recorder {
         }
     }
 
-    public static enum RecordStage{
+    public enum RecordStage{
         BEGIN,
         PROCESS,
         END,

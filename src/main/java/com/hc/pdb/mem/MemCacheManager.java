@@ -7,7 +7,7 @@ import com.hc.pdb.conf.PDBConstants;
 import com.hc.pdb.flusher.Flusher;
 import com.hc.pdb.flusher.IFlusher;
 import com.hc.pdb.hcc.HCCWriter;
-import com.hc.pdb.state.CreashWorkerManager;
+import com.hc.pdb.state.CrashWorkerManager;
 import com.hc.pdb.state.StateManager;
 import com.hc.pdb.state.WALFileMeta;
 import com.hc.pdb.util.RangeUtil;
@@ -37,11 +37,15 @@ public class MemCacheManager {
     public MemCacheManager(Configuration configuration,
                            StateManager manager,
                            HCCWriter hccWriter,
-                           CreashWorkerManager creashWorkerManager) throws IOException {
+                           CrashWorkerManager creashWorkerManager) throws IOException {
         this.stateManager = manager;
         flushIfHaveRemainedWal();
         this.hccWriter = hccWriter;
-        flusher = new Flusher(configuration, hccWriter, stateManager,creashWorkerManager);
+        String path = configuration.get(PDBConstants.DB_PATH_KEY);
+        int flushThreadNum = configuration.getInt(PDBConstants.FLUSHER_THREAD_SIZE_KEY,
+                PDBConstants.DEFAULT_FLUSHER_THREAD_SIZE);
+
+        flusher = new Flusher(path,flushThreadNum, hccWriter, stateManager,creashWorkerManager);
         this.walWriter = new DefaultWalWriter(configuration.get(PDBConstants.DB_PATH_KEY));
         current = new MemCache();
         this.configuration = configuration;
@@ -67,13 +71,13 @@ public class MemCacheManager {
         return sets;
     }
 
-    public void addCell(Cell cell) throws IOException {
+    public void addCell(Cell cell) throws Exception {
         walWriter.write(cell);
         current.put(cell);
         flushIfOK();
     }
 
-    private void flushIfOK() throws IOException {
+    private void flushIfOK() throws Exception {
         if (current.size() > configuration.getLong(PDBConstants.MEM_CACHE_MAX_SIZE_KEY,
                 PDBConstants.DEFAULT_MEM_CACHE_MAX_SIZE)) {
             synchronized (this) {

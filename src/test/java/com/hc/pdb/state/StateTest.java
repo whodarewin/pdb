@@ -21,7 +21,7 @@ public class StateTest {
         buffer.reset();
         State testState = new State();
         testState.deSerialize(buffer);
-        Assert.assertEquals(state.getHccFileMetas().iterator().next().getFileName(),
-                testState.getHccFileMetas().iterator().next().getFileName());
+        Assert.assertEquals(state.getHccFileMetas().iterator().next().getFilePath(),
+                testState.getHccFileMetas().iterator().next().getFilePath());
     }
 }

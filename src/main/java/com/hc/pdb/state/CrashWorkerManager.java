@@ -1,6 +1,10 @@
 package com.hc.pdb.state;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.hc.pdb.flusher.FlusherCrashable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,14 +17,20 @@ import java.util.concurrent.*;
  * @date 2019/7/22
  */
 
-public class CreashWorkerManager {
-
+public class CrashWorkerManager {
+    private static final Logger LOGGER = LoggerFactory.getLogger(CrashWorkerManager.class);
     private LogRecorder logRecorder;
 
-    private WorkerCreashableFactoryManager workerCreashableFactoryManager;
+    private WorkerCrashableFactoryManager workerCrashableFactoryManager;
 
-    public CreashWorkerManager(String path) throws IOException {
-        workerCreashableFactoryManager = new WorkerCreashableFactoryManager();
+    public CrashWorkerManager(String path,List<IWorkerCrashableFactory> factories) throws IOException {
+        workerCrashableFactoryManager = new WorkerCrashableFactoryManager();
+        for (IWorkerCrashableFactory factory : factories) {
+            workerCrashableFactoryManager.register(factory.getName(),factory);
+        }
+        workerCrashableFactoryManager.register(FlusherCrashable.FLUSHER,new FlusherWorkerCrashableFactory());
+
+
         logRecorder = new LogRecorder(path,1000);
         //1 load all recorder that not finished
         List<Recorder.RecordLog> logs = logRecorder.getAllLogNotFinished();
@@ -28,8 +38,8 @@ public class CreashWorkerManager {
         redoWork(logs);
     }
 
-    public void register(String name,IWorkerCreashableFactory workerCreashableFactory){
-        workerCreashableFactoryManager.register(name,workerCreashableFactory);
+    public void register(String name,IWorkerCrashableFactory workerCreashableFactory){
+        workerCrashableFactoryManager.register(name,workerCreashableFactory);
     }
 
     /**
@@ -38,9 +48,9 @@ public class CreashWorkerManager {
      * @param service
      * @return
      */
-    public Future doWork(IWorkerCreashable worker, ExecutorService service) throws JsonProcessingException {
+    public Future doWork(IWorkerCrashable worker, ExecutorService service) throws Exception {
         Recorder recorder = new Recorder(worker.getName(),logRecorder);
-        worker.preWork(recorder);
+        worker.recordConstructParam(recorder);
         return service.submit((Callable<Object>) () -> {
              recorder.startRecord();
              worker.doWork(recorder);
@@ -54,12 +64,17 @@ public class CreashWorkerManager {
      * @param logs
      */
     public void redoWork(List<Recorder.RecordLog> logs){
+        if(logs.size() == 0){
+            LOGGER.info("no log to continue");
+            return;
+        }
+
         ExecutorService service = Executors.newFixedThreadPool(logs.size());
         List<CompletableFuture> completableFutures = new ArrayList<>();
         for(Recorder.RecordLog log : logs){
             Recorder recorder = new Recorder(log.getId(),log.getWorkerName(),logRecorder);
             String workerName = log.getWorkerName();
-            IWorkerCreashable workerCreashable = workerCreashableFactoryManager.create(workerName);
+            IWorkerCrashable workerCreashable = workerCrashableFactoryManager.create(workerName,log);
 
             CompletableFuture.runAsync( () -> {
                 try {

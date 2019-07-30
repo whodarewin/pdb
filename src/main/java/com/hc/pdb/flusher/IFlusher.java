@@ -5,6 +5,7 @@ import com.hc.pdb.mem.MemCache;
 import com.hc.pdb.state.StateManager;
 import com.hc.pdb.wal.IWalWriter;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
@@ -21,7 +22,7 @@ public interface IFlusher {
      * @param entry
      * @return
      */
-    Future<Boolean> flush(FlushEntry entry) throws JsonProcessingException;
+    Future<Boolean> flush(FlushEntry entry) throws Exception;
 
     /**
      * 获得正在进行flush的任务

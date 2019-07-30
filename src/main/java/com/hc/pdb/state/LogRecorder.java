@@ -76,23 +76,25 @@ public class LogRecorder {
         }
     }
 
-    private List<Recorder.RecordLog> getAllLogNotFinished(File file) throws IOException {
+    private Collection<Recorder.RecordLog> getAllLogNotFinished(File file) throws IOException {
         if(!file.exists()){
-            return Collections.EMPTY_LIST;
+            return Collections.EMPTY_SET;
         }
 
-        List<Recorder.RecordLog> recordLogs = getAllLogLastStage(file);
-        List<Recorder.RecordLog> rets = new ArrayList<>();
+        List<Recorder.RecordLog> recordLogs = getAllLog(file);
+        Map<String,Recorder.RecordLog> rets = new HashMap<>();
         for (Recorder.RecordLog recordLog : recordLogs) {
-            if(recordLog.getRecordStage() != Recorder.RecordStage.END){
-                rets.add(recordLog);
+            if(recordLog.getRecordStage() == Recorder.RecordStage.END){
+                rets.remove(recordLog.getId());
+            }else{
+                rets.put(recordLog.getId(),recordLog);
             }
         }
-        return rets;
+        return rets.values();
     }
 
 
-    private List<Recorder.RecordLog> getAllLogLastStage(File file) throws IOException {
+    private List<Recorder.RecordLog> getAllLog(File file) throws IOException {
         if(!file.exists()){
             return Collections.EMPTY_LIST;
         }
@@ -111,7 +113,7 @@ public class LogRecorder {
     }
 
     private boolean isLogFinish(List<Recorder.RecordLog> logs, File file) throws IOException {
-        List<Recorder.RecordLog> lastStageLogs = getAllLogLastStage(file);
+        List<Recorder.RecordLog> lastStageLogs = getAllLog(file);
         Map<String,Recorder.RecordLog> id2RecorderLogs = new HashMap<>();
         for (Recorder.RecordLog lastStageLog : lastStageLogs) {
             if(!Recorder.RecordStage.END.equals(lastStageLog.getRecordStage())){
@@ -186,7 +188,7 @@ public class LogRecorder {
             String bakFile = path + LOG_FILE_NAME + BAK;
             File file = new File(bakFile);
             if(file.exists()){
-                List<Recorder.RecordLog> notFinishedValue = getAllLogLastStage(file);
+                List<Recorder.RecordLog> notFinishedValue = getAllLog(file);
                 if(CollectionUtils.isNotEmpty(notFinishedValue)){
                     String filePath = path + LOG_FILE_NAME;
                     File theFile = new File(filePath);

@@ -10,7 +10,7 @@ import java.io.IOException;
  * @date 2019/6/12
  */
 
-public interface IWorkerCreashable {
+public interface IWorkerCrashable {
 
     /**
      * 获得worker的名字
@@ -20,9 +20,10 @@ public interface IWorkerCreashable {
 
     /**
      * 在异步执行之前进行的动作
+     * 包括重建worker所需要的参数。
      * @param recorder
      */
-    void preWork(Recorder recorder) throws JsonProcessingException;
+    void recordConstructParam(Recorder recorder) throws IOException;
 
     /**
      * 执行工作
@@ -32,5 +33,5 @@ public interface IWorkerCreashable {
     /**
      * 宕机，启动了以后继续执行工作
      */
-    void continueWork(Recorder recorder) throws IOException, Exception;
+    void continueWork(Recorder recorder) throws Exception;
 }

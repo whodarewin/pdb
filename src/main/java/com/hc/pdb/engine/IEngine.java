@@ -19,13 +19,13 @@ public interface IEngine {
      * @param value value
      * @param ttl   过期时间
      */
-    void put(byte[] key, byte[] value, long ttl) throws IOException;
+    void put(byte[] key, byte[] value, long ttl) throws Exception;
 
     /**
      * 删除
      * @param key 需要删除的cell的key
      */
-    void delete(byte[] key) throws IOException;
+    void delete(byte[] key) throws IOException, Exception;
 
     /**
      * scan 检索方式
