@@ -17,8 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+
 
 /**
  * LSMEngine
@@ -60,26 +59,24 @@ public class LSMEngine implements IEngine {
         this.configuration = configuration;
         //加载状态
         this.stateManager = new StateManager(path);
+        //todo：两次load会出问题！！！
         stateManager.load();
 
         //整个程序只有这一个写hcc的类，无状态。
         hccWriter = new HCCWriter(configuration);
 
-        //创建memcache
-
-        //
+        //创建 mem cache
         MetaReader reader = new MetaReader();
         HCCManager hccManager = new HCCManager(configuration,reader);
-        List<IWorkerCrashableFactory> factories = new ArrayList<>();
-        factories.add(new CompactWokerCrashableFactory(stateManager));
-        factories.add(new FlusherWorkerCrashableFactory());
-        creashWorkerManager = new CrashWorkerManager(path,factories);
+
+        creashWorkerManager = new CrashWorkerManager(path);
         stateManager.addListener(hccManager);
         compactor = new Compactor(configuration,stateManager, hccWriter,creashWorkerManager);
         memCacheManager = new MemCacheManager(configuration,stateManager,hccWriter,creashWorkerManager);
         scannerMechine = new ScannerMechine(hccManager,memCacheManager);
 
         stateManager.load();
+        creashWorkerManager.redoAllWorker();
     }
 
 

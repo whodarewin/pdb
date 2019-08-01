@@ -4,12 +4,10 @@ import com.hc.pdb.Cell;
 import com.hc.pdb.LockContext;
 import com.hc.pdb.conf.Configuration;
 import com.hc.pdb.conf.PDBConstants;
-import com.hc.pdb.flusher.Flusher;
-import com.hc.pdb.flusher.IFlusher;
+import com.hc.pdb.flusher.FlusherCrashable;
 import com.hc.pdb.hcc.HCCWriter;
-import com.hc.pdb.state.CrashWorkerManager;
-import com.hc.pdb.state.StateManager;
-import com.hc.pdb.state.WALFileMeta;
+import com.hc.pdb.state.*;
+import com.hc.pdb.util.NamedThreadFactory;
 import com.hc.pdb.util.RangeUtil;
 import com.hc.pdb.wal.DefaultWalWriter;
 import com.hc.pdb.wal.IWalWriter;
@@ -17,6 +15,7 @@ import com.hc.pdb.wal.WalFileReader;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 /**
@@ -24,31 +23,42 @@ import java.util.stream.Collectors;
  * @author congcong.han
  * @date 2019/6/22
  */
-public class MemCacheManager {
+public class MemCacheManager implements IWorkerCrashableFactory {
+    private static final String FLUSHER = "flusher";
 
-    private IFlusher flusher;
     private IWalWriter walWriter;
     private StateManager stateManager;
     private Configuration configuration;
     private List<MemCache> flushingList = Collections.synchronizedList(new ArrayList<>());
     private MemCache current;
     private HCCWriter hccWriter;
+    private CrashWorkerManager crashWorkerManager;
+
+    private ExecutorService flushExecutor;
+    private String path;
 
     public MemCacheManager(Configuration configuration,
                            StateManager manager,
                            HCCWriter hccWriter,
-                           CrashWorkerManager creashWorkerManager) throws IOException {
+                           CrashWorkerManager crashWorkerManager) throws IOException {
         this.stateManager = manager;
         flushIfHaveRemainedWal();
         this.hccWriter = hccWriter;
-        String path = configuration.get(PDBConstants.DB_PATH_KEY);
+        this.path = configuration.get(PDBConstants.DB_PATH_KEY);
         int flushThreadNum = configuration.getInt(PDBConstants.FLUSHER_THREAD_SIZE_KEY,
                 PDBConstants.DEFAULT_FLUSHER_THREAD_SIZE);
 
-        flusher = new Flusher(path,flushThreadNum, hccWriter, stateManager,creashWorkerManager);
+
         this.walWriter = new DefaultWalWriter(configuration.get(PDBConstants.DB_PATH_KEY));
         current = new MemCache();
         this.configuration = configuration;
+
+        flushExecutor = new ThreadPoolExecutor(flushThreadNum, flushThreadNum,
+                0L, TimeUnit.MILLISECONDS,
+                new SynchronousQueue<>(),
+                new NamedThreadFactory("pdb-flusher"));
+        this.crashWorkerManager = crashWorkerManager;
+        crashWorkerManager.register(FLUSHER,this);
     }
 
     private void flushIfHaveRemainedWal() throws IOException {
@@ -98,9 +108,23 @@ public class MemCacheManager {
                     walWriter = new DefaultWalWriter(configuration.get(PDBConstants.DB_PATH_KEY));
 
                     //todo:flush完毕后，从flushList里面删除
-                    flusher.flush(new IFlusher.FlushEntry(tmpCache,tmpWalWriter,  () -> flushingList.remove(tmpCache)));
+                    Future<Boolean> ret = crashWorkerManager.doWork(
+                            new FlusherCrashable(path,new FlusherCrashable.FlushEntry(tmpCache,tmpWalWriter,
+                                    () -> flushingList.remove(tmpCache))
+                                    ,hccWriter,stateManager),
+                            flushExecutor);
                 }
             }
         }
+    }
+
+    @Override
+    public String getName() {
+        return FLUSHER;
+    }
+
+    @Override
+    public IWorkerCrashable create(Recorder.RecordLog log) {
+        return null;
     }
 }

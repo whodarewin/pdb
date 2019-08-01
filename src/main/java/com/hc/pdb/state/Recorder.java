@@ -151,7 +151,7 @@ public class Recorder {
         public static RecordLog deSerialize(String line) throws IOException {
             String[] strs = StringUtils.split(line,SPLIT);
             RecordLog log = new RecordLog();
-            if(strs.length == 5){
+            if(strs.length == 6){
                 log.setId(strs[0]);
                 log.setWorkerName(strs[1]);
                 log.setRecordStage(RecordStage.valueOf(strs[2]));

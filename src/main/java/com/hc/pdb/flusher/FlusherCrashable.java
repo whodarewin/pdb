@@ -38,11 +38,10 @@ public class FlusherCrashable implements IWorkerCrashable {
     private HCCWriter hccWriter;
     private IWalWriter walWriter;
     private StateManager stateManager;
-    private IFlusher.Callback callback;
+    private Callback callback;
     private String path;
 
-    public FlusherCrashable(){}
-    public FlusherCrashable(String path,IFlusher.FlushEntry entry, HCCWriter writer, StateManager manager) {
+    public FlusherCrashable(String path,FlushEntry entry, HCCWriter writer, StateManager manager) {
         Preconditions.checkNotNull(entry.getMemCache(), "MemCache can not be null");
         Preconditions.checkNotNull(entry.getWalWriter(),"WalWriter can not be null");
         Preconditions.checkNotNull(writer, "hccWriter can not be null");
@@ -110,4 +109,47 @@ public class FlusherCrashable implements IWorkerCrashable {
             }
         }
     }
+
+    public static interface Callback{
+        void callback();
+    }
+
+    public static class FlushEntry{
+
+        private MemCache memCache;
+        private IWalWriter walWriter;
+        private Callback callback;
+
+
+        public FlushEntry(MemCache memCache, IWalWriter walWriter,Callback callback) {
+            this.memCache = memCache;
+            this.walWriter = walWriter;
+            this.callback = callback;
+        }
+
+        public MemCache getMemCache() {
+            return memCache;
+        }
+
+        public void setMemCache(MemCache memCache) {
+            this.memCache = memCache;
+        }
+
+        public IWalWriter getWalWriter() {
+            return walWriter;
+        }
+
+        public void setWalWriter(IWalWriter walWriter) {
+            this.walWriter = walWriter;
+        }
+
+        public Callback getCallback() {
+            return callback;
+        }
+
+        public void setCallback(Callback callback) {
+            this.callback = callback;
+        }
+    }
+
 }

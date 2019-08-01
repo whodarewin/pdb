@@ -1,13 +1,14 @@
 package com.hc.pdb.state;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.hc.pdb.flusher.FlusherCrashable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.*;
 
 /**
@@ -21,25 +22,14 @@ public class CrashWorkerManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(CrashWorkerManager.class);
     private LogRecorder logRecorder;
 
-    private WorkerCrashableFactoryManager workerCrashableFactoryManager;
+    private Map<String,IWorkerCrashableFactory> name2WorkerCrashableFactory = new HashMap<>();
 
-    public CrashWorkerManager(String path,List<IWorkerCrashableFactory> factories) throws IOException {
-        workerCrashableFactoryManager = new WorkerCrashableFactoryManager();
-        for (IWorkerCrashableFactory factory : factories) {
-            workerCrashableFactoryManager.register(factory.getName(),factory);
-        }
-        workerCrashableFactoryManager.register(FlusherCrashable.FLUSHER,new FlusherWorkerCrashableFactory());
-
-
+    public CrashWorkerManager(String path) throws IOException {
         logRecorder = new LogRecorder(path,1000);
-        //1 load all recorder that not finished
-        List<Recorder.RecordLog> logs = logRecorder.getAllLogNotFinished();
-        //2 redo all recorder
-        redoWork(logs);
     }
 
     public void register(String name,IWorkerCrashableFactory workerCreashableFactory){
-        workerCrashableFactoryManager.register(name,workerCreashableFactory);
+        name2WorkerCrashableFactory.put(name, workerCreashableFactory);
     }
 
     /**
@@ -59,6 +49,13 @@ public class CrashWorkerManager {
         });
     }
 
+    public void redoAllWorker() throws IOException {
+        //1 load all recorder that not finished
+        List<Recorder.RecordLog> logs = logRecorder.getAllLogNotFinished();
+        //2 redo all recorder
+        redoWork(logs);
+    }
+
     /**
      * 宕机后继续执行任务
      * @param logs
@@ -74,11 +71,15 @@ public class CrashWorkerManager {
         for(Recorder.RecordLog log : logs){
             Recorder recorder = new Recorder(log.getId(),log.getWorkerName(),logRecorder);
             String workerName = log.getWorkerName();
-            IWorkerCrashable workerCreashable = workerCrashableFactoryManager.create(workerName,log);
-
-            CompletableFuture.runAsync( () -> {
+            IWorkerCrashableFactory factory = name2WorkerCrashableFactory.get(workerName);
+            if(factory == null){
+                LOGGER.info("can not create worker {} because worker factory is null",workerName);
+                throw new RuntimeException("can not create worker");
+            }
+            IWorkerCrashable workerCrashable = factory.create(log);
+            CompletableFuture.runAsync(() -> {
                 try {
-                    workerCreashable.continueWork(recorder);
+                    workerCrashable.continueWork(recorder);
                     recorder.endRecord();
                 } catch (JsonProcessingException e) {
                     throw new RuntimeException(e);

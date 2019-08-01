@@ -76,7 +76,7 @@ public class HCCManager implements StateChangeListener {
 
     @Override
     public void onChange(State state) {
-        this.fileMetas = state.getHccFileMetas();
+        this.fileMetas = state.getFileMetas();
         loadHCCFile();
     }
 

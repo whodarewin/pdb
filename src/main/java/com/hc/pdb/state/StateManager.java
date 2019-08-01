@@ -10,6 +10,7 @@ import java.io.*;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Predicate;
 
 /**
  * StateManager
@@ -62,25 +63,25 @@ public class StateManager {
     }
 
     public synchronized void add(HCCFileMeta fileMeta) throws IOException {
-        state.addFileMeta(fileMeta);
+        state.getFileMetas().add(fileMeta);
         sync();
         notifyListener();
     }
 
     public synchronized void setCurrentWalFileMeta(WALFileMeta walFileMeta) throws IOException {
-        state.setCurrentWalFileMeta(walFileMeta);
+        state.setWalFileMeta(walFileMeta);
         sync();
         notifyListener();
     }
 
     public synchronized void delete(String filePath) throws IOException {
-        state.delete(filePath);
+        state.getFileMetas().removeIf(hccFileMeta -> hccFileMeta.getFilePath().equals(filePath));
         sync();
         notifyListener();
     }
 
     public synchronized void deleteCompactingFile(String filePath) throws IOException {
-        state.deleteCompacting(filePath);
+        state.getCompactingFileMeta().removeIf(hccFileMeta -> hccFileMeta.getFilePath().equals(filePath));
         sync();
         notifyListener();
     }
@@ -101,7 +102,7 @@ public class StateManager {
     }
 
     public boolean exist(String fileName){
-        for (HCCFileMeta hccFileMeta : state.getHccFileMetas()) {
+        for (HCCFileMeta hccFileMeta : state.getFileMetas()) {
             if(hccFileMeta.getFilePath().equals(fileName)){
                 return true;
             }
@@ -110,7 +111,7 @@ public class StateManager {
     }
 
     public HCCFileMeta getHccFileMeta(String name){
-        for (HCCFileMeta hccFileMeta : state.getHccFileMetas()) {
+        for (HCCFileMeta hccFileMeta : state.getFileMetas()) {
             if(hccFileMeta.getFilePath().equals(name)){
                 return hccFileMeta;
             }
@@ -136,12 +137,14 @@ public class StateManager {
         String bakFileName = path + STATE_FILE_NAME + FileConstants.META_FILE_SUFFIX + STATE_BAK_FILE_NAME;
         File bakFile = new File(bakFileName);
         if(bakFile.exists()){
-            FileUtils.deleteDirectory(bakFile);
+            FileUtils.deleteQuietly(bakFile);
         }
         bakFile.createNewFile();
 
-        try(FileOutputStream outputStream = new FileOutputStream(bakFile)) {
-            outputStream.write(state.serialize());
+        try(FileOutputStream outputStream = new FileOutputStream(bakFile,false)) {
+            byte[] bytes = state.serialize();
+            outputStream.write(bytes);
+            outputStream.flush();
         }
         String metaFileName = path + STATE_FILE_NAME + FileConstants.META_FILE_SUFFIX;
         File metaFile = new File(metaFileName);
@@ -156,9 +159,10 @@ public class StateManager {
 
     public void load() throws Exception{
         long length = file.length();
-        ByteBuffer buffer = ByteBuffer.allocateDirect((int)length);
+        ByteBuffer buffer = ByteBuffer.allocate((int)length);
         buffer.mark();
         file.getChannel().read(buffer);
+        file.getChannel().position(0);
         buffer.reset();
         State state = new State();
         state.deSerialize(buffer);

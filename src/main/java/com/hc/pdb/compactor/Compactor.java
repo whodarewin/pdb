@@ -16,6 +16,8 @@ import com.hc.pdb.state.*;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.print.attribute.standard.MediaSize;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
@@ -30,7 +32,7 @@ import java.util.stream.Collectors;
  * @date 2019/6/11
  */
 
-public class Compactor implements StateChangeListener {
+public class Compactor implements StateChangeListener, IWorkerCrashableFactory {
     public static final String NAME = "compactor";
     private static final Logger LOGGER = LoggerFactory.getLogger(Compactor.class);
     private ExecutorService compactorExecutor;
@@ -60,7 +62,7 @@ public class Compactor implements StateChangeListener {
         //todo:循环检测
         synchronized (this) {
             while (true) {
-                Set<HCCFileMeta> metas = state.getHccFileMetas();
+                Set<HCCFileMeta> metas = state.getFileMetas();
                 Set<HCCFileMeta> noCompactMetas = metas.stream().filter(meta -> !stateManager.isCompactingFile(meta))
                         .collect(Collectors.toSet());
 
@@ -79,6 +81,16 @@ public class Compactor implements StateChangeListener {
                 }
             }
         }
+    }
+
+    @Override
+    public String getName() {
+        return NAME;
+    }
+
+    @Override
+    public IWorkerCrashable create(Recorder.RecordLog log) {
+        return null;
     }
 
 

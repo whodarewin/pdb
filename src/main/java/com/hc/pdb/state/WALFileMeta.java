@@ -14,6 +14,11 @@ public class WALFileMeta {
     private String walPath;
     private boolean flushing;
 
+    public WALFileMeta(String walPath, boolean flushing) {
+        this.walPath = walPath;
+        this.flushing = flushing;
+    }
+
     public String getWalPath() {
         return walPath;
     }
