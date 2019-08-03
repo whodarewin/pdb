@@ -1,22 +1,15 @@
 package com.hc.pdb.mem;
 
-import com.google.common.base.Preconditions;
+
 import com.hc.pdb.Cell;
-import com.hc.pdb.conf.Configuration;
-import com.hc.pdb.scanner.IScanner;
 import com.hc.pdb.util.Bytes;
 import com.hc.pdb.util.CellUtil;
-import com.hc.pdb.wal.DefaultWalWriter;
 import com.hc.pdb.wal.IWalReader;
-import com.hc.pdb.wal.IWalWriter;
-import org.checkerframework.common.util.report.qual.ReportOverride;
 
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicLong;
-
-import static com.sun.corba.se.impl.util.RepositoryId.cache;
 
 
 /**
@@ -27,6 +20,8 @@ import static com.sun.corba.se.impl.util.RepositoryId.cache;
  */
 
 public class MemCache{
+
+    private String id = UUID.randomUUID().toString();
 
     private ConcurrentSkipListMap<byte[], Cell> memValue = new ConcurrentSkipListMap<>((o1, o2) -> Bytes.compare(o1, o2));
 
@@ -78,5 +73,17 @@ public class MemCache{
 
     public byte[] getEnd(){
         return memValue.lastKey();
+    }
+
+    public String getId(){
+        return id;
+    }
+
+    @Override
+    public boolean equals(Object o){
+        if(o instanceof MemCache){
+            return this.id.equals(((MemCache) o).getId());
+        }
+        return false;
     }
 }

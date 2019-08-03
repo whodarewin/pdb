@@ -60,7 +60,7 @@ public class CrashWorkerManager {
      * 宕机后继续执行任务
      * @param logs
      */
-    public void redoWork(List<Recorder.RecordLog> logs){
+    public void redoWork(List<Recorder.RecordLog> logs) throws IOException {
         if(logs.size() == 0){
             LOGGER.info("no log to continue");
             return;

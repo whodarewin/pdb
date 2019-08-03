@@ -92,6 +92,12 @@ public class StateManager {
         notifyListener();
     }
 
+    public void deleteFlushingWal(String walPath) throws IOException {
+        state.getFlushingWals().removeIf(walFileMeta -> walFileMeta.getWalPath().equals(walPath));
+        sync();
+        notifyListener();
+    }
+
     public boolean isCompactingFile(HCCFileMeta hccFileMeta){
         for (HCCFileMeta fileMeta : state.getCompactingFileMeta()) {
             if(fileMeta.equals(hccFileMeta)){
@@ -118,6 +124,8 @@ public class StateManager {
         }
         return null;
     }
+
+
 
     private void notifyListener() {
         listeners.forEach((listener) -> {

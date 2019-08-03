@@ -1,5 +1,7 @@
 package com.hc.pdb.state;
 
+import java.io.IOException;
+
 /**
  *
  * @author han.congcong
@@ -13,5 +15,5 @@ public interface IWorkerCrashableFactory {
      * 创建一个{@link IWorkerCrashable}
      * @return
      */
-    IWorkerCrashable create(Recorder.RecordLog log);
+    IWorkerCrashable create(Recorder.RecordLog log) throws IOException;
 }

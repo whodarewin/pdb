@@ -1,6 +1,7 @@
 package com.hc.pdb.compactor;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.collect.Lists;
 import com.hc.pdb.Cell;
 import com.hc.pdb.LockContext;
 import com.hc.pdb.conf.Configuration;
@@ -90,7 +91,10 @@ public class Compactor implements StateChangeListener, IWorkerCrashableFactory {
 
     @Override
     public IWorkerCrashable create(Recorder.RecordLog log) {
-        return null;
+        List<String> hccFilePaths = log.getConstructParam();
+        HCCFileMeta one = stateManager.getHccFileMeta(hccFilePaths.get(0));
+        HCCFileMeta two = stateManager.getHccFileMeta(hccFilePaths.get(1));
+        return new CompactorWorker(Lists.newArrayList(one,two),stateManager);
     }
 
 

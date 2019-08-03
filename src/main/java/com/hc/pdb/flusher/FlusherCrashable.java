@@ -19,7 +19,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.*;
 
 /**
@@ -77,7 +76,7 @@ public class FlusherCrashable implements IWorkerCrashable {
         }
     }
 
-    private void doFlush(String fileName) throws IOException {
+    private void doFlush(String fileName) throws Exception {
         List<Cell> cells = new ArrayList<>(cache.getAllCells());
         HCCFileMeta fileMeta = hccWriter.writeHCC(cells.iterator(), cells.size(), fileName);
 
@@ -110,8 +109,8 @@ public class FlusherCrashable implements IWorkerCrashable {
         }
     }
 
-    public static interface Callback{
-        void callback();
+    public interface Callback{
+        void callback() throws Exception;
     }
 
     public static class FlushEntry{
