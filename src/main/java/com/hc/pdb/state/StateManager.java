@@ -178,8 +178,9 @@ public class StateManager {
         notifyListener();
     }
 
-    public void addListener(StateChangeListener listener){
+    public void addListener(StateChangeListener listener) throws Exception {
         this.listeners.add(listener);
+        listener.onChange(state);
     }
 
      public State getState(){

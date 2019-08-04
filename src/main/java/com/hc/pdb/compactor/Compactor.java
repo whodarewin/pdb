@@ -44,7 +44,7 @@ public class Compactor implements StateChangeListener, IWorkerCrashableFactory {
     private CrashWorkerManager creashWorkerManager;
 
     public Compactor(Configuration configuration, StateManager stateManager, HCCWriter hccWriter,
-                     CrashWorkerManager creashWorkerManager){
+                     CrashWorkerManager creashWorkerManager) throws Exception {
         int compactorSize = configuration.getInt(PDBConstants.COMPACTOR_THREAD_SIZE_KEY,
                 PDBConstants.COMPACTOR_THREAD_SIZE);
         compactThreshold = configuration.getInt(PDBConstants.COMPACTOR_HCCFILE_THRESHOLD_KEY,

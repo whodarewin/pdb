@@ -59,23 +59,25 @@ public class LSMEngine implements IEngine {
         this.configuration = configuration;
         //加载状态
         this.stateManager = new StateManager(path);
-        //todo：两次load会出问题！！！
         stateManager.load();
 
         //整个程序只有这一个写hcc的类，无状态。
         hccWriter = new HCCWriter(configuration);
 
-        //创建 mem cache
+        //创建 hccManager
         MetaReader reader = new MetaReader();
         HCCManager hccManager = new HCCManager(configuration,reader);
-
-        creashWorkerManager = new CrashWorkerManager(path);
+        //注册
         stateManager.addListener(hccManager);
+        //创建
+        creashWorkerManager = new CrashWorkerManager(path);
+
         compactor = new Compactor(configuration,stateManager, hccWriter,creashWorkerManager);
+        stateManager.addListener(compactor);
         memCacheManager = new MemCacheManager(configuration,stateManager,hccWriter,creashWorkerManager);
+
         scannerMechine = new ScannerMechine(hccManager,memCacheManager);
 
-        stateManager.load();
         creashWorkerManager.redoAllWorker();
     }
 
