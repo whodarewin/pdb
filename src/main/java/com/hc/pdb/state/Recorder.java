@@ -19,18 +19,19 @@ public class Recorder {
     private String id = UUID.randomUUID().toString();
     private String workerName;
     private LogRecorder logRecorder;
-    private RecordLog current;
-    private RecordLog constructLog;
+    private List<String> constructParams;
+    private List<Recorder.RecordLog> recordLogs;
 
     public Recorder(String workerName, LogRecorder logRecorder) {
         this.workerName = workerName;
         this.logRecorder = logRecorder;
     }
 
-    protected Recorder(String id,String workerName, LogRecorder logRecorder){
+    protected Recorder(String id,String workerName, List<RecordLog> log,LogRecorder logRecorder){
         this.id = id;
         this.workerName = workerName;
         this.logRecorder = logRecorder;
+        this.recordLogs = log;
     }
 
     protected void startRecord() throws JsonProcessingException {
@@ -40,6 +41,7 @@ public class Recorder {
         log.setProcessStage("none");
         log.setRecordStage(RecordStage.BEGIN);
         logRecorder.append(log);
+        this.recordLogs.add(log);
     }
 
     public void recordMsg(String state, List<String> params) throws JsonProcessingException {
@@ -49,8 +51,8 @@ public class Recorder {
         log.setProcessStage(state);
         log.setRecordStage(RecordStage.PROCESS);
         log.setParams(params);
-        current = log;
         logRecorder.append(log);
+        this.recordLogs.add(log);
     }
 
     protected void endRecord() throws JsonProcessingException {
@@ -61,22 +63,19 @@ public class Recorder {
         log.setRecordStage(RecordStage.END);
         log.setParams(null);
         logRecorder.append(log);
+        this.recordLogs.add(log);
     }
 
-    public RecordLog getCurrent() {
-        return current;
+    public RecordLog getCurrent(){
+        return recordLogs.get(recordLogs.size() - 1);
     }
 
-    protected void setCurrent(RecordLog current) {
-        this.current = current;
+    public List<String> getConstructParams() {
+        return constructParams;
     }
 
-    public RecordLog getConstructLog() {
-        return constructLog;
-    }
-
-    public void setConstructLog(RecordLog constructLog) {
-        this.constructLog = constructLog;
+    public void setConstructParams(List<String> constructParams) {
+        this.constructParams = constructParams;
     }
 
     /**
@@ -89,7 +88,6 @@ public class Recorder {
         private String workerName;
         private String processStage;
         private RecordStage recordStage;
-        private List<String> constructParam;
         private List<String> params;
 
 
@@ -133,31 +131,22 @@ public class Recorder {
             this.recordStage = recordStage;
         }
 
-        public List<String> getConstructParam() {
-            return constructParam;
-        }
-
-        public void setConstructParam(List<String> constructParam) {
-            this.constructParam = constructParam;
-        }
 
         public String serialize() throws JsonProcessingException {
             return id + SPLIT + workerName + SPLIT + recordStage +
                     SPLIT + processStage +
-                    SPLIT + mapper.writeValueAsString(constructParam)+
                     SPLIT + mapper.writeValueAsString(params);
         }
 
         public static RecordLog deSerialize(String line) throws IOException {
             String[] strs = StringUtils.split(line,SPLIT);
             RecordLog log = new RecordLog();
-            if(strs.length == 6){
+            if(strs.length == 5){
                 log.setId(strs[0]);
                 log.setWorkerName(strs[1]);
                 log.setRecordStage(RecordStage.valueOf(strs[2]));
                 log.setProcessStage(strs[3]);
-                log.setConstructParam(mapper.readValue(strs[4],List.class));
-                log.setParams(mapper.readValue(strs[5],List.class));
+                log.setParams(mapper.readValue(strs[4],List.class));
             }else{
                 throw new RuntimeException("log format error");
             }

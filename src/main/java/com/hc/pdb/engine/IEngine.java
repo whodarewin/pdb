@@ -1,6 +1,7 @@
 package com.hc.pdb.engine;
 
 
+import com.hc.pdb.exception.DBCloseException;
 import com.hc.pdb.scanner.IScanner;
 
 import java.io.IOException;
@@ -33,18 +34,18 @@ public interface IEngine {
      * @param end end key
      * @return
      */
-    IScanner scan(byte[] start, byte[] end) throws IOException;
+    IScanner scan(byte[] start, byte[] end) throws IOException, DBCloseException;
 
     /**
      * get 操作
      * @param key 需要get的key
      * @return 返回key所对应的值
      */
-    byte[] get(byte[] key) throws IOException;
+    byte[] get(byte[] key) throws IOException, DBCloseException;
     /**
      * 清空数据库
      */
-    void clean() throws IOException;
+    void clean() throws IOException, DBCloseException;
 
     void close();
 }

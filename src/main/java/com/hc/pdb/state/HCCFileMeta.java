@@ -60,4 +60,14 @@ public class HCCFileMeta {
     public int hashCode() {
         return Objects.hash(filePath, fileMD5, createTime, kvSize);
     }
+
+    @Override
+    public String toString() {
+        return "HCCFileMeta{" +
+                "filePath='" + filePath + '\'' +
+                ", fileMD5='" + fileMD5 + '\'' +
+                ", createTime=" + createTime +
+                ", kvSize=" + kvSize +
+                '}';
+    }
 }

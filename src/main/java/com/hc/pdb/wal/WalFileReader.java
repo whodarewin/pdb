@@ -21,7 +21,7 @@ public class WalFileReader implements IWalReader{
     public WalFileReader(String path) throws IOException {
         this.path = path;
         walFile = new RandomAccessFile(path,"r");
-        byteBuffer = walFile.getChannel().map(FileChannel.MapMode.READ_WRITE,0,walFile.length());
+        byteBuffer = walFile.getChannel().map(FileChannel.MapMode.READ_ONLY,0,walFile.length());
     }
 
     @Override

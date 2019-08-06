@@ -2,9 +2,7 @@ package com.hc.pdb;
 
 import com.hc.pdb.conf.Configuration;
 import com.hc.pdb.conf.PDBConstants;
-import com.hc.pdb.util.FileUtils;
-
-import java.io.IOException;
+import com.hc.pdb.util.PDBFileUtils;
 
 
 /**
@@ -23,7 +21,7 @@ public class PDBBuilder {
     }
 
     public PDBBuilder path(String path) {
-        path = FileUtils.reformatDirPath(path);
+        path = PDBFileUtils.reformatDirPath(path);
         configuration.put(PDBConstants.DB_PATH_KEY, path);
         return this;
     }

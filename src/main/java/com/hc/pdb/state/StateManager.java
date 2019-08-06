@@ -1,16 +1,14 @@
 package com.hc.pdb.state;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hc.pdb.file.FileConstants;
-import com.hc.pdb.hcc.HCCFile;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.nio.ByteBuffer;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.function.Predicate;
 
 /**
  * StateManager
@@ -62,40 +60,52 @@ public class StateManager {
         }
     }
 
-    public synchronized void add(HCCFileMeta fileMeta) throws IOException {
+    public synchronized void add(HCCFileMeta fileMeta) throws Exception {
+        LOGGER.info("add hcc file meta {}",fileMeta);
+        new Exception().printStackTrace();
         state.getFileMetas().add(fileMeta);
         sync();
         notifyListener();
     }
 
-    public synchronized void setCurrentWalFileMeta(WALFileMeta walFileMeta) throws IOException {
+    public synchronized void setCurrentWalFileMeta(WALFileMeta walFileMeta) throws Exception {
+        LOGGER.info("set current wal file meta {}", walFileMeta);
         state.setWalFileMeta(walFileMeta);
         sync();
         notifyListener();
     }
 
-    public synchronized void delete(String filePath) throws IOException {
+    public synchronized void delete(String filePath) throws Exception {
+        LOGGER.info("delete hcc file meta {}",filePath);
         state.getFileMetas().removeIf(hccFileMeta -> hccFileMeta.getFilePath().equals(filePath));
         sync();
         notifyListener();
     }
 
-    public synchronized void deleteCompactingFile(String filePath) throws IOException {
+    public synchronized void deleteCompactingFile(String filePath) throws Exception {
+        LOGGER.info("delete compacting file {}", filePath);
         state.getCompactingFileMeta().removeIf(hccFileMeta -> hccFileMeta.getFilePath().equals(filePath));
         sync();
         notifyListener();
     }
 
-    public synchronized void addCompactingFile(HCCFileMeta hccFileMeta) throws IOException {
+    public synchronized void addCompactingFile(HCCFileMeta hccFileMeta) throws Exception {
+        LOGGER.info("add compacting file meta {}",hccFileMeta);
         state.getCompactingFileMeta().add(hccFileMeta);
         sync();
         notifyListener();
     }
 
-    public void deleteFlushingWal(String walPath) throws IOException {
+    public void deleteFlushingWal(String walPath) throws Exception {
+        LOGGER.info("delete flushing wal {}", walPath);
         state.getFlushingWals().removeIf(walFileMeta -> walFileMeta.getWalPath().equals(walPath));
         sync();
         notifyListener();
+    }
+
+    public void addFlushingWal(String walPath){
+        WALFileMeta walFileMeta = new WALFileMeta(walPath,true);
+        this.state.getFlushingWals().add(walFileMeta);
     }
 
     public boolean isCompactingFile(HCCFileMeta hccFileMeta){
@@ -125,20 +135,16 @@ public class StateManager {
         return null;
     }
 
+    public Collection<WALFileMeta> getFlushingWal(){
+        return state.getFlushingWals();
+    }
 
 
-    private void notifyListener() {
-        listeners.forEach((listener) -> {
-            try {
-                listener.onChange(this.state);
-            } catch (JsonProcessingException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
+
+    private void notifyListener() throws Exception {
+        for (StateChangeListener listener : listeners) {
+            listener.onChange(this.state);
+        }
     }
 
     private void sync() throws IOException {

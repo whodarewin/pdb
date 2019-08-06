@@ -2,9 +2,11 @@ package com.hc.pdb.engine;
 
 import com.google.common.base.Preconditions;
 import com.hc.pdb.Cell;
+import com.hc.pdb.PDBStatus;
 import com.hc.pdb.compactor.Compactor;
 import com.hc.pdb.conf.Configuration;
 import com.hc.pdb.conf.PDBConstants;
+import com.hc.pdb.exception.DBCloseException;
 import com.hc.pdb.hcc.HCCManager;
 import com.hc.pdb.hcc.HCCWriter;
 import com.hc.pdb.hcc.meta.MetaReader;
@@ -12,7 +14,8 @@ import com.hc.pdb.mem.MemCacheManager;
 import com.hc.pdb.scanner.IScanner;
 import com.hc.pdb.scanner.ScannerMechine;
 import com.hc.pdb.state.*;
-import com.hc.pdb.util.FileUtils;
+import com.hc.pdb.util.PDBFileUtils;
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.File;
@@ -34,17 +37,10 @@ public class LSMEngine implements IEngine {
     private StateManager stateManager;
     private HCCWriter hccWriter;
     private Compactor compactor;
-    private CrashWorkerManager creashWorkerManager;
+    private CrashWorkerManager crashWorkerManager;
     private String path;
 
     /**
-     * todo:启动顺序，相互依赖问题
-     * 1. 创建上层对象
-     * 2. 整理硬盘数据
-     *  1. stateManager数据
-     *  2. current wal 数据
-     *  3. flush 数据
-     *  4. compactor数据
      * @param configuration
      * @throws Exception
      */
@@ -53,8 +49,7 @@ public class LSMEngine implements IEngine {
         this.path = configuration.get(PDBConstants.DB_PATH_KEY);
         LOGGER.info("create lsm db at {}",path);
 
-        FileUtils.createDirIfNotExist(path);
-
+        PDBFileUtils.createDirIfNotExist(path);
 
         this.configuration = configuration;
         //加载状态
@@ -64,36 +59,46 @@ public class LSMEngine implements IEngine {
         //整个程序只有这一个写hcc的类，无状态。
         hccWriter = new HCCWriter(configuration);
 
+        //～～ 搭建读架子
         //创建 hccManager
         MetaReader reader = new MetaReader();
         HCCManager hccManager = new HCCManager(configuration,reader);
-        //注册
+        //注册hccManager hccFile 变动时通知
         stateManager.addListener(hccManager);
-        //创建
-        creashWorkerManager = new CrashWorkerManager(path);
-
-        compactor = new Compactor(configuration,stateManager, hccWriter,creashWorkerManager);
-        stateManager.addListener(compactor);
-        memCacheManager = new MemCacheManager(configuration,stateManager,hccWriter,creashWorkerManager);
-
+        //创建CrashWorkerManager
+        crashWorkerManager = new CrashWorkerManager(path);
+        memCacheManager = new MemCacheManager(configuration,stateManager,hccWriter,crashWorkerManager);
+        //创建scannerMechine，整体的读架子搭建起来
         scannerMechine = new ScannerMechine(hccManager,memCacheManager);
+        //～～ 读架子搭建完毕
 
-        creashWorkerManager.redoAllWorker();
+        //创建compactor
+        compactor = new Compactor(configuration,stateManager, hccWriter,crashWorkerManager);
+        //注册compactor，hccFile变动时通知
+        stateManager.addListener(compactor);
+
+
+        PDBStatus.addListener(compactor);
+        PDBStatus.addListener(memCacheManager);
+
+        crashWorkerManager.redoAllWorker();
     }
 
 
 
     @Override
     public void put(byte[] key, byte[] value, long ttl) throws Exception {
+        PDBStatus.checkDBStatus();
         Cell cell = new Cell(key, value, ttl,false);
         this.memCacheManager.addCell(cell);
     }
     //todo:同步问题
     @Override
-    public void clean() throws IOException {
+    public void clean() throws IOException, DBCloseException {
+        PDBStatus.checkDBStatus();
         String path = configuration.get(PDBConstants.DB_PATH_KEY);
         LOGGER.info("clean lsm db at path {}",path);
-        org.apache.commons.io.FileUtils.deleteDirectory(new File(path));
+        FileUtils.deleteDirectory(new File(path));
     }
 
     @Override
@@ -103,7 +108,8 @@ public class LSMEngine implements IEngine {
 
 
     @Override
-    public byte[] get(byte[] key) throws IOException {
+    public byte[] get(byte[] key) throws IOException, DBCloseException {
+        PDBStatus.checkDBStatus();
         IScanner scanner = scannerMechine.createScanner(key,key);
         if(scanner == null){
             return null;
@@ -113,12 +119,14 @@ public class LSMEngine implements IEngine {
 
     @Override
     public void delete(byte[] key) throws Exception {
+        PDBStatus.checkDBStatus();
         Cell cell = new Cell(key, null, Cell.NO_TTL, false);
         this.memCacheManager.addCell(cell);
     }
 
     @Override
-    public IScanner scan(byte[] start, byte[] end) throws IOException {
+    public IScanner scan(byte[] start, byte[] end) throws IOException, DBCloseException {
+        PDBStatus.checkDBStatus();
         IScanner scanner = scannerMechine.createScanner(start, end);
         return scanner;
     }

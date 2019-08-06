@@ -5,14 +5,14 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.hc.pdb.Cell;
 import com.hc.pdb.LockContext;
-import com.hc.pdb.file.FileConstants;
+import com.hc.pdb.PDBStatus;
 import com.hc.pdb.hcc.HCCWriter;
 import com.hc.pdb.mem.MemCache;
 import com.hc.pdb.state.HCCFileMeta;
 import com.hc.pdb.state.IWorkerCrashable;
 import com.hc.pdb.state.Recorder;
 import com.hc.pdb.state.StateManager;
-import com.hc.pdb.wal.IWalWriter;
+import com.hc.pdb.util.PDBFileUtils;
 import com.hc.pdb.wal.WalFileReader;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -27,28 +27,28 @@ import java.util.*;
 public class FlusherCrashable implements IWorkerCrashable {
     private static final Logger LOGGER = LoggerFactory.getLogger(FlusherCrashable.class);
     public static final String FLUSHER = "flusher";
-    private static final String PRE_RECORD = "pre_record";
-    private static final String FLUSH_BEGIN = "flush_begin";
-    private static final String FLUSH_END = "flush_end";
-    private static final String CHANGE_METE_BEGIN = "change_meta_begin";
-    private static final String ALL_FINISH = "all_finish";
+    public static final String PRE_RECORD = "pre_record";
+    public static final String FLUSH_BEGIN = "flush_begin";
+    public static final String FLUSH_END = "flush_end";
+    public static final String CHANGE_METE_BEGIN = "change_meta_begin";
+    public static final String ALL_FINISH = "all_finish";
 
     private MemCache cache;
     private HCCWriter hccWriter;
-    private IWalWriter walWriter;
+    private String walPath;
     private StateManager stateManager;
     private Callback callback;
     private String path;
 
     public FlusherCrashable(String path,FlushEntry entry, HCCWriter writer, StateManager manager) {
         Preconditions.checkNotNull(entry.getMemCache(), "MemCache can not be null");
-        Preconditions.checkNotNull(entry.getWalWriter(),"WalWriter can not be null");
+        Preconditions.checkNotNull(entry.getWalPath(),"WalWriter can not be null");
         Preconditions.checkNotNull(writer, "hccWriter can not be null");
         Preconditions.checkNotNull(manager,"state manager can not be null");
         Preconditions.checkNotNull(path,"path can not be null");
         this.cache = entry.getMemCache();
         this.hccWriter = writer;
-        this.walWriter = entry.getWalWriter();
+        this.walPath = entry.getWalPath();
         this.stateManager = manager;
         this.callback = entry.getCallback();
         this.path = path;
@@ -61,18 +61,19 @@ public class FlusherCrashable implements IWorkerCrashable {
 
     @Override
     public void recordConstructParam(Recorder recorder) throws JsonProcessingException {
-        recorder.recordMsg(PRE_RECORD,Lists.newArrayList(walWriter.getWalFileName()));
+        recorder.recordMsg(PRE_RECORD,Lists.newArrayList(walPath));
     }
     @Override
     public void doWork(Recorder recorder) {
         try {
-            String fileName = path + UUID.randomUUID().toString() + FileConstants.DATA_FILE_SUFFIX;
-            List<String> beginParam = Lists.newArrayList(walWriter.getWalFileName(),fileName);
+            String fileName = PDBFileUtils.createHccFileName(path);
+            List<String> beginParam = Lists.newArrayList(walPath,fileName);
             recorder.recordMsg(FLUSH_BEGIN, beginParam);
             doFlush(fileName);
             recorder.recordMsg(ALL_FINISH,null);
         } catch (Exception e) {
-            LOGGER.error("flush error", e);
+            PDBStatus.setClose(true);
+            PDBStatus.setCrashException(e);
         }
     }
 
@@ -89,7 +90,7 @@ public class FlusherCrashable implements IWorkerCrashable {
         }finally {
             LockContext.flushLock.writeLock().unlock();
         }
-        walWriter.delete();
+        FileUtils.forceDelete(new File(walPath));
     }
 
     @Override
@@ -116,13 +117,13 @@ public class FlusherCrashable implements IWorkerCrashable {
     public static class FlushEntry{
 
         private MemCache memCache;
-        private IWalWriter walWriter;
+        private String walPath;
         private Callback callback;
 
 
-        public FlushEntry(MemCache memCache, IWalWriter walWriter,Callback callback) {
+        public FlushEntry(MemCache memCache, String walPath,Callback callback) {
             this.memCache = memCache;
-            this.walWriter = walWriter;
+            this.walPath = walPath;
             this.callback = callback;
         }
 
@@ -134,12 +135,12 @@ public class FlusherCrashable implements IWorkerCrashable {
             this.memCache = memCache;
         }
 
-        public IWalWriter getWalWriter() {
-            return walWriter;
+        public String getWalPath() {
+            return walPath;
         }
 
-        public void setWalWriter(IWalWriter walWriter) {
-            this.walWriter = walWriter;
+        public void setWalPath(String walPath) {
+            this.walPath = walPath;
         }
 
         public Callback getCallback() {

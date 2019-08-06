@@ -12,8 +12,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.BiFunction;
 
 /**
+ * todo：将这个记录到meta里面就行了。
  * LogRecroder
  * RecordLog的磁盘记录。
  * 包括
@@ -62,10 +64,10 @@ public class LogRecorder {
         }
     }
 
-    public List<Recorder.RecordLog> getAllLogNotFinished() throws IOException {
+    public List<List<Recorder.RecordLog>> getAllLogNotFinished() throws IOException {
         try{
             lock.readLock().lock();
-            List<Recorder.RecordLog> rets = new ArrayList<>();
+            List<List<Recorder.RecordLog>> rets = new ArrayList<>();
 
             rets.addAll(getAllLogNotFinished(currentFile));
             rets.addAll(getAllLogNotFinished(new File(getBakFileName())));
@@ -76,18 +78,24 @@ public class LogRecorder {
         }
     }
 
-    private Collection<Recorder.RecordLog> getAllLogNotFinished(File file) throws IOException {
+    private Collection<List<Recorder.RecordLog>> getAllLogNotFinished(File file) throws IOException {
         if(!file.exists()){
             return Collections.EMPTY_SET;
         }
 
         List<Recorder.RecordLog> recordLogs = getAllLog(file);
-        Map<String,Recorder.RecordLog> rets = new HashMap<>();
+        Map<String,List<Recorder.RecordLog>> rets = new HashMap<>();
         for (Recorder.RecordLog recordLog : recordLogs) {
             if(recordLog.getRecordStage() == Recorder.RecordStage.END){
                 rets.remove(recordLog.getId());
             }else{
-                rets.put(recordLog.getId(),recordLog);
+                rets.compute(recordLog.getId(), (s, logs) -> {
+                    if(logs == null){
+                        logs = new ArrayList<>();
+                    }
+                    logs.add(recordLog);
+                    return logs;
+                });
             }
         }
         return rets.values();

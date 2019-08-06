@@ -1,5 +1,6 @@
 package com.hc.pdb;
 
+import com.hc.pdb.exception.DBCloseException;
 import com.hc.pdb.hcc.HCCTest;
 import com.hc.pdb.util.Bytes;
 import org.junit.After;
@@ -33,7 +34,7 @@ public class PDBTest {
     }
 
     @After
-    public void close() throws IOException {
+    public void close() throws IOException, DBCloseException {
         pdb.clean();
     }
 }

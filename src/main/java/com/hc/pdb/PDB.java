@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import com.hc.pdb.conf.Configuration;
 import com.hc.pdb.engine.IEngine;
 import com.hc.pdb.engine.LSMEngine;
+import com.hc.pdb.exception.DBCloseException;
 import com.hc.pdb.scanner.IScanner;
 
 import java.io.IOException;
@@ -22,7 +23,7 @@ public class PDB {
         this.engine = new LSMEngine(configuration);
     }
 
-    public byte[] get(byte[] key) throws IOException {
+    public byte[] get(byte[] key) throws IOException, DBCloseException {
         Preconditions.checkNotNull(key,"key can not be null");
         return engine.get(key);
     }
@@ -31,7 +32,7 @@ public class PDB {
         this.engine.put(key, value, -1);
     }
 
-    public IScanner scan(byte[] start, byte[] end) throws IOException {
+    public IScanner scan(byte[] start, byte[] end) throws IOException, DBCloseException {
         return this.engine.scan(start,end);
     }
 
@@ -43,7 +44,7 @@ public class PDB {
         this.engine.close();
     }
 
-    public void clean() throws IOException {
+    public void clean() throws IOException, DBCloseException {
         this.engine.clean();
     }
 }

@@ -3,6 +3,7 @@ package com.hc.pdb.engine;
 import com.hc.pdb.Cell;
 import com.hc.pdb.conf.Configuration;
 import com.hc.pdb.conf.PDBConstants;
+import com.hc.pdb.exception.DBCloseException;
 import com.hc.pdb.scanner.IScanner;
 import com.hc.pdb.util.Bytes;
 import org.junit.After;
@@ -68,7 +69,7 @@ public class LSMEngineTest {
     }
 
     @After
-    public void clean() throws IOException {
+    public void clean() throws IOException, DBCloseException {
         engine.clean();
     }
 }

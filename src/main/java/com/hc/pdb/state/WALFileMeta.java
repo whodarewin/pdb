@@ -48,4 +48,12 @@ public class WALFileMeta {
     public int hashCode() {
         return Objects.hash(walPath, flushing);
     }
+
+    @Override
+    public String toString() {
+        return "WALFileMeta{" +
+                "walPath='" + walPath + '\'' +
+                ", flushing=" + flushing +
+                '}';
+    }
 }

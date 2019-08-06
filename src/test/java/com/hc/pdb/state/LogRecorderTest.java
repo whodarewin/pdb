@@ -71,7 +71,7 @@ public class LogRecorderTest {
 
     @Test
     public void testGetAllNoFinishedLog() throws IOException {
-        List<Recorder.RecordLog> logs = recorder.getAllLogNotFinished();
-        Assert.assertEquals(logs.get(0).getProcessStage(),"start flush");
+        List<List<Recorder.RecordLog>> logs = recorder.getAllLogNotFinished();
+        Assert.assertEquals(logs.get(0).get(0).getProcessStage(),"start flush");
     }
 }

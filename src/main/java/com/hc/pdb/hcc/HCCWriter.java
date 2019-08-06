@@ -12,13 +12,12 @@ import com.hc.pdb.hcc.meta.MetaReader;
 import com.hc.pdb.state.HCCFileMeta;
 import com.hc.pdb.util.ByteBloomFilter;
 import com.hc.pdb.util.Bytes;
-import com.hc.pdb.util.FileUtils;
+import com.hc.pdb.util.PDBFileUtils;
 import com.hc.pdb.util.MD5Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.util.Iterator;
-import java.util.List;
 import java.util.UUID;
 
 
@@ -55,7 +54,7 @@ public class HCCWriter implements IHCCWriter {
             throw new DBPathNotSetException();
         }
 
-        path = FileUtils.reformatDirPath(path);
+        path = PDBFileUtils.reformatDirPath(path);
 
 
         LOGGER.info("begin to write hcc file,fileName is {}",fileName);

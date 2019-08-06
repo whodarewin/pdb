@@ -28,8 +28,8 @@ public class CrashWorkerManager {
         logRecorder = new LogRecorder(path,1000);
     }
 
-    public void register(String name,IWorkerCrashableFactory workerCreashableFactory){
-        name2WorkerCrashableFactory.put(name, workerCreashableFactory);
+    public void register(IWorkerCrashableFactory workerCreashableFactory){
+        name2WorkerCrashableFactory.put(workerCreashableFactory.getName(), workerCreashableFactory);
     }
 
     /**
@@ -51,7 +51,7 @@ public class CrashWorkerManager {
 
     public void redoAllWorker() throws IOException {
         //1 load all recorder that not finished
-        List<Recorder.RecordLog> logs = logRecorder.getAllLogNotFinished();
+        List<List<Recorder.RecordLog>> logs = logRecorder.getAllLogNotFinished();
         //2 redo all recorder
         redoWork(logs);
     }
@@ -60,7 +60,7 @@ public class CrashWorkerManager {
      * 宕机后继续执行任务
      * @param logs
      */
-    public void redoWork(List<Recorder.RecordLog> logs) throws IOException {
+    public void redoWork(List<List<Recorder.RecordLog>> logs) throws IOException {
         if(logs.size() == 0){
             LOGGER.info("no log to continue");
             return;
@@ -68,14 +68,17 @@ public class CrashWorkerManager {
 
         ExecutorService service = Executors.newFixedThreadPool(logs.size());
         List<CompletableFuture> completableFutures = new ArrayList<>();
-        for(Recorder.RecordLog log : logs){
-            Recorder recorder = new Recorder(log.getId(),log.getWorkerName(),logRecorder);
-            String workerName = log.getWorkerName();
+        for(List<Recorder.RecordLog> log : logs){
+            Recorder.RecordLog recordLog = log.get(0);
+            String workerName = recordLog.getWorkerName();
+            Recorder recorder = new Recorder(recordLog.getId(),workerName,log,logRecorder);
+
             IWorkerCrashableFactory factory = name2WorkerCrashableFactory.get(workerName);
             if(factory == null){
                 LOGGER.info("can not create worker {} because worker factory is null",workerName);
                 throw new RuntimeException("can not create worker");
             }
+
             IWorkerCrashable workerCrashable = factory.create(log);
             CompletableFuture.runAsync(() -> {
                 try {

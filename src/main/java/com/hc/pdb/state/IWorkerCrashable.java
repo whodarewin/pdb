@@ -23,12 +23,12 @@ public interface IWorkerCrashable {
      * 包括重建worker所需要的参数。
      * @param recorder
      */
-    void recordConstructParam(Recorder recorder) throws IOException;
+    void recordConstructParam(Recorder recorder) throws Exception;
 
     /**
      * 执行工作
      */
-    void doWork(Recorder recorder) throws JsonProcessingException;
+    void doWork(Recorder recorder) throws Exception;
 
     /**
      * 宕机，启动了以后继续执行工作

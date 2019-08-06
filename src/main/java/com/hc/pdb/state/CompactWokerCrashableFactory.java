@@ -2,6 +2,8 @@ package com.hc.pdb.state;
 
 import com.hc.pdb.compactor.Compactor;
 
+import java.util.List;
+
 /**
  * CompactWokerCrashableFactory
  *
@@ -22,7 +24,7 @@ public class CompactWokerCrashableFactory implements IWorkerCrashableFactory {
     }
 
     @Override
-    public IWorkerCrashable create(Recorder.RecordLog log) {
+    public IWorkerCrashable create(List<Recorder.RecordLog> log) {
         return null;
     }
 }

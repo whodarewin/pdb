@@ -1,7 +1,10 @@
 package com.hc.pdb.util;
 
+import com.hc.pdb.file.FileConstants;
+
 import java.io.File;
 import java.io.IOException;
+import java.util.UUID;
 
 /**
  * FileUtils
@@ -10,7 +13,7 @@ import java.io.IOException;
  * @date 2019/6/10
  */
 
-public class FileUtils {
+public class PDBFileUtils {
     /**
      * 对不带/的目录增加/
      * @param dirPath
@@ -37,5 +40,9 @@ public class FileUtils {
             }
             file.mkdirs();
         }
+    }
+
+    public static String createHccFileName(String path){
+        return path + UUID.randomUUID().toString() + FileConstants.DATA_FILE_SUFFIX;
     }
 }
