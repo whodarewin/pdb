@@ -13,6 +13,7 @@ import com.hc.pdb.scanner.FilterScanner;
 import com.hc.pdb.scanner.HCCScanner;
 import com.hc.pdb.scanner.IScanner;
 import com.hc.pdb.state.*;
+import com.hc.pdb.util.NamedThreadFactory;
 import com.hc.pdb.util.PDBFileUtils;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -40,18 +41,21 @@ public class Compactor implements StateChangeListener,IRecoveryable,
     private int compactThreshold;
     private StateManager stateManager;
     private HCCWriter hccWriter;
+    private PDBStatus pdbStatus;
     private String path;
 
-    public Compactor(Configuration configuration, StateManager stateManager, HCCWriter hccWriter) {
+    public Compactor(Configuration configuration, StateManager stateManager,
+                     HCCWriter hccWriter,PDBStatus pdbStatus) {
         int compactorSize = configuration.getInt(PDBConstants.COMPACTOR_THREAD_SIZE_KEY,
                 PDBConstants.COMPACTOR_THREAD_SIZE);
         compactThreshold = configuration.getInt(PDBConstants.COMPACTOR_HCCFILE_THRESHOLD_KEY,
                 PDBConstants.COMPACTOR_HCCFILE_THRESHOLD);
         LOGGER.info("compactor thread size is {}",compactorSize);
-        compactorExecutor = Executors.newFixedThreadPool(compactorSize);
+        compactorExecutor = Executors.newFixedThreadPool(compactorSize,new NamedThreadFactory("compactor-thread"));
         this.path = configuration.get(PDBConstants.DB_PATH_KEY);
         this.stateManager = stateManager;
         this.hccWriter = hccWriter;
+        this.pdbStatus = pdbStatus;
     }
 
 
@@ -109,7 +113,7 @@ public class Compactor implements StateChangeListener,IRecoveryable,
 
     @Override
     public void safeClose() {
-        PDBStatus.setClose(true);
+        pdbStatus.setClose(true);
         this.compactorExecutor.shutdownNow();
 
     }
@@ -169,8 +173,8 @@ public class Compactor implements StateChangeListener,IRecoveryable,
                         throw new RuntimeException("no such state:" + state);
                 }
             }catch (Exception e){
-                PDBStatus.setCrashException(e);
-                PDBStatus.setClose(true);
+                pdbStatus.setCrashException(e);
+                pdbStatus.setClose(true);
                 throw new RuntimeException(e);
             }
         }

@@ -18,7 +18,7 @@ public class NamedThreadFactory implements ThreadFactory {
     public NamedThreadFactory(String name) {
         final SecurityManager s = System.getSecurityManager();
         this.group = (s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
-        this.namePrefix = "hubble-client-" + name + "-thread-";
+        this.namePrefix = name + "-thread-";
     }
 
     @Override

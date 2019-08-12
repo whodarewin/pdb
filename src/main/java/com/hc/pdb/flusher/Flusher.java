@@ -27,9 +27,11 @@ public class Flusher implements Runnable {
     private String walPath;
     private StateManager stateManager;
     private Callback callback;
+    private PDBStatus pdbStatus;
     private String hccFilePath;
 
-    public Flusher(String hccFilePath,FlushEntry entry, HCCWriter writer, StateManager manager) {
+    public Flusher(String hccFilePath,FlushEntry entry, HCCWriter writer,
+                   StateManager manager, PDBStatus pdbStatus) {
         Preconditions.checkNotNull(entry.getMemCache(), "MemCache can not be null");
         Preconditions.checkNotNull(entry.getWalPath(),"WalWriter can not be null");
         Preconditions.checkNotNull(writer, "hccWriter can not be null");
@@ -42,6 +44,7 @@ public class Flusher implements Runnable {
         this.stateManager = manager;
         this.callback = entry.getCallback();
         this.hccFilePath = hccFilePath;
+        this.pdbStatus = pdbStatus;
     }
 
     @Override
@@ -51,8 +54,8 @@ public class Flusher implements Runnable {
             doFlush(hccFilePath);
             stateManager.deleteFlushingWal(walPath);
         } catch (Exception e) {
-            PDBStatus.setClose(true);
-            PDBStatus.setCrashException(e);
+            pdbStatus.setClose(true);
+            pdbStatus.setCrashException(e);
         }
     }
 

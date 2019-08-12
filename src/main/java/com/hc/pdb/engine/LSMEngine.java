@@ -38,6 +38,7 @@ public class LSMEngine implements IEngine {
     private HCCWriter hccWriter;
     private Compactor compactor;
     private String path;
+    private PDBStatus pdbStatus;
 
     /**
      * @param configuration
@@ -54,6 +55,7 @@ public class LSMEngine implements IEngine {
 
         PDBFileUtils.createDirIfNotExist(path);
 
+        this.pdbStatus = new PDBStatus();
         this.configuration = configuration;
         //加载状态
         this.stateManager = new StateManager(path);
@@ -69,32 +71,31 @@ public class LSMEngine implements IEngine {
         //注册hccManager hccFile 变动时通知
         stateManager.addListener(hccManager);
         //创建CrashWorkerManage
-        memCacheManager = new MemCacheManager(configuration,stateManager,hccWriter);
+        memCacheManager = new MemCacheManager(configuration,stateManager,hccWriter,pdbStatus);
         //创建scannerMechine，整体的读架子搭建起来
         scannerMechine = new ScannerMechine(hccManager,memCacheManager);
         //～～ 读架子搭建完毕
 
         //创建compactor
-        compactor = new Compactor(configuration,stateManager, hccWriter);
+        compactor = new Compactor(configuration,stateManager, hccWriter,pdbStatus);
         //注册compactor，hccFile变动时通知
         stateManager.addListener(compactor);
 
-
-        PDBStatus.addListener(compactor);
-        PDBStatus.addListener(memCacheManager);
+        pdbStatus.addListener(compactor);
+        pdbStatus.addListener(memCacheManager);
     }
 
 
     @Override
     public void put(byte[] key, byte[] value, long ttl) throws Exception {
-        PDBStatus.checkDBStatus();
+        pdbStatus.checkDBStatus();
         Cell cell = new Cell(key, value, ttl,false);
         this.memCacheManager.addCell(cell);
     }
 
     @Override
     public void clean() throws IOException, DBCloseException {
-        PDBStatus.checkDBStatus();
+        pdbStatus.checkDBStatus();
         close();
         String path = configuration.get(PDBConstants.DB_PATH_KEY);
         LOGGER.info("clean lsm db at path {}",path);
@@ -103,7 +104,7 @@ public class LSMEngine implements IEngine {
 
     @Override
     public void close() {
-        PDBStatus.setClose(true);
+        pdbStatus.setClose(true);
         this.memCacheManager.safeClose();
         this.compactor.safeClose();
     }
@@ -111,7 +112,7 @@ public class LSMEngine implements IEngine {
 
     @Override
     public byte[] get(byte[] key) throws IOException, DBCloseException {
-        PDBStatus.checkDBStatus();
+        pdbStatus.checkDBStatus();
         IScanner scanner = scannerMechine.createScanner(key,key);
         if(scanner == null){
             return null;
@@ -121,14 +122,14 @@ public class LSMEngine implements IEngine {
 
     @Override
     public void delete(byte[] key) throws Exception {
-        PDBStatus.checkDBStatus();
+        pdbStatus.checkDBStatus();
         Cell cell = new Cell(key, null, Cell.NO_TTL, false);
         this.memCacheManager.addCell(cell);
     }
 
     @Override
     public IScanner scan(byte[] start, byte[] end) throws IOException, DBCloseException {
-        PDBStatus.checkDBStatus();
+        pdbStatus.checkDBStatus();
         IScanner scanner = scannerMechine.createScanner(start, end);
         return scanner;
     }

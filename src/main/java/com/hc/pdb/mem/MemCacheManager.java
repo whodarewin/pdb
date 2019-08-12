@@ -41,14 +41,17 @@ public class MemCacheManager implements IRecoveryable, PDBStatus.StatusListener,
     private HCCWriter hccWriter;
     private IWalWriter walWriter;
     private ExecutorService flushExecutor;
+    private PDBStatus pdbStatus;
     private String path;
 
     public MemCacheManager(Configuration configuration,
                            StateManager manager,
-                           HCCWriter hccWriter) throws Exception {
+                           HCCWriter hccWriter,
+                           PDBStatus pdbStatus) throws Exception {
         this.configuration = configuration;
         this.stateManager = manager;
         this.hccWriter = hccWriter;
+        this.pdbStatus = pdbStatus;
 
         this.path = configuration.get(PDBConstants.DB_PATH_KEY);
         int flushThreadNum = configuration.getInt(PDBConstants.FLUSHER_THREAD_SIZE_KEY,
@@ -56,7 +59,7 @@ public class MemCacheManager implements IRecoveryable, PDBStatus.StatusListener,
         flushExecutor = new ThreadPoolExecutor(flushThreadNum, flushThreadNum,
                 0L, TimeUnit.MILLISECONDS,
                 new SynchronousQueue<>(),
-                new NamedThreadFactory("pdb-flusher-"));
+                new NamedThreadFactory("pdb-flusher"));
         recovery();
     }
 
@@ -106,7 +109,7 @@ public class MemCacheManager implements IRecoveryable, PDBStatus.StatusListener,
                     }finally {
                         LockContext.flushLock.writeLock().unlock();
                     }
-                    flushExecutor.submit(new Flusher(hccFileName,entry,hccWriter,stateManager));
+                    flushExecutor.submit(new Flusher(hccFileName,entry,hccWriter,stateManager,pdbStatus));
                 }
             }
         }
@@ -170,7 +173,7 @@ public class MemCacheManager implements IRecoveryable, PDBStatus.StatusListener,
                                 flushEntry -> flushEntry.getMemCache().getId().equals(cache.getId()))
                 );
                 flushingEntry.add(entry);
-                flushExecutor.submit(new Flusher(hccFilePath,entry,hccWriter,stateManager));
+                flushExecutor.submit(new Flusher(hccFilePath,entry,hccWriter,stateManager,pdbStatus));
             }
         }
     }
@@ -198,7 +201,7 @@ public class MemCacheManager implements IRecoveryable, PDBStatus.StatusListener,
                         flushEntry -> flushEntry.getMemCache().getId().equals(cache.getId()))
         );
         flushingEntry.add(entry);
-        flushExecutor.submit(new Flusher(hccFilePath,entry,hccWriter,stateManager));
+        flushExecutor.submit(new Flusher(hccFilePath,entry,hccWriter,stateManager,pdbStatus));
     }
 
     private void initCurrentWalAndMemCache() throws Exception {
@@ -211,7 +214,7 @@ public class MemCacheManager implements IRecoveryable, PDBStatus.StatusListener,
     @Override
     public void safeClose() {
         //1 阻塞所有的写：直接设置为close就行
-        PDBStatus.setClose(true);
+        pdbStatus.setClose(true);
         //2 等待该flush的全部flush掉
         this.flushExecutor.shutdownNow();
     }

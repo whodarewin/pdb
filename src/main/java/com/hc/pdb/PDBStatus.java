@@ -17,23 +17,23 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class PDBStatus {
     private static final Logger LOGGER = LoggerFactory.getLogger(PDBStatus.class);
-    private static volatile boolean close = false;
-    private static Exception crashException;
-    private static List<StatusListener> listeners = new CopyOnWriteArrayList<>();
+    private volatile boolean close = false;
+    private Exception crashException;
+    private List<StatusListener> listeners = new CopyOnWriteArrayList<>();
 
-    public static void checkDBStatus() throws DBCloseException {
+    public void checkDBStatus() throws DBCloseException {
         if(close){
             throw new DBCloseException(crashException);
         }
     }
 
-    public static boolean isClose() {
+    public boolean isClose() {
         return close;
     }
 
-    public static void setClose(boolean close) {
+    public void setClose(boolean close) {
         LOGGER.info("set db to close");
-        PDBStatus.close = close;
+        this.close = close;
         for (StatusListener listener : listeners) {
             try {
                 listener.onClose();
@@ -43,20 +43,20 @@ public class PDBStatus {
         }
     }
 
-    public static Exception getCrashException() {
+    public Exception getCrashException() {
         return crashException;
     }
 
-    public static void setCrashException(Exception crashException) {
+    public void setCrashException(Exception crashException) {
         LOGGER.error("pdb crashed",crashException);
-        PDBStatus.crashException = crashException;
+        this.crashException = crashException;
     }
 
-    public static void addListener(StatusListener listener){
+    public void addListener(StatusListener listener){
         listeners.add(listener);
     }
 
-    public static interface StatusListener{
+    public interface StatusListener{
 
         void onClose() throws IOException;
     }
