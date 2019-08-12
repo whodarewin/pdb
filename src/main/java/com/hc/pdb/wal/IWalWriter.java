@@ -20,6 +20,4 @@ public interface IWalWriter {
     void delete() throws IOException;
 
     String getWalFileName();
-
-    void markFlush();
 }

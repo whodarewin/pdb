@@ -18,19 +18,17 @@ import java.util.UUID;
  * @date 2019/6/11
  */
 
-public class DefaultWalWriter implements IWalWriter {
-    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultWalWriter.class);
-    private String path;
+public class FileWalWriter implements IWalWriter {
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileWalWriter.class);
     private String fileName;
     private FileOutputStream output;
     private File walFile;
 
-    public DefaultWalWriter(String path) throws IOException {
-        this.path = path;
-        this.fileName = path + UUID.randomUUID().toString() + FileConstants.WAL_FILE_SUFFIX;
+    public FileWalWriter(String fileName) throws IOException {
+        this.fileName = fileName;
         walFile = new File(fileName);
         if(!walFile.createNewFile()) {
-            throw new RuntimeException("can not create file "+path);
+            throw new RuntimeException("can not create file " + fileName);
         }
 
         this.output = new FileOutputStream(walFile);
@@ -57,12 +55,5 @@ public class DefaultWalWriter implements IWalWriter {
     @Override
     public String getWalFileName() {
         return fileName;
-    }
-
-    @Override
-    public void markFlush() {
-        String flushName = fileName + ".flush";
-        walFile.renameTo(new File(flushName));
-        fileName = flushName;
     }
 }

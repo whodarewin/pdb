@@ -8,7 +8,9 @@ import java.io.*;
 import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Consumer;
 
 /**
  * StateManager
@@ -62,7 +64,6 @@ public class StateManager {
 
     public synchronized void add(HCCFileMeta fileMeta) throws Exception {
         LOGGER.info("add hcc file meta {}",fileMeta);
-        new Exception().printStackTrace();
         state.getFileMetas().add(fileMeta);
         sync();
         notifyListener();
@@ -82,18 +83,28 @@ public class StateManager {
         notifyListener();
     }
 
-    public synchronized void deleteCompactingFile(String filePath) throws Exception {
-        LOGGER.info("delete compacting file {}", filePath);
-        state.getCompactingFileMeta().removeIf(hccFileMeta -> hccFileMeta.getFilePath().equals(filePath));
+    public synchronized void deleteCompactingFile(String compactingID) throws Exception {
+        LOGGER.info("delete compacting file,compacting id is {}", compactingID);
+        state.getCompactingFileMeta().removeIf(compactingFile -> compactingFile.getCompactingID().equals(compactingID));
         sync();
         notifyListener();
     }
 
-    public synchronized void addCompactingFile(HCCFileMeta hccFileMeta) throws Exception {
-        LOGGER.info("add compacting file meta {}",hccFileMeta);
-        state.getCompactingFileMeta().add(hccFileMeta);
+    public synchronized String addCompactingFile(String toFilePath,HCCFileMeta... hccFileMeta) throws Exception {
+        for (HCCFileMeta fileMeta : hccFileMeta) {
+            LOGGER.info("add compacting file meta {}",fileMeta);
+        }
+
+        CompactingFile compactingFile = new CompactingFile();
+        for (HCCFileMeta fileMeta : hccFileMeta) {
+            compactingFile.getCompactingFiles().add(fileMeta);
+        }
+        compactingFile.setState(CompactingFile.BEGIN);
+        compactingFile.setToFilePath(toFilePath);
+        state.getCompactingFileMeta().add(compactingFile);
         sync();
         notifyListener();
+        return compactingFile.getCompactingID();
     }
 
     public void deleteFlushingWal(String walPath) throws Exception {
@@ -103,18 +114,32 @@ public class StateManager {
         notifyListener();
     }
 
-    public void addFlushingWal(String walPath){
-        WALFileMeta walFileMeta = new WALFileMeta(walPath,true);
+    public void addFlushingWal(String walPath,String state,List<String> param) throws Exception {
+        WALFileMeta walFileMeta = new WALFileMeta(walPath,state,param);
         this.state.getFlushingWals().add(walFileMeta);
+        sync();
+        notifyListener();
     }
 
     public boolean isCompactingFile(HCCFileMeta hccFileMeta){
-        for (HCCFileMeta fileMeta : state.getCompactingFileMeta()) {
-            if(fileMeta.equals(hccFileMeta)){
-                return true;
+        for (CompactingFile file : state.getCompactingFileMeta()) {
+            for (HCCFileMeta fileMeta : file.getCompactingFiles()) {
+                if(fileMeta.getFilePath().equals(hccFileMeta.getFilePath())){
+                    return true;
+                }
             }
         }
         return false;
+    }
+
+    public void changeCompactingFileState(String compactingID,String changeState) throws Exception {
+        state.getCompactingFileMeta().forEach(compactingFile -> {
+            if(compactingFile.getCompactingID().equals(compactingID)){
+                compactingFile.setState(changeState);
+            }
+        });
+        sync();
+        notifyListener();
     }
 
     public boolean exist(String fileName){
@@ -135,11 +160,17 @@ public class StateManager {
         return null;
     }
 
+    public Set<CompactingFile> getCompactingFiles(){
+        return state.getCompactingFileMeta();
+    }
+
     public Collection<WALFileMeta> getFlushingWal(){
         return state.getFlushingWals();
     }
 
-
+    public WALFileMeta getCurrentWALFileMeta(){
+        return state.getWalFileMeta();
+    }
 
     private void notifyListener() throws Exception {
         for (StateChangeListener listener : listeners) {

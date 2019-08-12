@@ -1,12 +1,10 @@
 package com.hc.pdb.compactor;
 
-import com.google.common.collect.Lists;
 import com.hc.pdb.Cell;
 import com.hc.pdb.LockContext;
 import com.hc.pdb.PDBStatus;
 import com.hc.pdb.conf.Configuration;
 import com.hc.pdb.conf.PDBConstants;
-import com.hc.pdb.file.FileConstants;
 import com.hc.pdb.hcc.HCCFile;
 import com.hc.pdb.hcc.HCCWriter;
 import com.hc.pdb.hcc.meta.MetaReader;
@@ -14,6 +12,7 @@ import com.hc.pdb.scanner.FilterScanner;
 import com.hc.pdb.scanner.HCCScanner;
 import com.hc.pdb.scanner.IScanner;
 import com.hc.pdb.state.*;
+import com.hc.pdb.util.PDBFileUtils;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +31,7 @@ import java.util.stream.Collectors;
  * @date 2019/6/11
  */
 
-public class Compactor implements StateChangeListener, IWorkerCrashableFactory, PDBStatus.StatusListener {
+public class Compactor implements StateChangeListener,IRecoveryable, PDBStatus.StatusListener {
     public static final String NAME = "compactor";
     private static final Logger LOGGER = LoggerFactory.getLogger(Compactor.class);
     private ExecutorService compactorExecutor;
@@ -40,10 +39,8 @@ public class Compactor implements StateChangeListener, IWorkerCrashableFactory, 
     private StateManager stateManager;
     private HCCWriter hccWriter;
     private String path;
-    private CrashWorkerManager crashWorkerManager;
 
-    public Compactor(Configuration configuration, StateManager stateManager, HCCWriter hccWriter,
-                     CrashWorkerManager crashWorkerManager) {
+    public Compactor(Configuration configuration, StateManager stateManager, HCCWriter hccWriter) {
         int compactorSize = configuration.getInt(PDBConstants.COMPACTOR_THREAD_SIZE_KEY,
                 PDBConstants.COMPACTOR_THREAD_SIZE);
         compactThreshold = configuration.getInt(PDBConstants.COMPACTOR_HCCFILE_THRESHOLD_KEY,
@@ -52,8 +49,6 @@ public class Compactor implements StateChangeListener, IWorkerCrashableFactory, 
         this.path = configuration.get(PDBConstants.DB_PATH_KEY);
         this.stateManager = stateManager;
         this.hccWriter = hccWriter;
-        this.crashWorkerManager = crashWorkerManager;
-        crashWorkerManager.register(this);
     }
 
 
@@ -71,11 +66,19 @@ public class Compactor implements StateChangeListener, IWorkerCrashableFactory, 
                     List<HCCFileMeta> toCompact = noCompactMetas.stream()
                             .sorted((o1, o2) -> (int) (o1.getCreateTime() - o2.getCreateTime()))
                             .limit(2).collect(Collectors.toList());
+                    if(toCompact.size() < 2){
+                        return;
+                    }
 
-                    crashWorkerManager.doWork(new CompactorWorker(toCompact,stateManager),compactorExecutor);
+                    String toFilePath = PDBFileUtils.createHccFileName(path);
+                    String compactingID = stateManager
+                            .addCompactingFile(toFilePath,toCompact.toArray(new HCCFileMeta[toCompact.size()]));
+
+                    compactorExecutor
+                            .submit(new CompactorWorker(compactingID,toCompact,toFilePath,CompactingFile.BEGIN,stateManager));
                 }else{
-
-                    LOGGER.info("no file to compact");
+                    LOGGER.info("no file to compact,compact threshold {} size {} compacting file size {}",
+                            compactThreshold,noCompactMetas.size(),stateManager.getCompactingFiles().size());
                     return;
 
                 }
@@ -84,63 +87,121 @@ public class Compactor implements StateChangeListener, IWorkerCrashableFactory, 
     }
 
     @Override
-    public String getName() {
-        return NAME;
-    }
-
-    @Override
-    public IWorkerCrashable create(List<Recorder.RecordLog> logs) {
-        Recorder.RecordLog initLog = logs.stream().filter(log ->
-                log.getProcessStage().equals(CompactorWorker.PRE_RECORD)).collect(Collectors.toList()).get(0);
-
-        List<String> hccFilePaths = initLog.getParams();
-        HCCFileMeta one = stateManager.getHccFileMeta(hccFilePaths.get(0));
-        HCCFileMeta two = stateManager.getHccFileMeta(hccFilePaths.get(1));
-        return new CompactorWorker(Lists.newArrayList(one,two),stateManager);
-    }
-
-    @Override
     public void onClose() {
         this.compactorExecutor.shutdown();
     }
 
+    @Override
+    public void recovery() throws RecorverFailedException {
+        for (CompactingFile compactingFile : stateManager.getCompactingFiles()) {
+            compactorExecutor.submit(new CompactorWorker(
+                    compactingFile.getCompactingID(),
+                    compactingFile.getCompactingFiles(),
+                    compactingFile.getToFilePath(),
+                    compactingFile.getState(),
+                    stateManager
+                    ));
+        }
+    }
 
-    public class CompactorWorker implements IWorkerCrashable{
-        public static final String PRE_RECORD = "pre_record";
-        public static final String START_COMPACT = "start_compact";
-        public static final String END_COMPACT = "end_compact";
 
-        public List<HCCFileMeta> hccFileMetas;
-        public StateManager stateManager;
+    public class CompactorWorker implements Runnable{
 
-        public CompactorWorker(List<HCCFileMeta> hccFileMetas, StateManager stateManager) {
+        private String compactingID;
+        private List<HCCFileMeta> hccFileMetas;
+        private StateManager stateManager;
+        private String toFilePath;
+        private HCCFileMeta fileMeta;
+        private String state;
+
+        public CompactorWorker(String compactingID,List<HCCFileMeta> hccFileMetas,
+                               String toFilePath, String state, StateManager stateManager) {
+            this.compactingID = compactingID;
             this.hccFileMetas = hccFileMetas;
             this.stateManager = stateManager;
+            this.toFilePath = toFilePath;
+            this.state = state;
         }
 
-        public void compact(Recorder recorder) throws Exception {
+        @Override
+        public void run() {
             LOGGER.info("begin to compact two file {},{}",
                     hccFileMetas.get(0).getFilePath(),
                     hccFileMetas.get(1).getFilePath());
-            String fileName = path + UUID.randomUUID().toString() + FileConstants.DATA_FILE_SUFFIX;
-            List<String> params = new ArrayList<>();
-            hccFileMetas.forEach(hccFileMeta -> {
-                params.add(hccFileMeta.getFilePath());
-            });
-            recorder.recordMsg(START_COMPACT,params);
+            try {
+                switch (state){
+                    case CompactingFile.BEGIN:
+                        deleteCompactTargetFileIfHave();
+                        writeNewHCCFile();
+                        stateManager.changeCompactingFileState(compactingID,CompactingFile.WRITE_HCC_FILE_FINISH);
+                        addNewHccFileToMeta();
+                        stateManager.changeCompactingFileState(compactingID,CompactingFile.ADD_COMPACTED_HCC_FILE_TO_STATE_FINISH);
+                        deleteFileCompacted();
+                        stateManager.changeCompactingFileState(compactingID,CompactingFile.DELETE_COMPACTED_FILE_FINISH);
+                        deleteMetaFileCompacting();
+                        break;
+                    case CompactingFile.WRITE_HCC_FILE_FINISH:
+                        addNewHccFileToMeta();
+                        stateManager.changeCompactingFileState(compactingID,CompactingFile.ADD_COMPACTED_HCC_FILE_TO_STATE_FINISH);
+                        deleteFileCompacted();
+                        stateManager.changeCompactingFileState(compactingID,CompactingFile.DELETE_COMPACTED_FILE_FINISH);
+                        deleteMetaFileCompacting();
+                        break;
+                    case CompactingFile.ADD_COMPACTED_HCC_FILE_TO_STATE_FINISH:
+                        deleteFileCompacted();
+                        stateManager.changeCompactingFileState(compactingID,CompactingFile.DELETE_COMPACTED_FILE_FINISH);
+                        deleteMetaFileCompacting();
+                        break;
+                    case CompactingFile.DELETE_COMPACTED_FILE_FINISH:
+                        deleteMetaFileCompacting();
+                        break;
+                    default:
+                        throw new RuntimeException("no such state:" + state);
+                }
+            }catch (Exception e){
+                PDBStatus.setCrashException(e);
+                PDBStatus.setClose(true);
+                throw new RuntimeException(e);
+            }
+        }
+
+        private void deleteCompactTargetFileIfHave() throws IOException {
+            File file = new File(toFilePath);
+            if(file.exists()){
+                FileUtils.forceDelete(file);
+            }
+        }
+
+        private void deleteMetaFileCompacting() throws Exception {
+            stateManager.deleteCompactingFile(compactingID);
+        }
+
+        private void addNewHccFileToMeta() throws Exception {
+            try {
+                LockContext.flushLock.writeLock().lock();
+                stateManager.add(fileMeta);
+                for (HCCFileMeta hccFileMeta : hccFileMetas) {
+                    stateManager.delete(hccFileMeta.getFilePath());
+                }
+            }finally {
+                LockContext.flushLock.writeLock().unlock();
+            }
+        }
+
+        public void writeNewHCCFile() throws IOException {
             MetaReader metaReader = new MetaReader();
 
             Set<IScanner> hccScanners = new HashSet<>();
             int size = 0;
             for (HCCFileMeta hccFileMeta : hccFileMetas) {
-                IScanner scanner = new HCCScanner(new HCCFile(hccFileMeta.getFilePath(),metaReader).createReader(),
-                            null,null);
+                IScanner scanner = new HCCScanner(new HCCFile(hccFileMeta.getFilePath(), metaReader).createReader(),
+                        null, null);
                 hccScanners.add(scanner);
                 size = hccFileMeta.getKvSize() + size;
             }
             FilterScanner scanner = new FilterScanner(hccScanners);
 
-            HCCFileMeta fileMeta = hccWriter.writeHCC(new Iterator<Cell>() {
+            fileMeta = hccWriter.writeHCC(new Iterator<Cell>() {
                 @Override
                 public boolean hasNext() {
                     try {
@@ -152,78 +213,16 @@ public class Compactor implements StateChangeListener, IWorkerCrashableFactory, 
 
                 @Override
                 public Cell next() {
-                        return scanner.peek();
-                    }
-            }, size,fileName);
-            long time = System.currentTimeMillis();
-            afterCompact(fileMeta);
-            LOGGER.info("compact change state transaction end {}",System.currentTimeMillis() - time);
+                    return scanner.peek();
+                }
+            }, size, toFilePath);
         }
 
-
-        private void afterCompact(HCCFileMeta fileMeta) throws Exception {
-            try {
-                //todo:缩小锁粒度
-                LOGGER.info("compact change state transaction begin");
-                LockContext.flushLock.writeLock().lock();
-                stateManager.add(fileMeta);
-
-                deleteFileCompacted();
-            } finally {
-                LockContext.flushLock.writeLock().unlock();
-            }
-        }
 
         private void deleteFileCompacted() throws Exception {
             for (HCCFileMeta meta : hccFileMetas) {
                 LOGGER.info("begin delete compacted file {}", meta.getFilePath());
-                stateManager.delete(meta.getFilePath());
                 FileUtils.forceDelete(new File(meta.getFilePath()));
-            }
-        }
-
-        @Override
-        public String getName() {
-            return NAME;
-        }
-
-        @Override
-        public void recordConstructParam(Recorder recorder) throws Exception {
-            List<String> params = new ArrayList<>();
-            hccFileMetas.forEach(hccFileMeta -> {
-                params.add(hccFileMeta.getFilePath());
-            });
-            recorder.recordMsg(PRE_RECORD,params);
-            for (HCCFileMeta hccFileMeta : hccFileMetas) {
-                stateManager.addCompactingFile(hccFileMeta);
-            }
-        }
-
-        @Override
-        public void doWork(Recorder recorder) throws Exception {
-            compact(recorder);
-            recorder.recordMsg(END_COMPACT,null);
-        }
-
-        @Override
-        public void continueWork(Recorder recorder) throws Exception {
-            Recorder.RecordLog recordLog = recorder.getCurrent();
-            String state = recordLog.getProcessStage();
-            List<String> params = recordLog.getParams();
-            if(PRE_RECORD.equals(state) || START_COMPACT.equals(state)){
-                if(stateManager.exist(params.get(3))){
-                    deleteFileCompacted();
-                    recorder.recordMsg(END_COMPACT,null);
-                }else{
-                    List<HCCFileMeta> metas = params.stream()
-                            .limit(2)
-                            .map(s -> stateManager.getHccFileMeta(s))
-                            .collect(Collectors.toList());
-                    for (HCCFileMeta meta : metas) {
-                        stateManager.addCompactingFile(meta);
-                    }
-                    crashWorkerManager.doWork(new CompactorWorker(metas,stateManager),compactorExecutor);
-                }
             }
         }
     }

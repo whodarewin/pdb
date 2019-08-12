@@ -1,31 +1,41 @@
 package com.hc.pdb.state;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
  * 文件的meta信息
- * Created by congcong.han on 2019/6/22.
+ * @author han.congcong
+ * @data 2019/6/22
  */
 public class HCCFileMeta {
+    public static final String CREATE = "create";
+    public static final String BEGIN_COMPACT = "begin_compact";
     /**
      * file的path
      */
     private String filePath;
+    /**
+     * file md5
+     */
     private String fileMD5;
-    private long createTime;
     /**
      * hcc file 重的kv数目
      */
-
     private int kvSize;
+    /**
+     * 创建时间
+     */
+    private long createTime;
+
 
     public HCCFileMeta() {}
 
-    public HCCFileMeta(String filePath, String fileMD5, long createTime, int kvSize){
+    public HCCFileMeta(String filePath, String fileMD5, int kvSize, long createTime) {
         this.filePath = filePath;
         this.fileMD5 = fileMD5;
-        this.createTime = createTime;
         this.kvSize = kvSize;
+        this.createTime = createTime;
     }
 
     public String getFilePath(){

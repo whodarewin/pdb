@@ -1,19 +1,25 @@
 package com.hc.pdb.mem;
 
+import com.google.common.collect.Lists;
 import com.hc.pdb.Cell;
 import com.hc.pdb.LockContext;
 import com.hc.pdb.PDBStatus;
 import com.hc.pdb.conf.Configuration;
 import com.hc.pdb.conf.PDBConstants;
-import com.hc.pdb.flusher.FlusherCrashable;
+import com.hc.pdb.flusher.Flusher;
 import com.hc.pdb.hcc.HCCWriter;
 import com.hc.pdb.state.*;
 import com.hc.pdb.util.NamedThreadFactory;
+import com.hc.pdb.util.PDBFileUtils;
 import com.hc.pdb.util.RangeUtil;
-import com.hc.pdb.wal.DefaultWalWriter;
+import com.hc.pdb.wal.FileWalWriter;
 import com.hc.pdb.wal.IWalWriter;
 import com.hc.pdb.wal.WalFileReader;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.io.FileUtils;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
@@ -23,82 +29,33 @@ import java.util.stream.Collectors;
  * @author congcong.han
  * @date 2019/6/22
  */
-public class MemCacheManager implements IWorkerCrashableFactory, PDBStatus.StatusListener {
+public class MemCacheManager implements IRecoveryable, PDBStatus.StatusListener {
     private static final String FLUSHER = "flusher";
 
     private StateManager stateManager;
     private Configuration configuration;
-    private List<FlusherCrashable.FlushEntry> flushingEntry = Collections.synchronizedList(new ArrayList<>());
+    private List<Flusher.FlushEntry> flushingEntry = Collections.synchronizedList(new ArrayList<>());
     private MemCache current;
     private HCCWriter hccWriter;
-    private CrashWorkerManager crashWorkerManager;
     private IWalWriter walWriter;
     private ExecutorService flushExecutor;
     private String path;
 
     public MemCacheManager(Configuration configuration,
                            StateManager manager,
-                           HCCWriter hccWriter,
-                           CrashWorkerManager crashWorkerManager) throws Exception {
+                           HCCWriter hccWriter) throws Exception {
+        this.configuration = configuration;
         this.stateManager = manager;
         this.hccWriter = hccWriter;
+
         this.path = configuration.get(PDBConstants.DB_PATH_KEY);
         int flushThreadNum = configuration.getInt(PDBConstants.FLUSHER_THREAD_SIZE_KEY,
                 PDBConstants.DEFAULT_FLUSHER_THREAD_SIZE);
-
-        this.walWriter = new DefaultWalWriter(configuration.get(PDBConstants.DB_PATH_KEY));
-        current = new MemCache();
-        this.configuration = configuration;
-
         flushExecutor = new ThreadPoolExecutor(flushThreadNum, flushThreadNum,
                 0L, TimeUnit.MILLISECONDS,
                 new SynchronousQueue<>(),
                 new NamedThreadFactory("pdb-flusher"));
-        this.crashWorkerManager = crashWorkerManager;
-        crashWorkerManager.register(this);
-        restoreFlushingMemCache();
-        stateManager.setCurrentWalFileMeta(new WALFileMeta(walWriter.getWalFileName(),false));
-    }
-
-    private void restoreFlushingMemCache() throws Exception {
-
-        Collection<WALFileMeta> fileMetaList = stateManager.getFlushingWal();
-
-        for (WALFileMeta meta : fileMetaList){
-            if (meta != null) {
-                String walPath = meta.getWalPath();
-                WalFileReader reader = new WalFileReader(walPath);
-                MemCache cache = new MemCache(reader);
-                this.flushingEntry.add(new FlusherCrashable.FlushEntry(cache,
-                        walPath,
-                        () -> finishFlush(cache, walPath)));
-            }
-        }
-        WALFileMeta walFileMeta = stateManager.getState().getWalFileMeta();
-
-        if(walFileMeta != null){
-            stateManager.getFlushingWal().add(walFileMeta);
-            MemCache cache = new MemCache(new WalFileReader(walFileMeta.getWalPath()));
-            FlusherCrashable.FlushEntry entry = new FlusherCrashable.FlushEntry(
-                    cache,
-                    walFileMeta.getWalPath(),
-                    () -> flushingEntry.removeIf(flushEntry -> flushEntry.getMemCache().getId().equals(cache.getId()))
-
-            );
-            flushingEntry.add(entry);
-            crashWorkerManager.doWork(
-                    new FlusherCrashable(
-                            path,
-                            entry,
-                            hccWriter,
-                            stateManager),
-                    flushExecutor);
-        }
-    }
-
-    public void finishFlush(MemCache cache,String walPath) throws Exception {
-        stateManager.deleteFlushingWal(walPath);
-        flushingEntry.remove(cache);
+        recovery();
     }
 
     public Set<MemCache> searchMemCache(byte[] startKey, byte[] endKey){
@@ -126,55 +83,126 @@ public class MemCacheManager implements IWorkerCrashableFactory, PDBStatus.Statu
                         PDBConstants.DEFAULT_MEM_CACHE_MAX_SIZE)) {
 
                     MemCache tmpCache = current;
-                    FlusherCrashable.FlushEntry entry;
+                    Flusher.FlushEntry entry;
+                    String hccFileName = PDBFileUtils.createHccFileName(path);
+                    //1 标记这个wal要被flush
+                    stateManager.addFlushingWal(walWriter.getWalFileName(),WALFileMeta.BEGIN_FLUSH,Lists.newArrayList(hccFileName));
+                    //2 关闭老的walWriter
+                    IWalWriter tmpWalWriter = walWriter;
+                    tmpWalWriter.close();
                     try {
                         LockContext.flushLock.writeLock().lock();
 
-                        stateManager.addFlushingWal(walWriter.getWalFileName());
-
-                        IWalWriter tmpWalWriter = walWriter;
-                        walWriter.close();
-                        walWriter = new DefaultWalWriter(configuration.get(PDBConstants.DB_PATH_KEY));
-                        entry = new FlusherCrashable.FlushEntry(tmpCache,tmpWalWriter.getWalFileName(),
+                        entry = new Flusher.FlushEntry(tmpCache,tmpWalWriter.getWalFileName(),
                                 () -> flushingEntry.removeIf(
                                         flushEntry -> flushEntry.getMemCache().getId().equals(tmpCache.getId()))
                         );
                         flushingEntry.add(entry);
-                        current = new MemCache();
+                        //3 创建新的一套写入系统
+                        initCurrentWalAndMemCache();
+
                     }finally {
                         LockContext.flushLock.writeLock().unlock();
                     }
-
-                    //todo:flush完毕后，从flushList里面删除
-                    Future<Boolean> ret = crashWorkerManager.doWork(
-                            new FlusherCrashable(path,entry
-                                    ,hccWriter,stateManager),
-                            flushExecutor);
+                    flushExecutor.submit(new Flusher(hccFileName,entry,hccWriter,stateManager));
                 }
             }
         }
     }
 
     @Override
-    public String getName() {
-        return FLUSHER;
-    }
-
-    @Override
-    public IWorkerCrashable create(List<Recorder.RecordLog> log) {
-        Recorder.RecordLog initLog = log.stream()
-                .filter(log1 -> FlusherCrashable.PRE_RECORD.equals(log1.getProcessStage()))
-                .collect(Collectors.toList())
-                .get(0);
-        String walPath = initLog.getParams().get(0);
-        FlusherCrashable.FlushEntry flushEntry = flushingEntry.stream()
-                .filter(flushEntry1 -> flushEntry1.getWalPath().equals(walPath))
-                .findFirst().get();
-        return new FlusherCrashable(path,flushEntry,hccWriter,stateManager);
-    }
-
-    @Override
-    public void onClose() {
+    public void onClose() throws IOException {
         this.flushExecutor.shutdown();
+        this.walWriter.close();
+    }
+
+    @Override
+    public void recovery() throws RecorverFailedException {
+        try {
+            //没有需要recorver的
+            if(recoveryIfNone()){
+                return;
+            }
+            //1 wal 到flushing wal的修正
+            recoveryMovingWALMeta();
+            //2 将flushing的wal继续工作
+            recoveryFlushingWal();
+            //3 将currentWal flush
+            flushCurrenWALIfHave();
+        }catch(Exception e){
+            throw new RecorverFailedException(e);
+        }
+    }
+
+    private boolean recoveryIfNone() throws Exception {
+        if (CollectionUtils.isEmpty(stateManager.getFlushingWal())
+                && stateManager.getCurrentWALFileMeta() == null) {
+            initCurrentWalAndMemCache();
+            return true;
+        }
+        return false;
+    }
+
+    private void recoveryMovingWALMeta() throws Exception {
+        if(stateManager.getFlushingWal().contains(stateManager.getCurrentWALFileMeta())){
+            stateManager.setCurrentWalFileMeta(null);
+        }
+    }
+
+    private void recoveryFlushingWal() throws IOException {
+        Collection<WALFileMeta> flushingWals = stateManager.getFlushingWal();
+        for (WALFileMeta flushingWal : flushingWals) {
+            String walPath = flushingWal.getWalPath();
+            String state = flushingWal.getState();
+            List<String> params = flushingWal.getParams();
+            String hccFilePath = params.get(0);
+            if(WALFileMeta.BEGIN_FLUSH.equals(state)){
+                //1 删除hccFile
+                FileUtils.forceDelete(new File(hccFilePath));
+                //2 重新flush
+                MemCache cache = new MemCache(new WalFileReader(walPath));
+                Flusher.FlushEntry entry = new Flusher.FlushEntry(
+                        cache,
+                        walPath,
+                        () -> flushingEntry.removeIf(
+                                flushEntry -> flushEntry.getMemCache().getId().equals(cache.getId()))
+                );
+                flushingEntry.add(entry);
+                flushExecutor.submit(new Flusher(hccFilePath,entry,hccWriter,stateManager));
+            }
+        }
+    }
+
+    private void flushCurrenWALIfHave() throws Exception {
+
+        WALFileMeta meta = stateManager.getCurrentWALFileMeta();
+        if(meta == null){
+            initCurrentWalAndMemCache();
+            return;
+        }
+
+        String hccFilePath = PDBFileUtils.createHccFileName(path);
+        stateManager.addFlushingWal(meta.getWalPath(),
+                WALFileMeta.BEGIN_FLUSH,
+                Lists.newArrayList(hccFilePath));
+
+        initCurrentWalAndMemCache();
+        //flush
+        MemCache cache = new MemCache(new WalFileReader(meta.getWalPath()));
+        Flusher.FlushEntry entry = new Flusher.FlushEntry(
+                cache,
+                meta.getWalPath(),
+                () -> flushingEntry.removeIf(
+                        flushEntry -> flushEntry.getMemCache().getId().equals(cache.getId()))
+        );
+        flushingEntry.add(entry);
+        flushExecutor.submit(new Flusher(hccFilePath,entry,hccWriter,stateManager));
+    }
+
+    private void initCurrentWalAndMemCache() throws Exception {
+        String walFileName = PDBFileUtils.createWalFileName(path);
+        stateManager.setCurrentWalFileMeta(new WALFileMeta(walFileName,WALFileMeta.CREATE,Lists.newArrayList(walFileName)));
+        this.current = new MemCache();
+        this.walWriter = new FileWalWriter(walFileName);
     }
 }

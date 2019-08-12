@@ -18,6 +18,7 @@ public class WriteContext {
      */
     private ByteBloomFilter bloom;
 
+
     public WriteContext(ByteBloomFilter bloom) {
         this.bloom = bloom;
     }

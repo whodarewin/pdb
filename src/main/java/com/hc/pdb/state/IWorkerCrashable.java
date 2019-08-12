@@ -1,9 +1,5 @@
 package com.hc.pdb.state;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-
-import java.io.IOException;
-
 /**
  * 宕机处理器
  * @author han.congcong

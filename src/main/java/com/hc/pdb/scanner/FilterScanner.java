@@ -5,6 +5,7 @@ import com.hc.pdb.util.Bytes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.concurrent.NotThreadSafe;
 import java.io.IOException;
 import java.util.List;
 import java.util.PriorityQueue;
@@ -12,7 +13,9 @@ import java.util.Set;
 
 /**
  * 最上层的scanner
+ * @author han.congcong
  */
+@NotThreadSafe
 public class FilterScanner implements IScanner {
     private static final Logger LOGGER = LoggerFactory.getLogger(FilterScanner.class);
     private PriorityQueue<IScanner> queue;
@@ -21,7 +24,7 @@ public class FilterScanner implements IScanner {
     public FilterScanner(Set<IScanner> scanners) {
         if(scanners == null){
             LOGGER.error("scanners can not be null");
-            throw new RuntimeException("scanners can not be null");
+            throw new ScannerNullException("scanners can not be null");
         }
         if(scanners.size() == 0){
             LOGGER.info("scanners is empty");

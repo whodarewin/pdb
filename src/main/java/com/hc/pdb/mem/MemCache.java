@@ -23,7 +23,7 @@ public class MemCache{
 
     private String id = UUID.randomUUID().toString();
 
-    private ConcurrentSkipListMap<byte[], Cell> memValue = new ConcurrentSkipListMap<>((o1, o2) -> Bytes.compare(o1, o2));
+    private ConcurrentSkipListMap<byte[], Cell> memValue = new ConcurrentSkipListMap<>(Bytes::compare);
 
     private AtomicLong size = new AtomicLong();
 

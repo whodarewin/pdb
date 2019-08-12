@@ -47,7 +47,7 @@ public class HCCWriter implements IHCCWriter {
     }
 
     @Override
-    public HCCFileMeta writeHCC(Iterator<Cell> cells, int size,String fileName) throws IOException {
+    public HCCFileMeta writeHCC(Iterator<Cell> cellIterator, int size,String fileName) throws IOException {
         //1 创建文件
 
         if (path == null) {
@@ -79,7 +79,7 @@ public class HCCWriter implements IHCCWriter {
             WriteContext context = new WriteContext(filter);
             LOGGER.info("second,write block,index is {}", FileConstants.HCC_WRITE_PREFIX.length );
             //2 开始写block
-            IBlockWriter.BlockWriterResult result = blockWriter.writeBlock(cells, fileOutputStream, context);
+            IBlockWriter.BlockWriterResult result = blockWriter.writeBlock(cellIterator, fileOutputStream, context);
             int blockFinishIndex = result.getIndex();
             LOGGER.info("block write finish,index is {}",blockFinishIndex);
             int indexStartIndex = blockFinishIndex ;
@@ -109,6 +109,6 @@ public class HCCWriter implements IHCCWriter {
         try (FileInputStream inputStream = new FileInputStream(fileName)){
             md5 = MD5Utils.getMD5(inputStream.getChannel());
         }
-        return new HCCFileMeta(fileName, md5, System.currentTimeMillis(), size);
+        return new HCCFileMeta(fileName, md5, size, System.currentTimeMillis());
     }
 }

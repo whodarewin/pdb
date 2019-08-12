@@ -25,19 +25,19 @@ public class StateTest {
     public void testStateSerialize() throws Exception {
         State state = new State();
         state.getFileMetas().add(new HCCFileMeta("/Users/momo/sourcecode/pdb/target/test-classes/b85e59bd-b3a9-40f7-88d7-3337dec64359.hcc",
-                "73aa60bbc110734af05bbe32ab43ce4a", 1564649395116l,1008247));
+                "73aa60bbc110734af05bbe32ab43ce4a", 1008247,156495116));
 
         state.getFileMetas().add(new HCCFileMeta("/Users/momo/sourcecode/pdb/target/test-classes/2622f38f-9670-4548-8888-3d1396d2b016.hcc",
-                "a2ea1415bf1cb58b982367b17f5ba6cd",1564649376435l,1008247));
+                "a2ea1415bf1cb58b982367b17f5ba6cd",1008247,15637643));
 
         state.getFileMetas().add(new HCCFileMeta("/Users/momo/sourcecode/pdb/target/test-classes/73c44f74-7e0a-4915-9edd-1090ed4186c4.hcc",
-                "dd94b1123996e711b5a72ad4dc42d530",1564649404508l,1008247));
+                "dd94b1123996e711b5a72ad4dc42d530",1008247,156404508l));
 
         state.getFileMetas().add(new HCCFileMeta("/Users/momo/sourcecode/pdb/target/test-classes/f5aedc9b-f71b-4a23-baab-45026c423cb7.hcc",
-                "1f163c1bdfa250a880d81eec10d08cfd",1564649385533l,1008247));
+                "1f163c1bdfa250a880d81eec10d08cfd",1008247,156465533l));
 
         state.getFileMetas().add(new HCCFileMeta("/Users/momo/sourcecode/pdb/target/test-classes/c275fd4a-2a5a-4540-9a66-5e690857df50.hcc",
-                "05a54b32f2af6996014608613fb16c26",1564649415079l,1008247));
+                "05a54b32f2af6996014608613fb16c26",1008247,1564649415079l));
 
         ByteBuffer buffer = ByteBuffer.allocate(state.serialize().length);
         buffer.mark();

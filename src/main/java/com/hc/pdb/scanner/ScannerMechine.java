@@ -15,7 +15,8 @@ import java.util.Set;
 
 /**
  * scanner的创建者
- * Created by congcong.han on 2019/6/22.
+ * @author han.congcong
+ * @date 2019/6/22.
  */
 public class ScannerMechine {
     private static final Logger LOGGER = LoggerFactory.getLogger(ScannerMechine.class);

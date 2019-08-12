@@ -7,6 +7,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+/**
+ * @author han.congcong
+ */
 public class Cell implements ISerializable, Comparable<Cell>{
     public static final long NO_TTL = -1;
 
@@ -97,7 +100,10 @@ public class Cell implements ISerializable, Comparable<Cell>{
         return outputStream.toByteArray();
     }
 
-    //key length + key timeToDrop + value
+    /**
+     * key length + key timeToDrop + value
+     */
+
     public byte[] serializeNormalCell() throws IOException {
         //todo:抛弃output stream 的写法，写到文件里要增加version字段。
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();

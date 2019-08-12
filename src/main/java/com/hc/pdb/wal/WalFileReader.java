@@ -11,7 +11,8 @@ import java.nio.channels.FileChannel;
 import java.util.Iterator;
 
 /**
- * Created by congcong.han on 2019/7/27.
+ * @author han.congcong
+ * @date 2019/7/27
  */
 public class WalFileReader implements IWalReader{
     private String path;
@@ -25,7 +26,7 @@ public class WalFileReader implements IWalReader{
     }
 
     @Override
-    public Iterator<Cell> read() throws IOException {
+    public Iterator<Cell> read() {
         return new Iterator<Cell>() {
             Cell currentCell = null;
             @Override

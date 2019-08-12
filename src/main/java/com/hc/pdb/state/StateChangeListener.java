@@ -1,9 +1,5 @@
 package com.hc.pdb.state;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-
-import java.io.IOException;
-
 /**
  * StateChangeListener
  *
@@ -15,6 +11,7 @@ public interface StateChangeListener {
     /**
      * 改变状态
      * @param state 状态
+     * @throws Exception todo:made it ChangeException
      */
     void onChange(State state) throws Exception;
 }

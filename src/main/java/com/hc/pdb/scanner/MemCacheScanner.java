@@ -12,15 +12,12 @@ import java.util.Map;
  * @date 2019/6/12
  */
 public class MemCacheScanner implements IScanner{
-    private MemCache memCache;
     private Iterator<Map.Entry<byte[],Cell>> iterator;
     private Cell current;
 
     public MemCacheScanner(MemCache memCache, byte[] startKey, byte[] endKey) {
-        this.memCache = memCache;
         this.iterator = memCache.iterator(startKey,endKey);
     }
-
 
     @Override
     public Cell next() {

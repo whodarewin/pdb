@@ -49,7 +49,7 @@ public class CrashWorkerManager {
         });
     }
 
-    public void redoAllWorker() throws IOException {
+    public void redoAllWorker() throws IOException, ExecutionException, InterruptedException {
         //1 load all recorder that not finished
         List<List<Recorder.RecordLog>> logs = logRecorder.getAllLogNotFinished();
         //2 redo all recorder
@@ -60,7 +60,8 @@ public class CrashWorkerManager {
      * 宕机后继续执行任务
      * @param logs
      */
-    public void redoWork(List<List<Recorder.RecordLog>> logs) throws IOException {
+    public void redoWork(List<List<Recorder.RecordLog>> logs) throws IOException,
+            ExecutionException, InterruptedException {
         if(logs.size() == 0){
             LOGGER.info("no log to continue");
             return;
@@ -80,26 +81,19 @@ public class CrashWorkerManager {
             }
 
             IWorkerCrashable workerCrashable = factory.create(log);
-            CompletableFuture.runAsync(() -> {
+            completableFutures.add(CompletableFuture.runAsync(() -> {
                 try {
                     workerCrashable.continueWork(recorder);
                     recorder.endRecord();
-                } catch (JsonProcessingException e) {
-                    throw new RuntimeException(e);
-                } catch (IOException e) {
-                    e.printStackTrace();
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    throw new CompletionException(e);
                 }
-            },service);
+            },service));
         }
 
         CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[completableFutures.size()]))
-                .whenComplete((r,e)->{
-                    if(e != null){
-                        throw new RuntimeException(e);
-                    }
-                }).join();
+                .get();
+
         service.shutdown();
     }
 }

@@ -66,6 +66,7 @@ public class LSMEngineTest {
             Assert.assertEquals(n,value);
             n++;
         }
+        Thread.sleep(1000000000);
     }
 
     @After

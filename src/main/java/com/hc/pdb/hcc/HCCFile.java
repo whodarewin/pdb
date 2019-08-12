@@ -7,6 +7,7 @@ import com.hc.pdb.util.Bytes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
@@ -31,6 +32,7 @@ public class HCCFile {
      * 索引 block的开始key和blcok的开始index
      */
     private TreeMap<byte[], Integer> key2index = new TreeMap<>(Bytes::compare);
+
     private byte[] start;
 
     /**

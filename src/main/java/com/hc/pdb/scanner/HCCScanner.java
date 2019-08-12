@@ -8,6 +8,7 @@ import java.io.IOException;
 
 /**
  * hcc file的scanner
+ * @author han.congcong
  */
 public class HCCScanner implements IScanner {
     private HCCReader reader;

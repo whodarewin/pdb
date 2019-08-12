@@ -37,7 +37,6 @@ public class LSMEngine implements IEngine {
     private StateManager stateManager;
     private HCCWriter hccWriter;
     private Compactor compactor;
-    private CrashWorkerManager crashWorkerManager;
     private String path;
 
     /**
@@ -65,15 +64,14 @@ public class LSMEngine implements IEngine {
         HCCManager hccManager = new HCCManager(configuration,reader);
         //注册hccManager hccFile 变动时通知
         stateManager.addListener(hccManager);
-        //创建CrashWorkerManager
-        crashWorkerManager = new CrashWorkerManager(path);
-        memCacheManager = new MemCacheManager(configuration,stateManager,hccWriter,crashWorkerManager);
+        //创建CrashWorkerManage
+        memCacheManager = new MemCacheManager(configuration,stateManager,hccWriter);
         //创建scannerMechine，整体的读架子搭建起来
         scannerMechine = new ScannerMechine(hccManager,memCacheManager);
         //～～ 读架子搭建完毕
 
         //创建compactor
-        compactor = new Compactor(configuration,stateManager, hccWriter,crashWorkerManager);
+        compactor = new Compactor(configuration,stateManager, hccWriter);
         //注册compactor，hccFile变动时通知
         stateManager.addListener(compactor);
 
@@ -81,7 +79,6 @@ public class LSMEngine implements IEngine {
         PDBStatus.addListener(compactor);
         PDBStatus.addListener(memCacheManager);
 
-        crashWorkerManager.redoAllWorker();
     }
 
 
