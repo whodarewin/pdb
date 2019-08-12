@@ -1,6 +1,7 @@
 package com.hc.pdb.compactor;
 
 import com.hc.pdb.Cell;
+import com.hc.pdb.ISafeClose;
 import com.hc.pdb.LockContext;
 import com.hc.pdb.PDBStatus;
 import com.hc.pdb.conf.Configuration;
@@ -31,7 +32,8 @@ import java.util.stream.Collectors;
  * @date 2019/6/11
  */
 
-public class Compactor implements StateChangeListener,IRecoveryable, PDBStatus.StatusListener {
+public class Compactor implements StateChangeListener,IRecoveryable,
+        PDBStatus.StatusListener, ISafeClose {
     public static final String NAME = "compactor";
     private static final Logger LOGGER = LoggerFactory.getLogger(Compactor.class);
     private ExecutorService compactorExecutor;
@@ -45,6 +47,7 @@ public class Compactor implements StateChangeListener,IRecoveryable, PDBStatus.S
                 PDBConstants.COMPACTOR_THREAD_SIZE);
         compactThreshold = configuration.getInt(PDBConstants.COMPACTOR_HCCFILE_THRESHOLD_KEY,
                 PDBConstants.COMPACTOR_HCCFILE_THRESHOLD);
+        LOGGER.info("compactor thread size is {}",compactorSize);
         compactorExecutor = Executors.newFixedThreadPool(compactorSize);
         this.path = configuration.get(PDBConstants.DB_PATH_KEY);
         this.stateManager = stateManager;
@@ -102,6 +105,13 @@ public class Compactor implements StateChangeListener,IRecoveryable, PDBStatus.S
                     stateManager
                     ));
         }
+    }
+
+    @Override
+    public void safeClose() {
+        PDBStatus.setClose(true);
+        this.compactorExecutor.shutdownNow();
+
     }
 
 

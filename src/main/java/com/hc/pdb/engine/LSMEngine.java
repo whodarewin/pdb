@@ -44,6 +44,10 @@ public class LSMEngine implements IEngine {
      * @throws Exception
      */
     public LSMEngine(Configuration configuration) throws Exception {
+        createOrStartPDB(configuration);
+    }
+
+    private void createOrStartPDB(Configuration configuration) throws Exception {
         Preconditions.checkNotNull(configuration);
         this.path = configuration.get(PDBConstants.DB_PATH_KEY);
         LOGGER.info("create lsm db at {}",path);
@@ -78,9 +82,7 @@ public class LSMEngine implements IEngine {
 
         PDBStatus.addListener(compactor);
         PDBStatus.addListener(memCacheManager);
-
     }
-
 
 
     @Override
@@ -89,10 +91,11 @@ public class LSMEngine implements IEngine {
         Cell cell = new Cell(key, value, ttl,false);
         this.memCacheManager.addCell(cell);
     }
-    //todo:同步问题
+
     @Override
     public void clean() throws IOException, DBCloseException {
         PDBStatus.checkDBStatus();
+        close();
         String path = configuration.get(PDBConstants.DB_PATH_KEY);
         LOGGER.info("clean lsm db at path {}",path);
         FileUtils.deleteDirectory(new File(path));
@@ -100,7 +103,9 @@ public class LSMEngine implements IEngine {
 
     @Override
     public void close() {
-
+        PDBStatus.setClose(true);
+        this.memCacheManager.safeClose();
+        this.compactor.safeClose();
     }
 
 

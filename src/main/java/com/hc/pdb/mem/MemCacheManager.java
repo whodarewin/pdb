@@ -2,6 +2,7 @@ package com.hc.pdb.mem;
 
 import com.google.common.collect.Lists;
 import com.hc.pdb.Cell;
+import com.hc.pdb.ISafeClose;
 import com.hc.pdb.LockContext;
 import com.hc.pdb.PDBStatus;
 import com.hc.pdb.conf.Configuration;
@@ -29,7 +30,8 @@ import java.util.stream.Collectors;
  * @author congcong.han
  * @date 2019/6/22
  */
-public class MemCacheManager implements IRecoveryable, PDBStatus.StatusListener {
+public class MemCacheManager implements IRecoveryable, PDBStatus.StatusListener,
+        ISafeClose {
     private static final String FLUSHER = "flusher";
 
     private StateManager stateManager;
@@ -54,7 +56,7 @@ public class MemCacheManager implements IRecoveryable, PDBStatus.StatusListener 
         flushExecutor = new ThreadPoolExecutor(flushThreadNum, flushThreadNum,
                 0L, TimeUnit.MILLISECONDS,
                 new SynchronousQueue<>(),
-                new NamedThreadFactory("pdb-flusher"));
+                new NamedThreadFactory("pdb-flusher-"));
         recovery();
     }
 
@@ -85,7 +87,7 @@ public class MemCacheManager implements IRecoveryable, PDBStatus.StatusListener 
                     MemCache tmpCache = current;
                     Flusher.FlushEntry entry;
                     String hccFileName = PDBFileUtils.createHccFileName(path);
-                    //1 标记这个wal要被flush
+                    //1 记录日志
                     stateManager.addFlushingWal(walWriter.getWalFileName(),WALFileMeta.BEGIN_FLUSH,Lists.newArrayList(hccFileName));
                     //2 关闭老的walWriter
                     IWalWriter tmpWalWriter = walWriter;
@@ -204,5 +206,13 @@ public class MemCacheManager implements IRecoveryable, PDBStatus.StatusListener 
         stateManager.setCurrentWalFileMeta(new WALFileMeta(walFileName,WALFileMeta.CREATE,Lists.newArrayList(walFileName)));
         this.current = new MemCache();
         this.walWriter = new FileWalWriter(walFileName);
+    }
+
+    @Override
+    public void safeClose() {
+        //1 阻塞所有的写：直接设置为close就行
+        PDBStatus.setClose(true);
+        //2 等待该flush的全部flush掉
+        this.flushExecutor.shutdownNow();
     }
 }

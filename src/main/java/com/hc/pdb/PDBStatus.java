@@ -17,7 +17,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class PDBStatus {
     private static final Logger LOGGER = LoggerFactory.getLogger(PDBStatus.class);
-    private static boolean close = false;
+    private static volatile boolean close = false;
     private static Exception crashException;
     private static List<StatusListener> listeners = new CopyOnWriteArrayList<>();
 
