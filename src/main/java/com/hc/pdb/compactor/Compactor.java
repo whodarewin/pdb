@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
  */
 
 public class Compactor implements StateChangeListener,IRecoveryable,
-        PDBStatus.StatusListener, ISafeClose {
+        PDBStatus.StatusListener {
     public static final String NAME = "compactor";
     private static final Logger LOGGER = LoggerFactory.getLogger(Compactor.class);
     private ExecutorService compactorExecutor;
@@ -51,7 +51,7 @@ public class Compactor implements StateChangeListener,IRecoveryable,
         compactThreshold = configuration.getInt(PDBConstants.COMPACTOR_HCCFILE_THRESHOLD_KEY,
                 PDBConstants.COMPACTOR_HCCFILE_THRESHOLD);
         LOGGER.info("compactor thread size is {}",compactorSize);
-        compactorExecutor = Executors.newFixedThreadPool(compactorSize,new NamedThreadFactory("compactor-thread"));
+        compactorExecutor = Executors.newFixedThreadPool(compactorSize,new NamedThreadFactory("pdb-compactor"));
         this.path = configuration.get(PDBConstants.DB_PATH_KEY);
         this.stateManager = stateManager;
         this.hccWriter = hccWriter;
@@ -111,13 +111,6 @@ public class Compactor implements StateChangeListener,IRecoveryable,
         }
     }
 
-    @Override
-    public void safeClose() {
-        pdbStatus.setClose(true);
-        this.compactorExecutor.shutdownNow();
-
-    }
-
 
     public class CompactorWorker implements Runnable{
 
@@ -174,7 +167,7 @@ public class Compactor implements StateChangeListener,IRecoveryable,
                 }
             }catch (Exception e){
                 pdbStatus.setCrashException(e);
-                pdbStatus.setClose(true);
+                pdbStatus.setClose(true,"compact exception");
                 throw new RuntimeException(e);
             }
         }

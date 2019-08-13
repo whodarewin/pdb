@@ -54,7 +54,7 @@ public class Flusher implements Runnable {
             doFlush(hccFilePath);
             stateManager.deleteFlushingWal(walPath);
         } catch (Exception e) {
-            pdbStatus.setClose(true);
+            pdbStatus.setClose(true,"flush exception");
             pdbStatus.setCrashException(e);
         }
     }

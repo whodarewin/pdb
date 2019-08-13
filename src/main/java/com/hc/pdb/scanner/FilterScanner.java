@@ -49,25 +49,39 @@ public class FilterScanner implements IScanner {
                 return null;
             }
             Cell cell = scanner.peek();
-            // 两种情况继续读下一个
-            // 1 key和上一个相同
-            // 2 为deleteCell
-            if((current != null &&
-                    (Bytes.compare(cell.getKey(),current.getKey()) == 0)
-                    || cell.getDelete())){
+
+            //先过滤掉过期的，丢掉这种Cell
+            if(System.currentTimeMillis() > cell.getTimeStamp() + cell.getTtl()) {
+                if (scanner.next() != null) {
+                    queue.add(scanner);
+                }
+                continue;
+            //处理delete，设置current但是不返回。
+            }else if(cell.getDelete()){
+                if(scanner.next() != null){
+                    queue.add(scanner);
+                }
+                this.current = cell;
+                continue;
+            //如果是空，那么直接返回
+            } else if(current == null){
+                if(scanner.next() != null){
+                    queue.add(scanner);
+                }
+                this.current = cell;
+                break;
+            //如果和上一个key一致，则为覆盖删除的，继续
+            }else if((current != null && (Bytes.compare(cell.getKey(),current.getKey()) == 0))){
                 if(scanner.next() != null){
                     queue.add(scanner);
                 }
                 continue;
             }
-            if(scanner.next() != null){
-                queue.add(scanner);
-            }
-
-            this.current = cell;
             break;
         }
-
+        if(current.getDelete()){
+            return null;
+        }
         return current;
     }
 

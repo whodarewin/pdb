@@ -94,9 +94,10 @@ public class LSMEngine implements IEngine {
     }
 
     @Override
-    public void clean() throws IOException, DBCloseException {
-        pdbStatus.checkDBStatus();
-        close();
+    public void clean() throws IOException {
+        if(!pdbStatus.isClose()){
+            close();
+        }
         String path = configuration.get(PDBConstants.DB_PATH_KEY);
         LOGGER.info("clean lsm db at path {}",path);
         FileUtils.deleteDirectory(new File(path));
@@ -104,9 +105,7 @@ public class LSMEngine implements IEngine {
 
     @Override
     public void close() {
-        pdbStatus.setClose(true);
-        this.memCacheManager.safeClose();
-        this.compactor.safeClose();
+        pdbStatus.setClose(true,"lsm close");
     }
 
 
@@ -117,13 +116,17 @@ public class LSMEngine implements IEngine {
         if(scanner == null){
             return null;
         }
-        return scanner.next().getValue();
+        Cell cell = scanner.next();
+        if(cell == null){
+            return null;
+        }
+        return cell.getValue();
     }
 
     @Override
     public void delete(byte[] key) throws Exception {
         pdbStatus.checkDBStatus();
-        Cell cell = new Cell(key, null, Cell.NO_TTL, false);
+        Cell cell = new Cell(key, Cell.DELETE_VALUE, Cell.NO_TTL, true);
         this.memCacheManager.addCell(cell);
     }
 

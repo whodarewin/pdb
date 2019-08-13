@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -37,6 +38,10 @@ public class HCCReader implements IHCCReader {
      */
     private RandomAccessFile file;
     /**
+     * file channel
+     */
+    private FileChannel channel;
+    /**
      * 索引 block的开始key和blcok的开始index
      */
     private TreeMap<byte[], Integer> key2index;
@@ -55,6 +60,7 @@ public class HCCReader implements IHCCReader {
                      ByteBloomFilter byteBloomFilter,MetaInfo metaInfo) throws IOException {
         this.filePath = path;
         file = new RandomAccessFile(path, "r");
+        this.channel = file.getChannel();
         this.key2index = key2index;
         this.byteBloomFilter = byteBloomFilter;
         this.metaInfo = metaInfo;
@@ -135,7 +141,7 @@ public class HCCReader implements IHCCReader {
     private void readBlock(int blockStartIndex, int blockEndIndex) throws IOException {
         this.currentBlock = ByteBuffer.allocateDirect(blockEndIndex - blockStartIndex);
         this.currentBlock.mark();
-        file.getChannel().read(this.currentBlock, blockStartIndex);
+        channel.read(this.currentBlock, blockStartIndex);
         this.currentBlock.reset();
     }
 

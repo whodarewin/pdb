@@ -19,6 +19,7 @@ public class PDBStatus {
     private static final Logger LOGGER = LoggerFactory.getLogger(PDBStatus.class);
     private volatile boolean close = false;
     private Exception crashException;
+    private String cause;
     private List<StatusListener> listeners = new CopyOnWriteArrayList<>();
 
     public void checkDBStatus() throws DBCloseException {
@@ -31,9 +32,10 @@ public class PDBStatus {
         return close;
     }
 
-    public void setClose(boolean close) {
-        LOGGER.info("set db to close");
+    public void setClose(boolean close,String cause) {
+        LOGGER.info("set db to close,cause {}",cause);
         this.close = close;
+        this.cause = cause;
         for (StatusListener listener : listeners) {
             try {
                 listener.onClose();

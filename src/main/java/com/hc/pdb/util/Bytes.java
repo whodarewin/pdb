@@ -27,10 +27,16 @@ public class Bytes {
 
 
     public static long toLong(byte[] b) {
+        if(b == null){
+            throw new IllegalArgumentException("value can not be null");
+        }
         return UnsafeAccess.toLong(b, 0);
     }
 
     public static int toInt(byte[] b) {
+        if(b == null){
+            throw new IllegalArgumentException("value can not be null");
+        }
         return UnsafeAccess.toInt(b, 0);
     }
 

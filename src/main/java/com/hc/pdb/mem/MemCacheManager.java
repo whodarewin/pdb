@@ -30,8 +30,7 @@ import java.util.stream.Collectors;
  * @author congcong.han
  * @date 2019/6/22
  */
-public class MemCacheManager implements IRecoveryable, PDBStatus.StatusListener,
-        ISafeClose {
+public class MemCacheManager implements IRecoveryable, PDBStatus.StatusListener{
     private static final String FLUSHER = "flusher";
 
     private StateManager stateManager;
@@ -117,7 +116,7 @@ public class MemCacheManager implements IRecoveryable, PDBStatus.StatusListener,
 
     @Override
     public void onClose() throws IOException {
-        this.flushExecutor.shutdown();
+        this.flushExecutor.shutdownNow();
         this.walWriter.close();
     }
 
@@ -209,13 +208,5 @@ public class MemCacheManager implements IRecoveryable, PDBStatus.StatusListener,
         stateManager.setCurrentWalFileMeta(new WALFileMeta(walFileName,WALFileMeta.CREATE,Lists.newArrayList(walFileName)));
         this.current = new MemCache();
         this.walWriter = new FileWalWriter(walFileName);
-    }
-
-    @Override
-    public void safeClose() {
-        //1 阻塞所有的写：直接设置为close就行
-        pdbStatus.setClose(true);
-        //2 等待该flush的全部flush掉
-        this.flushExecutor.shutdownNow();
     }
 }

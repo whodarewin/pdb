@@ -1,10 +1,8 @@
 package com.hc.pdb.engine;
 
-import com.hc.pdb.Cell;
 import com.hc.pdb.conf.Configuration;
 import com.hc.pdb.conf.PDBConstants;
 import com.hc.pdb.exception.DBCloseException;
-import com.hc.pdb.scanner.IScanner;
 import com.hc.pdb.util.Bytes;
 import org.junit.After;
 import org.junit.Assert;
@@ -31,46 +29,35 @@ public class LSMEngineTest {
     }
 
     @Test
-    public void test() throws Exception {
-        for (int i = 0; i < 10000000; i++) {
-            engine.put(Bytes.toBytes(i),Bytes.toBytes(i),20);
+    public void testCase1() throws Exception {
+        for(int i = 0; i < 1000000; i++){
+            engine.put(Bytes.toBytes(i),Bytes.toBytes(i), Long.MAX_VALUE);
         }
-        for (int i = 0; i < 1500000; i++) {
-            engine.put(Bytes.toBytes(i),Bytes.toBytes(i),20);
+        for(int i = 0; i < 1000000; i++){
+            byte[] bytes = engine.get(Bytes.toBytes(i));
+            int value = Bytes.toInt(bytes);
+            Assert.assertEquals(i,value);
         }
+        engine.clean();
+    }
 
+    @Test
+    public void testCase2() throws Exception {
+        for(int i = 0; i < 100; i++){
+            engine.put(Bytes.toBytes(i),Bytes.toBytes(i), 20);
+        }
+        Thread.sleep(20000);
 
-        Assert.assertEquals(Bytes.toInt(engine.get(Bytes.toBytes(10))), 10);
-        IScanner scanner = engine.scan(null,null);
-        int i = 0;
-        while(scanner.next() != null){
-            Cell cell = scanner.peek();
-            int value = Bytes.toInt(cell.getValue());
-            Assert.assertEquals(value,i);
-            i++;
+        for(int i = 0; i < 100; i++){
+            byte[] bytes = engine.get(Bytes.toBytes(i));
+            Assert.assertEquals(null,bytes);
         }
+        engine.clean();
 
-        IScanner endNullScanner = engine.scan(Bytes.toBytes(10000),null);
-        int m = 10000;
-        while(endNullScanner.next() != null){
-            Cell cell = endNullScanner.peek();
-            int value = Bytes.toInt(cell.getValue());
-            Assert.assertEquals(m,value);
-            m++;
-        }
-        IScanner startNullScanner = engine.scan(null,Bytes.toBytes(10000));
-        int n = 0;
-        while(startNullScanner.next() != null){
-            Cell cell = startNullScanner.peek();
-            int value = Bytes.toInt(cell.getValue());
-            Assert.assertEquals(n,value);
-            n++;
-        }
-        Thread.sleep(1000000000);
     }
 
     @After
-    public void clean() throws IOException, DBCloseException {
+    public void clean() throws IOException {
         engine.clean();
     }
 }

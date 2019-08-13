@@ -107,14 +107,14 @@ public class StateManager {
         return compactingFile.getCompactingID();
     }
 
-    public void deleteFlushingWal(String walPath) throws Exception {
+    public synchronized void deleteFlushingWal(String walPath) throws Exception {
         LOGGER.info("delete flushing wal {}", walPath);
         state.getFlushingWals().removeIf(walFileMeta -> walFileMeta.getWalPath().equals(walPath));
         sync();
         notifyListener();
     }
 
-    public void addFlushingWal(String walPath,String state,List<String> param) throws Exception {
+    public synchronized void addFlushingWal(String walPath,String state,List<String> param) throws Exception {
         WALFileMeta walFileMeta = new WALFileMeta(walPath,state,param);
         this.state.getFlushingWals().add(walFileMeta);
         sync();
@@ -132,7 +132,7 @@ public class StateManager {
         return false;
     }
 
-    public void changeCompactingFileState(String compactingID,String changeState) throws Exception {
+    public synchronized void changeCompactingFileState(String compactingID,String changeState) throws Exception {
         state.getCompactingFileMeta().forEach(compactingFile -> {
             if(compactingFile.getCompactingID().equals(compactingID)){
                 compactingFile.setState(changeState);
@@ -140,6 +140,16 @@ public class StateManager {
         });
         sync();
         notifyListener();
+    }
+
+    public synchronized void setClose() throws Exception {
+        this.state.setClose(true);
+        sync();
+        notifyListener();
+    }
+
+    public boolean isClosing(){
+        return state.isClose();
     }
 
     public boolean exist(String fileName){

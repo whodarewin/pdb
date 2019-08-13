@@ -12,9 +12,11 @@ import java.nio.ByteBuffer;
  */
 public class Cell implements ISerializable, Comparable<Cell>{
     public static final long NO_TTL = -1;
+    public static final byte[] DELETE_VALUE = new byte[1];
 
     private static final int NORMAL_BYTE = 1;
     private static final int DELETE_BYTE = 0;
+
 
     private byte[] key;
     private byte[] value;
@@ -141,5 +143,13 @@ public class Cell implements ISerializable, Comparable<Cell>{
 
     public boolean getDelete(){
         return delete;
+    }
+
+    public long getTimeStamp() {
+        return timeStamp;
+    }
+
+    public void setTimeStamp(long timeStamp) {
+        this.timeStamp = timeStamp;
     }
 }

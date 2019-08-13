@@ -1,7 +1,5 @@
 package com.hc.pdb.state;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hc.pdb.ISerializable;
 import io.protostuff.LinkedBuffer;
 import io.protostuff.ProtostuffIOUtil;
@@ -22,7 +20,8 @@ import java.util.*;
 public class State implements ISerializable{
     private static final Logger LOGGER = LoggerFactory.getLogger(State.class);
     private static Schema<State> schema = RuntimeSchema.getSchema(State.class);
-    private static ThreadLocal<LinkedBuffer> buffer = ThreadLocal.withInitial(() -> LinkedBuffer.allocate(LinkedBuffer.DEFAULT_BUFFER_SIZE));
+    private static ThreadLocal<LinkedBuffer> buffer =
+            ThreadLocal.withInitial(() -> LinkedBuffer.allocate(LinkedBuffer.DEFAULT_BUFFER_SIZE));
 
     private Set<HCCFileMeta> fileMetas = new HashSet<>();
 
@@ -31,6 +30,8 @@ public class State implements ISerializable{
     private Set<WALFileMeta> flushingWals = new HashSet<>();
 
     private WALFileMeta walFileMeta;
+
+    private boolean close = false;
 
     public Set<HCCFileMeta> getFileMetas() {
         return fileMetas;
@@ -64,6 +65,14 @@ public class State implements ISerializable{
 
     public void setCompactingFileMeta(Set<CompactingFile> compactingFileMeta) {
         this.compactingFileMeta = compactingFileMeta;
+    }
+
+    public boolean isClose() {
+        return close;
+    }
+
+    public void setClose(boolean close) {
+        this.close = close;
     }
 
     @Override

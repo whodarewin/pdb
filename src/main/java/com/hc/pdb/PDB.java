@@ -9,8 +9,10 @@ import com.hc.pdb.scanner.IScanner;
 
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.concurrent.TimeUnit;
 
 /**
+ * TODO:key-value null值处理
  * PDB 对外暴露接口
  */
 public class PDB {
@@ -30,6 +32,10 @@ public class PDB {
 
     public void put(byte[] key, byte[] value) throws Exception {
         this.engine.put(key, value, -1);
+    }
+
+    public void put(byte[] key, byte[] value, long ttl, TimeUnit unit) throws Exception {
+        this.engine.put(key, value, unit.toMillis(ttl));
     }
 
     public IScanner scan(byte[] start, byte[] end) throws IOException, DBCloseException {
