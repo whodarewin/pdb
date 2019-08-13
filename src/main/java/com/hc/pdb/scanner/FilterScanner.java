@@ -51,7 +51,7 @@ public class FilterScanner implements IScanner {
             Cell cell = scanner.peek();
 
             //先过滤掉过期的，丢掉这种Cell
-            if(System.currentTimeMillis() > cell.getTimeStamp() + cell.getTtl()) {
+            if((cell.getTtl() != Cell.NO_TTL) && System.currentTimeMillis() > cell.getTimeStamp() + cell.getTtl()) {
                 if (scanner.next() != null) {
                     queue.add(scanner);
                 }
@@ -76,8 +76,13 @@ public class FilterScanner implements IScanner {
                     queue.add(scanner);
                 }
                 continue;
+            }else{
+                if(scanner.next() != null){
+                    queue.add(scanner);
+                }
+                this.current = cell;
+                break;
             }
-            break;
         }
         if(current.getDelete()){
             return null;

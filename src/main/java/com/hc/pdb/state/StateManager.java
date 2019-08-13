@@ -70,7 +70,7 @@ public class StateManager {
     }
 
     public synchronized void setCurrentWalFileMeta(WALFileMeta walFileMeta) throws Exception {
-        LOGGER.info("set current wal file meta {}", walFileMeta);
+        LOGGER.info("set current wal file meta {}", walFileMeta.getWalPath());
         state.setWalFileMeta(walFileMeta);
         sync();
         notifyListener();
@@ -142,14 +142,14 @@ public class StateManager {
         notifyListener();
     }
 
-    public synchronized void setClose() throws Exception {
-        this.state.setClose(true);
+    public synchronized void setClean() throws Exception {
+        this.state.setClean(true);
         sync();
         notifyListener();
     }
 
-    public boolean isClosing(){
-        return state.isClose();
+    public boolean isCleaning(){
+        return state.isClean();
     }
 
     public boolean exist(String fileName){

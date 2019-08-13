@@ -58,9 +58,12 @@ public class MemCache{
             startKey = memValue.firstKey();
         }
         boolean lastInclude = false;
-        if(endKey == null || Bytes.compare(startKey,endKey) == 0 ){
+        if(endKey == null ){
             lastInclude = true;
             endKey = memValue.lastKey();
+        //get 请求
+        }else if(Bytes.compare(startKey,endKey) == 0){
+            lastInclude = true;
         }
 
         return memValue.subMap(startKey,true,endKey,lastInclude).entrySet().iterator();
@@ -77,6 +80,10 @@ public class MemCache{
 
     public String getId(){
         return id;
+    }
+
+    public boolean isEmpty(){
+        return memValue.isEmpty();
     }
 
     @Override

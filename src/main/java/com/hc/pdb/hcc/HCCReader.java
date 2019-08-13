@@ -45,16 +45,30 @@ public class HCCReader implements IHCCReader {
      * 索引 block的开始key和blcok的开始index
      */
     private TreeMap<byte[], Integer> key2index;
-
+    /**
+     * block的start
+     */
     private int blockStartIndex;
+    /**
+     * block的end
+     */
     private int blockEndIndex;
+    /**
+     *
+     */
     private byte[] endKey;
+    /**
+     * 当前读取的block
+     */
     private ByteBuffer currentBlock;
 
     /**
      * 加载预加载内容
      *
      * @param path hcc 的地址
+     * @param key2index block的索引
+     * @param byteBloomFilter 布隆过滤器
+     * @param metaInfo hcc 的 META值
      */
     public HCCReader(String path, TreeMap<byte[], Integer> key2index,
                      ByteBloomFilter byteBloomFilter,MetaInfo metaInfo) throws IOException {
@@ -68,12 +82,15 @@ public class HCCReader implements IHCCReader {
     }
 
     private void seekToFirst() throws IOException {
-        //1 找到key所定义的index
+        //找到block的start index，为啥不直接用startKey找：TODO:
         blockStartIndex = this.key2index.firstEntry().getValue();
+        //找到第二个entry
         Map.Entry<byte[], Integer> entry = this.key2index.higherEntry(this.metaInfo.getStartKey());
+        //如果能找到，则其start即为这个block的end
         if (entry != null) {
             endKey = entry.getKey();
             blockEndIndex = entry.getValue();
+        //如果找不到
         } else {
             endKey = null;
             blockEndIndex = metaInfo.getIndexStartIndex() - 1;
@@ -139,7 +156,8 @@ public class HCCReader implements IHCCReader {
     }
 
     private void readBlock(int blockStartIndex, int blockEndIndex) throws IOException {
-        this.currentBlock = ByteBuffer.allocateDirect(blockEndIndex - blockStartIndex);
+        int cap = blockEndIndex - blockStartIndex;
+        this.currentBlock = ByteBuffer.allocateDirect(cap);
         this.currentBlock.mark();
         channel.read(this.currentBlock, blockStartIndex);
         this.currentBlock.reset();

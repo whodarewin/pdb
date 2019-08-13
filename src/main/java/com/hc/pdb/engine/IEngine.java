@@ -43,9 +43,12 @@ public interface IEngine {
      */
     byte[] get(byte[] key) throws IOException, DBCloseException;
     /**
-     * 清空数据库
+     * 清空数据库，所有数据丢失
      */
-    void clean() throws IOException, DBCloseException;
+    void clean() throws Exception;
 
+    /**
+     * 关闭数据库
+     */
     void close();
 }

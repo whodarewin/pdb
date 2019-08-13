@@ -71,6 +71,9 @@ public class BlockWriter implements IBlockWriter {
             }
             writeBloom(context.getBloom(), cell.getKey());
         }
+        if(end == null){
+            throw new RuntimeException("cell iterator is null");
+        }
         //写endkey的index 形成闭环
         writeIndex(context.getIndex(), end, index);
         return new BlockWriterResult(index,start,end);

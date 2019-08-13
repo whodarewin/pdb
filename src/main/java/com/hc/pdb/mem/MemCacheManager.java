@@ -18,6 +18,8 @@ import com.hc.pdb.wal.IWalWriter;
 import com.hc.pdb.wal.WalFileReader;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,6 +33,7 @@ import java.util.stream.Collectors;
  * @date 2019/6/22
  */
 public class MemCacheManager implements IRecoveryable, PDBStatus.StatusListener{
+    private static final Logger LOGGER = LoggerFactory.getLogger(MemCacheManager.class);
     private static final String FLUSHER = "flusher";
 
     private StateManager stateManager;
@@ -85,7 +88,11 @@ public class MemCacheManager implements IRecoveryable, PDBStatus.StatusListener{
             synchronized (this) {
                 if (current.size() > configuration.getLong(PDBConstants.MEM_CACHE_MAX_SIZE_KEY,
                         PDBConstants.DEFAULT_MEM_CACHE_MAX_SIZE)) {
-
+                    if(current.iterator(null,null).next() == null){
+                        LOGGER.warn("no cell found");
+                        initCurrentWalAndMemCache();
+                        return;
+                    }
                     MemCache tmpCache = current;
                     Flusher.FlushEntry entry;
                     String hccFileName = PDBFileUtils.createHccFileName(path);
@@ -132,7 +139,7 @@ public class MemCacheManager implements IRecoveryable, PDBStatus.StatusListener{
             //2 将flushing的wal继续工作
             recoveryFlushingWal();
             //3 将currentWal flush
-            flushCurrenWALIfHave();
+            flushCurrentWALIfHave();
         }catch(Exception e){
             throw new RecorverFailedException(e);
         }
@@ -177,7 +184,7 @@ public class MemCacheManager implements IRecoveryable, PDBStatus.StatusListener{
         }
     }
 
-    private void flushCurrenWALIfHave() throws Exception {
+    private void flushCurrentWALIfHave() throws Exception {
 
         WALFileMeta meta = stateManager.getCurrentWALFileMeta();
         if(meta == null){
@@ -193,6 +200,10 @@ public class MemCacheManager implements IRecoveryable, PDBStatus.StatusListener{
         initCurrentWalAndMemCache();
         //flush
         MemCache cache = new MemCache(new WalFileReader(meta.getWalPath()));
+        if(cache.isEmpty()){
+            return;
+        }
+
         Flusher.FlushEntry entry = new Flusher.FlushEntry(
                 cache,
                 meta.getWalPath(),

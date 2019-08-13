@@ -50,16 +50,22 @@ public class LSMEngine implements IEngine {
 
     private void createOrStartPDB(Configuration configuration) throws Exception {
         Preconditions.checkNotNull(configuration);
+        this.configuration = configuration;
         this.path = configuration.get(PDBConstants.DB_PATH_KEY);
         LOGGER.info("create lsm db at {}",path);
 
         PDBFileUtils.createDirIfNotExist(path);
-
         this.pdbStatus = new PDBStatus();
-        this.configuration = configuration;
         //加载状态
         this.stateManager = new StateManager(path);
         stateManager.load();
+        if(stateManager.isCleaning()){
+            this.clean();
+        }
+
+
+        this.configuration = configuration;
+
 
         //整个程序只有这一个写hcc的类，无状态。
         hccWriter = new HCCWriter(configuration);
@@ -94,13 +100,15 @@ public class LSMEngine implements IEngine {
     }
 
     @Override
-    public void clean() throws IOException {
+    public void clean() throws Exception {
         if(!pdbStatus.isClose()){
             close();
         }
+        stateManager.setClean();
         String path = configuration.get(PDBConstants.DB_PATH_KEY);
         LOGGER.info("clean lsm db at path {}",path);
         FileUtils.deleteDirectory(new File(path));
+        createOrStartPDB(configuration);
     }
 
     @Override

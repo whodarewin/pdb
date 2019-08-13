@@ -16,6 +16,7 @@ import com.hc.pdb.state.*;
 import com.hc.pdb.util.NamedThreadFactory;
 import com.hc.pdb.util.PDBFileUtils;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -95,11 +96,11 @@ public class Compactor implements StateChangeListener,IRecoveryable,
 
     @Override
     public void onClose() {
-        this.compactorExecutor.shutdown();
+        this.compactorExecutor.shutdownNow();
     }
 
     @Override
-    public void recovery() throws RecorverFailedException {
+    public void recovery() {
         for (CompactingFile compactingFile : stateManager.getCompactingFiles()) {
             compactorExecutor.submit(new CompactorWorker(
                     compactingFile.getCompactingID(),
@@ -139,19 +140,31 @@ public class Compactor implements StateChangeListener,IRecoveryable,
                 switch (state){
                     case CompactingFile.BEGIN:
                         deleteCompactTargetFileIfHave();
-                        writeNewHCCFile();
-                        stateManager.changeCompactingFileState(compactingID,CompactingFile.WRITE_HCC_FILE_FINISH);
-                        addNewHccFileToMeta();
-                        stateManager.changeCompactingFileState(compactingID,CompactingFile.ADD_COMPACTED_HCC_FILE_TO_STATE_FINISH);
-                        deleteFileCompacted();
-                        stateManager.changeCompactingFileState(compactingID,CompactingFile.DELETE_COMPACTED_FILE_FINISH);
-                        deleteMetaFileCompacting();
+                        boolean succ = writeNewHCCFile();
+                        if(succ) {
+                            stateManager.changeCompactingFileState(compactingID, CompactingFile.WRITE_HCC_FILE_FINISH);
+                            addNewHccFileToMeta();
+                            stateManager.changeCompactingFileState(compactingID, CompactingFile.ADD_COMPACTED_HCC_FILE_TO_STATE_FINISH);
+                            deleteFileCompacted();
+                            stateManager.changeCompactingFileState(compactingID, CompactingFile.DELETE_COMPACTED_FILE_FINISH);
+                            deleteMetaFileCompacting();
+                        }else{
+                            stateManager.changeCompactingFileState(compactingID, CompactingFile.COMPACTED_HCC_FILE_IS_NULL);
+                            deleteFileCompacted();
+                            stateManager.changeCompactingFileState(compactingID, CompactingFile.DELETE_COMPACTED_FILE_FINISH);
+                            deleteMetaFileCompacting();
+                        }
                         break;
                     case CompactingFile.WRITE_HCC_FILE_FINISH:
                         addNewHccFileToMeta();
                         stateManager.changeCompactingFileState(compactingID,CompactingFile.ADD_COMPACTED_HCC_FILE_TO_STATE_FINISH);
                         deleteFileCompacted();
                         stateManager.changeCompactingFileState(compactingID,CompactingFile.DELETE_COMPACTED_FILE_FINISH);
+                        deleteMetaFileCompacting();
+                        break;
+                    case CompactingFile.COMPACTED_HCC_FILE_IS_NULL:
+                        deleteFileCompacted();
+                        stateManager.changeCompactingFileState(compactingID, CompactingFile.DELETE_COMPACTED_FILE_FINISH);
                         deleteMetaFileCompacting();
                         break;
                     case CompactingFile.ADD_COMPACTED_HCC_FILE_TO_STATE_FINISH:
@@ -195,24 +208,21 @@ public class Compactor implements StateChangeListener,IRecoveryable,
             }
         }
 
-        public void writeNewHCCFile() throws IOException {
-            MetaReader metaReader = new MetaReader();
+        public boolean writeNewHCCFile() throws IOException {
 
-            Set<IScanner> hccScanners = new HashSet<>();
-            int size = 0;
-            for (HCCFileMeta hccFileMeta : hccFileMetas) {
-                IScanner scanner = new HCCScanner(new HCCFile(hccFileMeta.getFilePath(), metaReader).createReader(),
-                        null, null);
-                hccScanners.add(scanner);
-                size = hccFileMeta.getKvSize() + size;
+            FilterScanner scanner = getScanner().getKey();
+            if(scanner.next() == null){
+                return false;
             }
-            FilterScanner scanner = new FilterScanner(hccScanners);
+            Pair<FilterScanner,Integer> pair = getScanner();
+            FilterScanner filterScanner = pair.getKey();
+            int size = pair.getValue();
 
             fileMeta = hccWriter.writeHCC(new Iterator<Cell>() {
                 @Override
                 public boolean hasNext() {
                     try {
-                        return scanner.next() != null;
+                        return filterScanner.next() != null;
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
@@ -223,6 +233,7 @@ public class Compactor implements StateChangeListener,IRecoveryable,
                     return scanner.peek();
                 }
             }, size, toFilePath);
+            return true;
         }
 
 
@@ -231,6 +242,20 @@ public class Compactor implements StateChangeListener,IRecoveryable,
                 LOGGER.info("begin delete compacted file {}", meta.getFilePath());
                 FileUtils.forceDelete(new File(meta.getFilePath()));
             }
+        }
+
+        private Pair<FilterScanner,Integer> getScanner() throws IOException {
+            MetaReader metaReader = new MetaReader();
+            Set<IScanner> hccScanners = new HashSet<>();
+            int size = 0;
+            for (HCCFileMeta hccFileMeta : hccFileMetas) {
+                IScanner scanner = new HCCScanner(new HCCFile(hccFileMeta.getFilePath(), metaReader).createReader(),
+                        null, null);
+                hccScanners.add(scanner);
+                size = hccFileMeta.getKvSize() + size;
+            }
+            FilterScanner scanner = new FilterScanner(hccScanners);
+            return Pair.of(scanner, size);
         }
     }
 

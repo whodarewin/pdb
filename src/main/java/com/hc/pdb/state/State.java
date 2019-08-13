@@ -31,7 +31,7 @@ public class State implements ISerializable{
 
     private WALFileMeta walFileMeta;
 
-    private boolean close = false;
+    private boolean clean = false;
 
     public Set<HCCFileMeta> getFileMetas() {
         return fileMetas;
@@ -67,12 +67,12 @@ public class State implements ISerializable{
         this.compactingFileMeta = compactingFileMeta;
     }
 
-    public boolean isClose() {
-        return close;
+    public boolean isClean() {
+        return clean;
     }
 
-    public void setClose(boolean close) {
-        this.close = close;
+    public void setClean(boolean clean) {
+        this.clean = clean;
     }
 
     @Override

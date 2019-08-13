@@ -50,7 +50,7 @@ public class PDB {
         this.engine.close();
     }
 
-    public void clean() throws IOException, DBCloseException {
+    public void clean() throws Exception {
         this.engine.clean();
     }
 }

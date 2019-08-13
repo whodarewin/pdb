@@ -34,7 +34,7 @@ public class PDBTest {
     }
 
     @After
-    public void close() throws IOException, DBCloseException {
+    public void close() throws Exception {
         pdb.clean();
     }
 }

@@ -14,6 +14,7 @@ import java.util.UUID;
 
 public class CompactingFile {
     public static final String BEGIN = "begin";
+    public static final String COMPACTED_HCC_FILE_IS_NULL = "compacted_hcc_file_is_null";
     public static final String WRITE_HCC_FILE_FINISH = "write_hcc_file_finish";
     public static final String ADD_COMPACTED_HCC_FILE_TO_STATE_FINISH = "add_compacted_hcc_file_to_state_finish";
     public static final String DELETE_COMPACTED_FILE_FINISH = "delete_compacted_file_finish";

@@ -1,14 +1,14 @@
 # PDB
 ## 测试CASE
 1. 读写顺序测试（无ttl写，有ttl写，删除，验证读）
-    1. case1测试 无ttl写
+    1. case1测试 无ttl写 finish
         1. 写入1000000行
         2. 读取验证
-    2. case2测试 有ttl写    
+    2. case2测试 有ttl写 finish  
         1. 写入1000000行 ttl 20s
         2. Thread.sleep(20000)
         3. 读取不到任何数据
-    3. case3 删除验证
+    3. case3 删除验证 finish
         1. 写入1000000行
         2. 删除前1000行
         3. 读取验证
