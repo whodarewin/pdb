@@ -1,5 +1,7 @@
 package com.hc.pdb.state;
 
+import com.hc.pdb.exception.PDBException;
+
 /**
  * StateChangeListener
  *
@@ -13,5 +15,5 @@ public interface StateChangeListener {
      * @param state 状态
      * @throws Exception todo:made it ChangeException
      */
-    void onChange(State state) throws Exception;
+    void onChange(State state) throws PDBException;
 }

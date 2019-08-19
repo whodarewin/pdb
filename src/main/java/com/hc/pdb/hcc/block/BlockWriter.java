@@ -3,6 +3,9 @@ package com.hc.pdb.hcc.block;
 import com.hc.pdb.Cell;
 import com.hc.pdb.conf.Configuration;
 import com.hc.pdb.conf.PDBConstants;
+import com.hc.pdb.exception.PDBException;
+import com.hc.pdb.exception.PDBIOException;
+import com.hc.pdb.exception.PDBSerializeException;
 import com.hc.pdb.file.FileConstants;
 import com.hc.pdb.hcc.WriteContext;
 import com.hc.pdb.util.ByteBloomFilter;
@@ -35,7 +38,7 @@ public class BlockWriter implements IBlockWriter {
 
     @Override
     public BlockWriterResult writeBlock(Iterator<Cell> cellIterator, FileOutputStream outputStream, WriteContext context)
-            throws IOException {
+            throws PDBIOException, PDBSerializeException {
         long blockSize = conf.getLong(PDBConstants.BLOCK_SIZE_KEY, PDBConstants.DEFAULT_BLOCK_SIZE);
         blockSize = blockSize * 1024;
 
@@ -63,7 +66,11 @@ public class BlockWriter implements IBlockWriter {
             index = index + bytes.length;
 
             //写数据
-            outputStream.write(bytes);
+            try {
+                outputStream.write(bytes);
+            }catch (IOException e){
+                throw new PDBIOException(e);
+            }
 
             if (blockCurSize > blockSize) {
                 writeIndex(context.getIndex(), cell.getKey(), index);
@@ -83,11 +90,15 @@ public class BlockWriter implements IBlockWriter {
         filter.add(key);
     }
 
-    private void writeIndex(ByteArrayOutputStream indexStream, byte[] key, int index) throws IOException {
-        LOGGER.debug("begin write key length {}",key.length);
-        indexStream.write(Bytes.toBytes(key.length));
-        indexStream.write(key);
-        LOGGER.debug("begin write index {}",index);
-        indexStream.write(Bytes.toBytes(index));
+    private void writeIndex(ByteArrayOutputStream indexStream, byte[] key, int index) throws PDBIOException {
+        try {
+            LOGGER.debug("begin write key length {}", key.length);
+            indexStream.write(Bytes.toBytes(key.length));
+            indexStream.write(key);
+            LOGGER.debug("begin write index {}", index);
+            indexStream.write(Bytes.toBytes(index));
+        }catch (Exception e){
+            throw new PDBIOException(e);
+        }
     }
 }

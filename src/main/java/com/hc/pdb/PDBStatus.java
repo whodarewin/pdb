@@ -1,6 +1,7 @@
 package com.hc.pdb;
 
 import com.hc.pdb.exception.DBCloseException;
+import com.hc.pdb.exception.PDBIOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +40,7 @@ public class PDBStatus {
         for (StatusListener listener : listeners) {
             try {
                 listener.onClose();
-            } catch (IOException e) {
+            } catch (PDBIOException e) {
                 LOGGER.info("error on listener closez",e);
             }
         }
@@ -60,6 +61,6 @@ public class PDBStatus {
 
     public interface StatusListener{
 
-        void onClose() throws IOException;
+        void onClose() throws PDBIOException;
     }
 }

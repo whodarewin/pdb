@@ -1,6 +1,7 @@
 package com.hc.pdb.hcc.block;
 
 import com.hc.pdb.Cell;
+import com.hc.pdb.exception.PDBException;
 import com.hc.pdb.hcc.WriteContext;
 
 import java.io.FileOutputStream;
@@ -13,7 +14,7 @@ import java.util.List;
  */
 public interface IBlockWriter {
 
-    BlockWriterResult writeBlock(Iterator<Cell> cells, FileOutputStream outputStream, WriteContext context) throws IOException;
+    BlockWriterResult writeBlock(Iterator<Cell> cells, FileOutputStream outputStream, WriteContext context) throws PDBException;
 
     class BlockWriterResult{
         private int index;

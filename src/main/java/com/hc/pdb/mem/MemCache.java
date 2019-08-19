@@ -71,11 +71,19 @@ public class MemCache{
     }
 
     public byte[] getStart(){
-        return memValue.firstKey();
+        if(!memValue.isEmpty()) {
+            return memValue.firstKey();
+        }else{
+            return null;
+        }
     }
 
     public byte[] getEnd(){
-        return memValue.lastKey();
+        if(!memValue.isEmpty()) {
+            return memValue.lastKey();
+        }else{
+            return null;
+        }
     }
 
     public String getId(){

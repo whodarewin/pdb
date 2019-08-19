@@ -1,6 +1,7 @@
 package com.hc.pdb.scanner;
 
 import com.hc.pdb.Cell;
+import com.hc.pdb.exception.PDBException;
 
 import java.io.IOException;
 
@@ -13,7 +14,7 @@ import java.io.IOException;
 
 public class NoneScanner implements IScanner {
     @Override
-    public Cell next() throws IOException {
+    public Cell next() {
         return null;
     }
 

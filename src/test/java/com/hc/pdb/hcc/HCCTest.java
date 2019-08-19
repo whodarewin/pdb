@@ -3,6 +3,8 @@ package com.hc.pdb.hcc;
 import com.hc.pdb.Cell;
 import com.hc.pdb.conf.Configuration;
 import com.hc.pdb.conf.PDBConstants;
+import com.hc.pdb.exception.PDBIOException;
+import com.hc.pdb.exception.PDBSerializeException;
 import com.hc.pdb.file.FileConstants;
 import com.hc.pdb.hcc.meta.MetaReader;
 import com.hc.pdb.state.HCCFileMeta;
@@ -28,7 +30,7 @@ public class HCCTest {
     private Configuration configuration;
     private HCCFileMeta fileMeta;
     @Before
-    public void setUp() throws IOException {
+    public void setUp() throws PDBIOException, PDBSerializeException {
         configuration = new Configuration();
         configuration.put(PDBConstants.DB_PATH_KEY,HCCTest.class.getClassLoader().getResource("").getPath());
         String path = configuration.get(PDBConstants.DB_PATH_KEY);
@@ -43,7 +45,7 @@ public class HCCTest {
     }
 
     @Test
-    public void test() throws IOException {
+    public void test() throws PDBIOException {
         HCCFile file = new HCCFile(fileMeta.getFilePath(), new MetaReader());
         HCCReader reader = file.createReader();
         reader.seek(Bytes.toBytes(50000));

@@ -1,6 +1,7 @@
 package com.hc.pdb.hcc;
 
 import com.hc.pdb.Cell;
+import com.hc.pdb.exception.PDBIOException;
 import com.hc.pdb.file.FileConstants;
 import com.hc.pdb.hcc.meta.MetaInfo;
 import com.hc.pdb.hcc.meta.MetaReader;
@@ -19,6 +20,7 @@ import java.util.TreeMap;
 /**
  * HCCReader
  * 读取一个hcc文件
+ * todo:不要魔法值
  * @author han.congcong
  * @date 2019/6/5
  */
@@ -71,9 +73,13 @@ public class HCCReader implements IHCCReader {
      * @param metaInfo hcc 的 META值
      */
     public HCCReader(String path, TreeMap<byte[], Integer> key2index,
-                     ByteBloomFilter byteBloomFilter,MetaInfo metaInfo) throws IOException {
+                     ByteBloomFilter byteBloomFilter,MetaInfo metaInfo) throws PDBIOException {
         this.filePath = path;
-        file = new RandomAccessFile(path, "r");
+        try {
+            file = new RandomAccessFile(path, "r");
+        }catch (Exception e){
+            throw new PDBIOException(e);
+        }
         this.channel = file.getChannel();
         this.key2index = key2index;
         this.byteBloomFilter = byteBloomFilter;
@@ -81,7 +87,7 @@ public class HCCReader implements IHCCReader {
         seekToFirst();
     }
 
-    private void seekToFirst() throws IOException {
+    private void seekToFirst() throws PDBIOException {
         //找到block的start index，为啥不直接用startKey找：TODO:
         blockStartIndex = this.key2index.firstEntry().getValue();
         //找到第二个entry
@@ -93,6 +99,7 @@ public class HCCReader implements IHCCReader {
         //如果找不到
         } else {
             endKey = null;
+            //todo:为何这个要减1，而上面的entry.getValue 不需要？
             blockEndIndex = metaInfo.getIndexStartIndex() - 1;
         }
         LOGGER.info("seek to first {} {}", blockStartIndex, blockEndIndex);
@@ -108,7 +115,7 @@ public class HCCReader implements IHCCReader {
     }
 
     @Override
-    public void seek(byte[] key) throws IOException {
+    public void seek(byte[] key) throws PDBIOException {
         if(key == null || Bytes.compare(key,metaInfo.getStartKey()) <= 0){
             seekToFirst();
             return;
@@ -155,17 +162,21 @@ public class HCCReader implements IHCCReader {
         throw new SeekOutofRangeException();
     }
 
-    private void readBlock(int blockStartIndex, int blockEndIndex) throws IOException {
+    private void readBlock(int blockStartIndex, int blockEndIndex) {
         int cap = blockEndIndex - blockStartIndex;
         this.currentBlock = ByteBuffer.allocateDirect(cap);
         this.currentBlock.mark();
-        channel.read(this.currentBlock, blockStartIndex);
+        try {
+            channel.read(this.currentBlock, blockStartIndex);
+        }catch (IOException e){
+
+        }
         this.currentBlock.reset();
     }
 
 
     @Override
-    public Cell next() throws IOException {
+    public Cell next() {
         if(this.currentBlock.position() == this.currentBlock.limit()){
             blockStartIndex = blockEndIndex ;
             Map.Entry<byte[],Integer> entry = key2index.higherEntry(endKey);

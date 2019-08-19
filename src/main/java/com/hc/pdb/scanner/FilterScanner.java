@@ -1,6 +1,9 @@
 package com.hc.pdb.scanner;
 
 import com.hc.pdb.Cell;
+import com.hc.pdb.exception.PDBException;
+import com.hc.pdb.exception.PDBIOException;
+import com.hc.pdb.exception.PDBRuntimeException;
 import com.hc.pdb.util.Bytes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,15 +37,15 @@ public class FilterScanner implements IScanner {
             try {
                 o.next();
                 queue.add(o);
-            }catch (IOException e){
-                throw new RuntimeException(e);
+            }catch (PDBException e){
+                throw new PDBRuntimeException(e);
             }
         });
     }
 
 
     @Override
-    public Cell next() throws IOException {
+    public Cell next() throws PDBException{
         while(true) {
             IScanner scanner = queue.poll();
             if(scanner == null){

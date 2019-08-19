@@ -4,6 +4,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.hc.pdb.LockContext;
 import com.hc.pdb.conf.Configuration;
+import com.hc.pdb.exception.PDBIOException;
+import com.hc.pdb.exception.PDBRuntimeException;
 import com.hc.pdb.hcc.meta.MetaReader;
 import com.hc.pdb.state.HCCFileMeta;
 import com.hc.pdb.state.State;
@@ -50,8 +52,9 @@ public class HCCManager implements StateChangeListener {
             try {
                 HCCFile hccFile = new HCCFile(filePath,metaReader);
                 toAddHccFiles.add(hccFile);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+            } catch (PDBIOException e) {
+                //todo:
+                throw new PDBRuntimeException(e);
             }
         });
 

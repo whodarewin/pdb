@@ -31,11 +31,11 @@ public class WalFileReader implements IWalReader{
             Cell currentCell = null;
             @Override
             public boolean hasNext() {
-                try {
-                    currentCell = Cell.toCell(byteBuffer);
-                }catch (NoEnoughByteException e){
+                if(byteBuffer.position() == byteBuffer.limit()){
                     return false;
                 }
+                currentCell = Cell.toCell(byteBuffer);
+
                 return true;
             }
 

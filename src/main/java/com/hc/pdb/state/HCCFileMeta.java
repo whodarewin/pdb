@@ -1,6 +1,5 @@
 package com.hc.pdb.state;
 
-import java.util.List;
 import java.util.Objects;
 
 /**

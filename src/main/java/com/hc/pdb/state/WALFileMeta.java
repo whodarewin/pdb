@@ -14,10 +14,12 @@ import java.util.Objects;
 public class WALFileMeta {
     public static final String CREATE = "create";
     public static final String BEGIN_FLUSH = "begin_flush";
+    public static final String HCC_WRITE_FINISH = "hcc_write_finish";
+    public static final String CHANGE_META_DELETE_WAL_FINISH = "change_meta_del_wal_finish";
     public static final String END_FLUSH = "end_flush";
     private String walPath;
     private String state;
-    private List<String> params;
+    private List params;
 
     public WALFileMeta(){}
 
@@ -43,11 +45,11 @@ public class WALFileMeta {
         this.state = state;
     }
 
-    public List<String> getParams() {
+    public List getParams() {
         return params;
     }
 
-    public void setParams(List<String> params) {
+    public void setParams(List params) {
         this.params = params;
     }
 
@@ -56,13 +58,11 @@ public class WALFileMeta {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         WALFileMeta that = (WALFileMeta) o;
-        return Objects.equals(walPath, that.walPath) &&
-                Objects.equals(state, that.state) &&
-                Objects.equals(params, that.params);
+        return Objects.equals(walPath, that.walPath);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(walPath, state, params);
+        return Objects.hash(walPath);
     }
 }

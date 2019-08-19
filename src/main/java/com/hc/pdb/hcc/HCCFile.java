@@ -1,5 +1,6 @@
 package com.hc.pdb.hcc;
 
+import com.hc.pdb.exception.PDBIOException;
 import com.hc.pdb.hcc.meta.MetaInfo;
 import com.hc.pdb.hcc.meta.MetaReader;
 import com.hc.pdb.util.ByteBloomFilter;
@@ -40,15 +41,19 @@ public class HCCFile {
      *
      * @param path hcc 的地址
      */
-    public HCCFile(String path, MetaReader metaReader) throws IOException {
+    public HCCFile(String path, MetaReader metaReader) throws PDBIOException {
         this.filePath = path;
-        file = new RandomAccessFile(path, "r");
-        metaInfo = metaReader.read(file);
+        try {
+            file = new RandomAccessFile(path, "r");
+            metaInfo = metaReader.read(file);
+        }catch (IOException e){
+            throw new PDBIOException(e);
+        }
         LOGGER.info("meta info {}",metaInfo);
         preLoad();
     }
 
-    private void preLoad() throws IOException {
+    private void preLoad() throws PDBIOException {
         //todo:check prefix
         //读取bloom过滤器
         loadBloom();
@@ -56,28 +61,36 @@ public class HCCFile {
         loadIndex();
     }
 
-    private void loadBloom() throws IOException {
+    private void loadBloom() throws PDBIOException {
         //todo: 和meta的代码一致，合并成一个
-        byte[] metaLengthBytes = new byte[4];
-        file.seek(file.length() - 4);
-        file.readFully(metaLengthBytes);
-        int metaL = Bytes.toInt(metaLengthBytes);
+        try {
+            byte[] metaLengthBytes = new byte[4];
+            file.seek(file.length() - 4);
+            file.readFully(metaLengthBytes);
+            int metaL = Bytes.toInt(metaLengthBytes);
 
-        int bloomStartIndex = metaInfo.getBloomStartIndex();
-        int metaIndex = (int) file.length() - metaL - 4;
-        LOGGER.info("begin to read bloom start {} end {}",bloomStartIndex, metaIndex);
-        ByteBuffer bloomBytes = ByteBuffer.allocate(metaIndex - bloomStartIndex);
-        file.getChannel().read(bloomBytes, bloomStartIndex);
-        this.byteBloomFilter = new ByteBloomFilter(1, bloomBytes);
+            int bloomStartIndex = metaInfo.getBloomStartIndex();
+            int metaIndex = (int) file.length() - metaL - 4;
+            LOGGER.info("begin to read bloom start {} end {}", bloomStartIndex, metaIndex);
+            ByteBuffer bloomBytes = ByteBuffer.allocate(metaIndex - bloomStartIndex);
+            file.getChannel().read(bloomBytes, bloomStartIndex);
+            this.byteBloomFilter = new ByteBloomFilter(1, bloomBytes);
+        }catch (IOException e){
+            throw new PDBIOException(e);
+        }
     }
 
-    private void loadIndex() throws IOException {
+    private void loadIndex() throws PDBIOException {
         int startIndex = metaInfo.getIndexStartIndex();
         int endIndex = metaInfo.getBloomStartIndex();
         LOGGER.info("begin to load index start {} end {}",startIndex, endIndex);
         ByteBuffer indexBuffer = ByteBuffer.allocate((endIndex - startIndex));
         indexBuffer.mark();
-        file.getChannel().read(indexBuffer, startIndex);
+        try {
+            file.getChannel().read(indexBuffer, startIndex);
+        }catch (IOException e){
+            throw new PDBIOException(e);
+        }
         indexBuffer.reset();
         while (indexBuffer.position() < indexBuffer.limit()) {
             byte[] bytes = new byte[4];
@@ -91,7 +104,7 @@ public class HCCFile {
         }
     }
 
-    public HCCReader createReader() throws IOException {
+    public HCCReader createReader() throws PDBIOException {
         return new HCCReader(filePath,key2index,byteBloomFilter,metaInfo);
     }
 

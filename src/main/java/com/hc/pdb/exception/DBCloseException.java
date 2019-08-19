@@ -6,7 +6,7 @@ package com.hc.pdb.exception;
  * @date 2019/8/6
  */
 
-public class DBCloseException extends Exception {
+public class DBCloseException extends PDBException {
     public DBCloseException(String msg){
         super(msg);
     }

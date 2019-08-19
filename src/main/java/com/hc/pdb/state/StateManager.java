@@ -1,5 +1,7 @@
 package com.hc.pdb.state;
 
+import com.hc.pdb.exception.PDBException;
+import com.hc.pdb.exception.PDBIOException;
 import com.hc.pdb.file.FileConstants;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -64,12 +66,13 @@ public class StateManager {
 
     public synchronized void add(HCCFileMeta fileMeta) throws Exception {
         LOGGER.info("add hcc file meta {}",fileMeta);
+        state.getFileMetas().remove(fileMeta);
         state.getFileMetas().add(fileMeta);
         sync();
         notifyListener();
     }
 
-    public synchronized void setCurrentWalFileMeta(WALFileMeta walFileMeta) throws Exception {
+    public synchronized void setCurrentWalFileMeta(WALFileMeta walFileMeta) throws PDBException {
         LOGGER.info("set current wal file meta {}", walFileMeta.getWalPath());
         state.setWalFileMeta(walFileMeta);
         sync();
@@ -90,7 +93,7 @@ public class StateManager {
         notifyListener();
     }
 
-    public synchronized String addCompactingFile(String toFilePath,HCCFileMeta... hccFileMeta) throws Exception {
+    public synchronized String addCompactingFile(String toFilePath,HCCFileMeta... hccFileMeta) throws PDBException {
         for (HCCFileMeta fileMeta : hccFileMeta) {
             LOGGER.info("add compacting file meta {}",fileMeta);
         }
@@ -101,6 +104,7 @@ public class StateManager {
         }
         compactingFile.setState(CompactingFile.BEGIN);
         compactingFile.setToFilePath(toFilePath);
+        state.getCompactingFileMeta().remove(compactingFile);
         state.getCompactingFileMeta().add(compactingFile);
         sync();
         notifyListener();
@@ -113,9 +117,17 @@ public class StateManager {
         sync();
         notifyListener();
     }
-
-    public synchronized void addFlushingWal(String walPath,String state,List<String> param) throws Exception {
+    //todo: add change state method, no corver
+    public synchronized void addFlushingWal(String walPath,String state,List param) throws PDBException {
         WALFileMeta walFileMeta = new WALFileMeta(walPath,state,param);
+        this.state.getFlushingWals().remove(walFileMeta);
+        this.state.getFlushingWals().add(walFileMeta);
+        sync();
+        notifyListener();
+    }
+
+    public synchronized void addFlushingWal(WALFileMeta walFileMeta) throws PDBException {
+        this.state.getFlushingWals().remove(walFileMeta);
         this.state.getFlushingWals().add(walFileMeta);
         sync();
         notifyListener();
@@ -132,7 +144,7 @@ public class StateManager {
         return false;
     }
 
-    public synchronized void changeCompactingFileState(String compactingID,String changeState) throws Exception {
+    public synchronized void changeCompactingFileState(String compactingID,String changeState) throws PDBException {
         state.getCompactingFileMeta().forEach(compactingFile -> {
             if(compactingFile.getCompactingID().equals(compactingID)){
                 compactingFile.setState(changeState);
@@ -142,7 +154,7 @@ public class StateManager {
         notifyListener();
     }
 
-    public synchronized void setClean() throws Exception {
+    public synchronized void setClean() throws PDBException {
         this.state.setClean(true);
         sync();
         notifyListener();
@@ -182,24 +194,28 @@ public class StateManager {
         return state.getWalFileMeta();
     }
 
-    private void notifyListener() throws Exception {
+    private void notifyListener() throws PDBException {
         for (StateChangeListener listener : listeners) {
             listener.onChange(this.state);
         }
     }
 
-    private void sync() throws IOException {
+    private void sync() throws PDBIOException {
         String bakFileName = path + STATE_FILE_NAME + FileConstants.META_FILE_SUFFIX + STATE_BAK_FILE_NAME;
         File bakFile = new File(bakFileName);
         if(bakFile.exists()){
             FileUtils.deleteQuietly(bakFile);
         }
-        bakFile.createNewFile();
+        try {
+            bakFile.createNewFile();
 
-        try(FileOutputStream outputStream = new FileOutputStream(bakFile,false)) {
-            byte[] bytes = state.serialize();
-            outputStream.write(bytes);
-            outputStream.flush();
+            try (FileOutputStream outputStream = new FileOutputStream(bakFile, false)) {
+                byte[] bytes = state.serialize();
+                outputStream.write(bytes);
+                outputStream.flush();
+            }
+        }catch (Exception e){
+            throw new PDBIOException(e);
         }
         String metaFileName = path + STATE_FILE_NAME + FileConstants.META_FILE_SUFFIX;
         File metaFile = new File(metaFileName);

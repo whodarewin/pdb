@@ -1,6 +1,7 @@
 package com.hc.pdb.hcc.meta;
 
 import com.hc.pdb.ISerializable;
+import com.hc.pdb.exception.PDBSerializeException;
 import com.hc.pdb.util.Bytes;
 
 import java.io.ByteArrayInputStream;
@@ -92,15 +93,19 @@ public class MetaInfo implements ISerializable {
      * @return
      */
     @Override
-    public byte[] serialize() throws IOException {
+    public byte[] serialize() throws PDBSerializeException {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        outputStream.write(Bytes.toBytes(createTime));
-        outputStream.write(Bytes.toBytes(startKey.length));
-        outputStream.write(startKey);
-        outputStream.write(Bytes.toBytes(endKey.length));
-        outputStream.write(endKey);
-        outputStream.write(Bytes.toBytes(indexStartIndex));
-        outputStream.write(Bytes.toBytes(bloomStartIndex));
+        try {
+            outputStream.write(Bytes.toBytes(createTime));
+            outputStream.write(Bytes.toBytes(startKey.length));
+            outputStream.write(startKey);
+            outputStream.write(Bytes.toBytes(endKey.length));
+            outputStream.write(endKey);
+            outputStream.write(Bytes.toBytes(indexStartIndex));
+            outputStream.write(Bytes.toBytes(bloomStartIndex));
+        }catch (Exception e){
+            throw new PDBSerializeException(e);
+        }
         return outputStream.toByteArray();
     }
 

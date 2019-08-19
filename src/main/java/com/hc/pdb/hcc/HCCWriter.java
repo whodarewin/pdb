@@ -4,6 +4,8 @@ import com.google.common.base.Preconditions;
 import com.hc.pdb.Cell;
 import com.hc.pdb.conf.Configuration;
 import com.hc.pdb.conf.PDBConstants;
+import com.hc.pdb.exception.PDBIOException;
+import com.hc.pdb.exception.PDBSerializeException;
 import com.hc.pdb.file.FileConstants;
 import com.hc.pdb.hcc.block.BlockWriter;
 import com.hc.pdb.hcc.block.IBlockWriter;
@@ -47,68 +49,72 @@ public class HCCWriter implements IHCCWriter {
     }
 
     @Override
-    public HCCFileMeta writeHCC(Iterator<Cell> cellIterator, int size,String fileName) throws IOException {
+    public HCCFileMeta writeHCC(Iterator<Cell> cellIterator, int size,String fileName) throws PDBIOException, PDBSerializeException {
         //1 创建文件
+        try {
+            if (path == null) {
+                throw new DBPathNotSetException();
+            }
 
-        if (path == null) {
-            throw new DBPathNotSetException();
+            path = PDBFileUtils.reformatDirPath(path);
+
+
+            LOGGER.info("begin to write hcc file,fileName is {}", fileName);
+
+            File file = new File(fileName);
+            while (file.exists()) {
+                fileName = path + UUID.randomUUID().toString() + FileConstants.DATA_FILE_SUFFIX;
+                file = new File(fileName);
+            }
+
+            file.createNewFile();
+            long createTime = System.currentTimeMillis();
+            String md5 = null;
+            try (FileOutputStream fileOutputStream = new FileOutputStream(file)) {
+                //写prefix
+                LOGGER.info("first,write hcc prefix");
+                fileOutputStream.write(FileConstants.HCC_WRITE_PREFIX);
+                //创建bloom filter
+
+                ByteBloomFilter filter = new ByteBloomFilter(size, errorRate, 1, 1);
+                filter.allocBloom();
+                WriteContext context = new WriteContext(filter);
+                LOGGER.info("second,write block,index is {}", FileConstants.HCC_WRITE_PREFIX.length);
+                //2 开始写block
+                IBlockWriter.BlockWriterResult result = blockWriter.writeBlock(cellIterator, fileOutputStream, context);
+                int blockFinishIndex = result.getIndex();
+                LOGGER.info("block write finish,index is {}", blockFinishIndex);
+                int indexStartIndex = blockFinishIndex;
+                LOGGER.info("third, write index, index is {}", indexStartIndex);
+                //3 开始写index
+                //todo:优化掉toByteArray的copy
+                ByteArrayOutputStream indexStream = context.getIndex();
+
+                fileOutputStream.write(indexStream.toByteArray());
+
+                //4 开始写bloomFilter
+                ByteBloomFilter bloomFilter = context.getBloom();
+                LOGGER.info("index write finished at {}", blockFinishIndex + context.getIndex().size());
+                int bloomStartIndex = blockFinishIndex + context.getIndex().size();
+                LOGGER.info("fourth,write bloom, index is {}", bloomStartIndex);
+                bloomFilter.writeBloom(fileOutputStream);
+
+                //4 开始写meta
+
+                MetaInfo metaInfo = new MetaInfo(createTime, result.getStart(), result.getEnd(), indexStartIndex, bloomStartIndex);
+                LOGGER.info("fifth,write meta info {}", metaInfo);
+                byte[] bytes = metaInfo.serialize();
+                fileOutputStream.write(bytes);
+                fileOutputStream.write(Bytes.toBytes(bytes.length));
+            }
+
+            try (FileInputStream inputStream = new FileInputStream(fileName)) {
+                md5 = MD5Utils.getMD5(inputStream.getChannel());
+            }
+            return new HCCFileMeta(fileName, md5, size, System.currentTimeMillis());
+        }catch (IOException e){
+            throw new PDBIOException(e);
         }
 
-        path = PDBFileUtils.reformatDirPath(path);
-
-
-        LOGGER.info("begin to write hcc file,fileName is {}",fileName);
-
-        File file = new File(fileName);
-        while(file.exists()) {
-            fileName = path + UUID.randomUUID().toString() + FileConstants.DATA_FILE_SUFFIX;
-            file = new File(fileName);
-        }
-
-        file.createNewFile();
-        long createTime = System.currentTimeMillis();
-        String md5 = null;
-        try (FileOutputStream fileOutputStream = new FileOutputStream(file)) {
-            //写prefix
-            LOGGER.info("first,write hcc prefix");
-            fileOutputStream.write(FileConstants.HCC_WRITE_PREFIX);
-            //创建bloom filter
-
-            ByteBloomFilter filter = new ByteBloomFilter(size, errorRate, 1, 1);
-            filter.allocBloom();
-            WriteContext context = new WriteContext(filter);
-            LOGGER.info("second,write block,index is {}", FileConstants.HCC_WRITE_PREFIX.length );
-            //2 开始写block
-            IBlockWriter.BlockWriterResult result = blockWriter.writeBlock(cellIterator, fileOutputStream, context);
-            int blockFinishIndex = result.getIndex();
-            LOGGER.info("block write finish,index is {}",blockFinishIndex);
-            int indexStartIndex = blockFinishIndex ;
-            LOGGER.info("third, write index, index is {}",indexStartIndex);
-            //3 开始写index
-            //todo:优化掉toByteArray的copy
-            ByteArrayOutputStream indexStream = context.getIndex();
-
-            fileOutputStream.write(indexStream.toByteArray());
-
-            //4 开始写bloomFilter
-            ByteBloomFilter bloomFilter = context.getBloom();
-            LOGGER.info("index write finished at {}",blockFinishIndex + context.getIndex().size());
-            int bloomStartIndex = blockFinishIndex + context.getIndex().size();
-            LOGGER.info("fourth,write bloom, index is {}",bloomStartIndex);
-            bloomFilter.writeBloom(fileOutputStream);
-
-            //4 开始写meta
-
-            MetaInfo metaInfo = new MetaInfo(createTime, result.getStart(), result.getEnd(), indexStartIndex, bloomStartIndex);
-            LOGGER.info("fifth,write meta info {}",metaInfo);
-            byte[] bytes = metaInfo.serialize();
-            fileOutputStream.write(bytes);
-            fileOutputStream.write(Bytes.toBytes(bytes.length));
-        }
-
-        try (FileInputStream inputStream = new FileInputStream(fileName)){
-            md5 = MD5Utils.getMD5(inputStream.getChannel());
-        }
-        return new HCCFileMeta(fileName, md5, size, System.currentTimeMillis());
     }
 }

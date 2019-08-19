@@ -6,6 +6,8 @@ import com.hc.pdb.LockContext;
 import com.hc.pdb.PDBStatus;
 import com.hc.pdb.conf.Configuration;
 import com.hc.pdb.conf.PDBConstants;
+import com.hc.pdb.exception.PDBException;
+import com.hc.pdb.exception.PDBIOException;
 import com.hc.pdb.hcc.HCCFile;
 import com.hc.pdb.hcc.HCCWriter;
 import com.hc.pdb.hcc.meta.MetaReader;
@@ -61,7 +63,7 @@ public class Compactor implements StateChangeListener,IRecoveryable,
 
 
     @Override
-    public void onChange(State state) throws Exception {
+    public void onChange(State state) throws PDBException {
         //todo:循环检测
         synchronized (this) {
             while (true) {
@@ -208,7 +210,7 @@ public class Compactor implements StateChangeListener,IRecoveryable,
             }
         }
 
-        public boolean writeNewHCCFile() throws IOException {
+        public boolean writeNewHCCFile() throws PDBException {
 
             FilterScanner scanner = getScanner().getKey();
             if(scanner.next() == null){
@@ -223,7 +225,7 @@ public class Compactor implements StateChangeListener,IRecoveryable,
                 public boolean hasNext() {
                     try {
                         return filterScanner.next() != null;
-                    } catch (IOException e) {
+                    } catch (PDBException e) {
                         throw new RuntimeException(e);
                     }
                 }
@@ -244,7 +246,7 @@ public class Compactor implements StateChangeListener,IRecoveryable,
             }
         }
 
-        private Pair<FilterScanner,Integer> getScanner() throws IOException {
+        private Pair<FilterScanner,Integer> getScanner() throws PDBIOException {
             MetaReader metaReader = new MetaReader();
             Set<IScanner> hccScanners = new HashSet<>();
             int size = 0;

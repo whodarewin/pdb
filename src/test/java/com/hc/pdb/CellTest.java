@@ -1,5 +1,6 @@
 package com.hc.pdb;
 
+import com.hc.pdb.exception.PDBSerializeException;
 import org.junit.Assert;
 import org.junit.Test;
 import java.io.IOException;
@@ -10,7 +11,7 @@ import java.nio.ByteBuffer;
  */
 public class CellTest{
     @Test
-    public void testCell() throws IOException {
+    public void testCell() throws PDBSerializeException {
         Cell cell1 = new Cell("1".getBytes(),"1".getBytes(), 20, false);
         ByteBuffer buffer = ByteBuffer.allocate(cell1.serialize().length);
         buffer.mark();

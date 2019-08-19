@@ -1,5 +1,6 @@
 package com.hc.pdb.hcc.meta;
 
+import com.hc.pdb.exception.PDBSerializeException;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -11,7 +12,7 @@ import java.io.IOException;
 public class MetaInfoTest {
 
     @Test
-    public void testMetaInfo() throws IOException {
+    public void testMetaInfo() throws PDBSerializeException {
         MetaInfo metaInfo1 = new MetaInfo(System.currentTimeMillis(), "1".getBytes(),"10".getBytes(),1,2);
         byte[] metaBytes = metaInfo1.serialize();
         MetaInfo metaInfo2 = MetaInfo.toMetaInfo(metaBytes);

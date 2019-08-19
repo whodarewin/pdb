@@ -1,6 +1,7 @@
 package com.hc.pdb.hcc;
 
 import com.hc.pdb.Cell;
+import com.hc.pdb.exception.PDBIOException;
 
 import java.io.IOException;
 
@@ -16,7 +17,7 @@ public interface IHCCReader {
      * seek 到某一位置
      * @param key
      */
-    void seek(byte[] key) throws IOException;
+    void seek(byte[] key) throws IOException, PDBIOException;
 
     /**
      * 下一个cell

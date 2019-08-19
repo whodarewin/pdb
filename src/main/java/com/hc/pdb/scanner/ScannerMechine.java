@@ -1,6 +1,7 @@
 package com.hc.pdb.scanner;
 
 import com.hc.pdb.LockContext;
+import com.hc.pdb.exception.PDBIOException;
 import com.hc.pdb.hcc.HCCFile;
 import com.hc.pdb.hcc.HCCManager;
 import com.hc.pdb.mem.MemCache;
@@ -37,7 +38,7 @@ public class ScannerMechine {
      * @param endKey 结束key
      * @return
      */
-    public IScanner createScanner(byte[] startKey, byte[] endKey) throws IOException {
+    public IScanner createScanner(byte[] startKey, byte[] endKey) throws PDBIOException {
         Set<HCCFile> hccFiles;
         Set<MemCache> memCaches;
         try {

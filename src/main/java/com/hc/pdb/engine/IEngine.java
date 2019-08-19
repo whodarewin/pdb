@@ -1,10 +1,7 @@
 package com.hc.pdb.engine;
 
-
-import com.hc.pdb.exception.DBCloseException;
+import com.hc.pdb.exception.PDBException;
 import com.hc.pdb.scanner.IScanner;
-
-import java.io.IOException;
 
 /**
  * IEngine
@@ -20,13 +17,13 @@ public interface IEngine {
      * @param value value
      * @param ttl   过期时间
      */
-    void put(byte[] key, byte[] value, long ttl) throws Exception;
+    void put(byte[] key, byte[] value, long ttl) throws PDBException;
 
     /**
      * 删除
      * @param key 需要删除的cell的key
      */
-    void delete(byte[] key) throws IOException, Exception;
+    void delete(byte[] key) throws PDBException;
 
     /**
      * scan 检索方式
@@ -34,18 +31,18 @@ public interface IEngine {
      * @param end end key
      * @return
      */
-    IScanner scan(byte[] start, byte[] end) throws IOException, DBCloseException;
+    IScanner scan(byte[] start, byte[] end) throws PDBException;
 
     /**
      * get 操作
      * @param key 需要get的key
      * @return 返回key所对应的值
      */
-    byte[] get(byte[] key) throws IOException, DBCloseException;
+    byte[] get(byte[] key) throws PDBException;
     /**
      * 清空数据库，所有数据丢失
      */
-    void clean() throws Exception;
+    void clean() throws PDBException;
 
     /**
      * 关闭数据库

@@ -1,6 +1,7 @@
 package com.hc.pdb.scanner;
 
 import com.hc.pdb.Cell;
+import com.hc.pdb.exception.PDBIOException;
 import com.hc.pdb.hcc.HCCReader;
 import com.hc.pdb.util.Bytes;
 
@@ -16,15 +17,15 @@ public class HCCScanner implements IScanner {
     private Cell current;
     private boolean scanEnd;
 
-    public HCCScanner(HCCReader reader, byte[] start, byte[] end) throws IOException {
+    public HCCScanner(HCCReader reader, byte[] start, byte[] end) throws PDBIOException {
         this.reader = reader;
-        reader.seek(start);
         this.end = end;
+        reader.seek(start);
     }
 
 
     @Override
-    public Cell next() throws IOException {
+    public Cell next() {
         if(scanEnd){
             return null;
         }

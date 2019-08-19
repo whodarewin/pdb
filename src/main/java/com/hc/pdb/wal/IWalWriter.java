@@ -1,8 +1,8 @@
 package com.hc.pdb.wal;
 
 import com.hc.pdb.ISerializable;
-
-import java.io.IOException;
+import com.hc.pdb.exception.PDBException;
+import com.hc.pdb.exception.PDBIOException;
 
 /**
  * IWalWriter
@@ -13,11 +13,11 @@ import java.io.IOException;
  */
 public interface IWalWriter {
 
-    void write(ISerializable serializable) throws IOException;
+    void write(ISerializable serializable) throws PDBException;
 
-    void close() throws IOException;
+    void close() throws PDBIOException;
 
-    void delete() throws IOException;
+    void delete() throws PDBIOException;
 
     String getWalFileName();
 }

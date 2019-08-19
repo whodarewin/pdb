@@ -1,6 +1,8 @@
 package com.hc.pdb.wal;
 
 import com.hc.pdb.ISerializable;
+import com.hc.pdb.exception.PDBException;
+import com.hc.pdb.exception.PDBIOException;
 import com.hc.pdb.file.FileConstants;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -24,32 +26,49 @@ public class FileWalWriter implements IWalWriter {
     private FileOutputStream output;
     private File walFile;
 
-    public FileWalWriter(String fileName) throws IOException {
-        this.fileName = fileName;
-        walFile = new File(fileName);
-        if(!walFile.createNewFile()) {
-            throw new RuntimeException("can not create file " + fileName);
+    public FileWalWriter(String fileName) throws PDBIOException {
+        try{
+            this.fileName = fileName;
+            walFile = new File(fileName);
+            if(!walFile.exists()){
+                if (!walFile.createNewFile()) {
+                    throw new RuntimeException("can not create file " + fileName);
+                }
+            }
+            this.output = new FileOutputStream(walFile);
+        }catch (Exception e){
+            throw new PDBIOException(e);
         }
-
-        this.output = new FileOutputStream(walFile);
     }
 
     @Override
-    public void write(ISerializable serializable) throws IOException {
-        output.write(serializable.serialize());
-        output.flush();
+    public void write(ISerializable serializable) throws PDBException {
+        try {
+            output.write(serializable.serialize());
+            output.flush();
+        }catch (IOException e){
+            throw new PDBIOException(e);
+        }
     }
 
     @Override
-    public void close() throws IOException {
-        this.output.close();
+    public void close() throws PDBIOException {
+        try {
+            this.output.close();
+        }catch (Exception e){
+            throw new PDBIOException(e);
+        }
     }
 
     @Override
-    public void delete() throws IOException {
+    public void delete() throws PDBIOException {
         this.close();
-        FileUtils.forceDelete(new File(fileName));
-        LOGGER.info("delete wal success {}", fileName);
+        try{
+            FileUtils.forceDelete(new File(fileName));
+            LOGGER.info("delete wal success {}", fileName);
+        }catch (Exception e){
+            throw new PDBIOException(e);
+        }
     }
 
     @Override

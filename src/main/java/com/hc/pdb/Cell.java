@@ -1,6 +1,8 @@
 package com.hc.pdb;
 
 import com.hc.pdb.exception.NoEnoughByteException;
+import com.hc.pdb.exception.PDBIOException;
+import com.hc.pdb.exception.PDBSerializeException;
 import com.hc.pdb.util.Bytes;
 
 import java.io.ByteArrayOutputStream;
@@ -87,18 +89,22 @@ public class Cell implements ISerializable, Comparable<Cell>{
 
 
     @Override
-    public byte[] serialize() throws IOException {
+    public byte[] serialize() throws PDBSerializeException {
         if(delete){
             return serializeDeleteCell();
         }
         return serializeNormalCell();
     }
 
-    public byte[] serializeDeleteCell() throws IOException {
+    public byte[] serializeDeleteCell() throws PDBSerializeException {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         outputStream.write(DELETE_BYTE);
-        outputStream.write(Bytes.toBytes(key.length));
-        outputStream.write(key);
+        try {
+            outputStream.write(Bytes.toBytes(key.length));
+            outputStream.write(key);
+        }catch (IOException e){
+            throw new PDBSerializeException(e);
+        }
         return outputStream.toByteArray();
     }
 
@@ -106,16 +112,20 @@ public class Cell implements ISerializable, Comparable<Cell>{
      * key length + key timeToDrop + value
      */
 
-    public byte[] serializeNormalCell() throws IOException {
+    public byte[] serializeNormalCell() throws PDBSerializeException {
         //todo:抛弃output stream 的写法，写到文件里要增加version字段。
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         outputStream.write(NORMAL_BYTE);
-        outputStream.write(Bytes.toBytes(key.length + value.length + Long.BYTES * 2 + Integer.BYTES));
-        outputStream.write(Bytes.toBytes(key.length));
-        outputStream.write(key);
-        outputStream.write(value);
-        outputStream.write(Bytes.toBytes(ttl));
-        outputStream.write(Bytes.toBytes(timeStamp));
+        try {
+            outputStream.write(Bytes.toBytes(key.length + value.length + Long.BYTES * 2 + Integer.BYTES));
+            outputStream.write(Bytes.toBytes(key.length));
+            outputStream.write(key);
+            outputStream.write(value);
+            outputStream.write(Bytes.toBytes(ttl));
+            outputStream.write(Bytes.toBytes(timeStamp));
+        }catch (Exception e){
+            throw new PDBSerializeException(e);
+        }
         return outputStream.toByteArray();
     }
 

@@ -4,6 +4,7 @@ import com.hc.pdb.Cell;
 import com.hc.pdb.conf.Configuration;
 import com.hc.pdb.conf.PDBConstants;
 import com.hc.pdb.exception.DBCloseException;
+import com.hc.pdb.exception.PDBException;
 import com.hc.pdb.util.Bytes;
 import org.junit.After;
 import org.junit.Assert;
@@ -93,6 +94,30 @@ public class LSMEngineTest {
         testCase1();
 
     }
+
+    @Test
+    public void testCase4() throws Exception {
+        engine.clean();
+        engine.close();
+        String path = LSMEngineTest.class.getClassLoader().getResource("").getPath()+"pdb/";
+        LOGGER.info("create pdb at {}",path);
+        Configuration configuration = new Configuration();
+        configuration.put(PDBConstants.DB_PATH_KEY,path);
+        engine = new LSMEngine(configuration);
+        for(int i = 0; i < 1000000; i++){
+            engine.put(Bytes.toBytes(i),Bytes.toBytes(i), Cell.NO_TTL);
+        }
+
+        engine.close();
+        engine = new LSMEngine(configuration);
+        for(int i = 0; i < 1000000; i++){
+            byte[] bytes = engine.get(Bytes.toBytes(i));
+            int value = Bytes.toInt(bytes);
+            Assert.assertEquals(i,value);
+        }
+
+    }
+
 
     @After
     public void clean() throws Exception {

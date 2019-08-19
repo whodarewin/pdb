@@ -7,6 +7,8 @@ import com.hc.pdb.compactor.Compactor;
 import com.hc.pdb.conf.Configuration;
 import com.hc.pdb.conf.PDBConstants;
 import com.hc.pdb.exception.DBCloseException;
+import com.hc.pdb.exception.PDBException;
+import com.hc.pdb.exception.PDBIOException;
 import com.hc.pdb.hcc.HCCManager;
 import com.hc.pdb.hcc.HCCWriter;
 import com.hc.pdb.hcc.meta.MetaReader;
@@ -44,70 +46,78 @@ public class LSMEngine implements IEngine {
      * @param configuration
      * @throws Exception
      */
-    public LSMEngine(Configuration configuration) throws Exception {
+    public LSMEngine(Configuration configuration) throws PDBException {
         createOrStartPDB(configuration);
     }
 
-    private void createOrStartPDB(Configuration configuration) throws Exception {
-        Preconditions.checkNotNull(configuration);
-        this.configuration = configuration;
-        this.path = configuration.get(PDBConstants.DB_PATH_KEY);
-        LOGGER.info("create lsm db at {}",path);
+    private void createOrStartPDB(Configuration configuration) throws PDBException {
+        try {
+            Preconditions.checkNotNull(configuration);
+            this.configuration = configuration;
+            this.path = configuration.get(PDBConstants.DB_PATH_KEY);
+            LOGGER.info("create lsm db at {}", path);
 
-        PDBFileUtils.createDirIfNotExist(path);
-        this.pdbStatus = new PDBStatus();
-        //加载状态
-        this.stateManager = new StateManager(path);
-        stateManager.load();
-        if(stateManager.isCleaning()){
-            this.clean();
+            PDBFileUtils.createDirIfNotExist(path);
+            this.pdbStatus = new PDBStatus();
+            //加载状态
+            this.stateManager = new StateManager(path);
+            stateManager.load();
+            if (stateManager.isCleaning()) {
+                this.clean();
+            }
+
+
+            this.configuration = configuration;
+
+
+            //整个程序只有这一个写hcc的类，无状态。
+            hccWriter = new HCCWriter(configuration);
+
+            //～～ 搭建读架子
+            //创建 hccManager
+            MetaReader reader = new MetaReader();
+            HCCManager hccManager = new HCCManager(configuration, reader);
+            //注册hccManager hccFile 变动时通知
+            stateManager.addListener(hccManager);
+            //创建CrashWorkerManage
+            memCacheManager = new MemCacheManager(configuration, stateManager, hccWriter, pdbStatus);
+            //创建scannerMechine，整体的读架子搭建起来
+            scannerMechine = new ScannerMechine(hccManager, memCacheManager);
+            //～～ 读架子搭建完毕
+
+            //创建compactor
+            compactor = new Compactor(configuration, stateManager, hccWriter, pdbStatus);
+            //注册compactor，hccFile变动时通知
+            stateManager.addListener(compactor);
+
+            pdbStatus.addListener(compactor);
+            pdbStatus.addListener(memCacheManager);
+        }catch(Exception e){
+            throw new PDBException(e);
         }
-
-
-        this.configuration = configuration;
-
-
-        //整个程序只有这一个写hcc的类，无状态。
-        hccWriter = new HCCWriter(configuration);
-
-        //～～ 搭建读架子
-        //创建 hccManager
-        MetaReader reader = new MetaReader();
-        HCCManager hccManager = new HCCManager(configuration,reader);
-        //注册hccManager hccFile 变动时通知
-        stateManager.addListener(hccManager);
-        //创建CrashWorkerManage
-        memCacheManager = new MemCacheManager(configuration,stateManager,hccWriter,pdbStatus);
-        //创建scannerMechine，整体的读架子搭建起来
-        scannerMechine = new ScannerMechine(hccManager,memCacheManager);
-        //～～ 读架子搭建完毕
-
-        //创建compactor
-        compactor = new Compactor(configuration,stateManager, hccWriter,pdbStatus);
-        //注册compactor，hccFile变动时通知
-        stateManager.addListener(compactor);
-
-        pdbStatus.addListener(compactor);
-        pdbStatus.addListener(memCacheManager);
     }
 
 
     @Override
-    public void put(byte[] key, byte[] value, long ttl) throws Exception {
+    public void put(byte[] key, byte[] value, long ttl) throws PDBException {
         pdbStatus.checkDBStatus();
         Cell cell = new Cell(key, value, ttl,false);
         this.memCacheManager.addCell(cell);
     }
 
     @Override
-    public void clean() throws Exception {
+    public void clean() throws PDBException {
         if(!pdbStatus.isClose()){
             close();
         }
         stateManager.setClean();
         String path = configuration.get(PDBConstants.DB_PATH_KEY);
         LOGGER.info("clean lsm db at path {}",path);
-        FileUtils.deleteDirectory(new File(path));
+        try {
+            FileUtils.deleteDirectory(new File(path));
+        }catch (IOException e){
+            throw new PDBIOException(e);
+        }
         createOrStartPDB(configuration);
     }
 
@@ -118,7 +128,7 @@ public class LSMEngine implements IEngine {
 
 
     @Override
-    public byte[] get(byte[] key) throws IOException, DBCloseException {
+    public byte[] get(byte[] key) throws PDBException {
         pdbStatus.checkDBStatus();
         IScanner scanner = scannerMechine.createScanner(key,key);
         if(scanner == null){
@@ -132,14 +142,14 @@ public class LSMEngine implements IEngine {
     }
 
     @Override
-    public void delete(byte[] key) throws Exception {
+    public void delete(byte[] key) throws PDBException {
         pdbStatus.checkDBStatus();
         Cell cell = new Cell(key, Cell.DELETE_VALUE, Cell.NO_TTL, true);
         this.memCacheManager.addCell(cell);
     }
 
     @Override
-    public IScanner scan(byte[] start, byte[] end) throws IOException, DBCloseException {
+    public IScanner scan(byte[] start, byte[] end) throws PDBException {
         pdbStatus.checkDBStatus();
         IScanner scanner = scannerMechine.createScanner(start, end);
         return scanner;
