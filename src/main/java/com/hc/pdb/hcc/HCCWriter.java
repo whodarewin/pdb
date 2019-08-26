@@ -2,10 +2,13 @@ package com.hc.pdb.hcc;
 
 import com.google.common.base.Preconditions;
 import com.hc.pdb.Cell;
+import com.hc.pdb.PDBStatus;
 import com.hc.pdb.conf.Configuration;
 import com.hc.pdb.conf.PDBConstants;
+import com.hc.pdb.exception.PDBException;
 import com.hc.pdb.exception.PDBIOException;
 import com.hc.pdb.exception.PDBSerializeException;
+import com.hc.pdb.exception.PDBStopException;
 import com.hc.pdb.file.FileConstants;
 import com.hc.pdb.hcc.block.BlockWriter;
 import com.hc.pdb.hcc.block.IBlockWriter;
@@ -39,17 +42,18 @@ public class HCCWriter implements IHCCWriter {
     private String path;
     private double errorRate;
 
-    public HCCWriter(Configuration configuration) {
+    public HCCWriter(Configuration configuration, PDBStatus status) {
         Preconditions.checkNotNull(configuration, "configuration can not be null");
         this.configuration = configuration;
         path = configuration.get(PDBConstants.DB_PATH_KEY);
         errorRate = configuration.getDouble(PDBConstants.ERROR_RATE_KEY, PDBConstants.DEFAULT_ERROR_RATE);
         this.manager = new HCCManager(configuration, new MetaReader());
-        this.blockWriter = new BlockWriter(configuration);
+        this.blockWriter = new BlockWriter(configuration,status);
     }
 
     @Override
-    public HCCFileMeta writeHCC(Iterator<Cell> cellIterator, int size,String fileName) throws PDBIOException, PDBSerializeException {
+    public HCCFileMeta writeHCC(Iterator<Cell> cellIterator, int size,String fileName)
+            throws PDBIOException, PDBSerializeException, PDBStopException {
         //1 创建文件
         try {
             if (path == null) {
@@ -63,8 +67,8 @@ public class HCCWriter implements IHCCWriter {
 
             File file = new File(fileName);
             while (file.exists()) {
-                fileName = path + UUID.randomUUID().toString() + FileConstants.DATA_FILE_SUFFIX;
-                file = new File(fileName);
+                LOGGER.info("file {} exist");
+                throw new PDBIOException("file "+ fileName + " exist!");
             }
 
             file.createNewFile();
@@ -82,6 +86,10 @@ public class HCCWriter implements IHCCWriter {
                 LOGGER.info("second,write block,index is {}", FileConstants.HCC_WRITE_PREFIX.length);
                 //2 开始写block
                 IBlockWriter.BlockWriterResult result = blockWriter.writeBlock(cellIterator, fileOutputStream, context);
+                if(result == null){
+                    LOGGER.warn("block write result is null,check if pdb is closed");
+                    return null;
+                }
                 int blockFinishIndex = result.getIndex();
                 LOGGER.info("block write finish,index is {}", blockFinishIndex);
                 int indexStartIndex = blockFinishIndex;
@@ -106,6 +114,11 @@ public class HCCWriter implements IHCCWriter {
                 byte[] bytes = metaInfo.serialize();
                 fileOutputStream.write(bytes);
                 fileOutputStream.write(Bytes.toBytes(bytes.length));
+                fileOutputStream.flush();
+            }
+
+            if(!file.exists()){
+                throw new PDBIOException("file "+ fileName + " not exist");
             }
 
             try (FileInputStream inputStream = new FileInputStream(fileName)) {

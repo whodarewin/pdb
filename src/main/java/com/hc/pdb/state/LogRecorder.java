@@ -1,6 +1,7 @@
 package com.hc.pdb.state;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.hc.pdb.exception.PDBIOException;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 
@@ -64,7 +65,7 @@ public class LogRecorder {
         }
     }
 
-    public List<List<Recorder.RecordLog>> getAllLogNotFinished() throws IOException {
+    public List<List<Recorder.RecordLog>> getAllLogNotFinished() throws PDBIOException {
         try{
             lock.readLock().lock();
             List<List<Recorder.RecordLog>> rets = new ArrayList<>();
@@ -73,6 +74,8 @@ public class LogRecorder {
             rets.addAll(getAllLogNotFinished(new File(getBakFileName())));
 
             return rets;
+        } catch (Exception e){
+            throw new PDBIOException(e);
         }finally {
             lock.readLock().unlock();
         }

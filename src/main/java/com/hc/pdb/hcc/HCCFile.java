@@ -119,4 +119,12 @@ public class HCCFile {
     public byte[] getEnd(){
         return metaInfo.getEndKey();
     }
+
+    public void close() throws PDBIOException {
+        try {
+            this.file.close();
+        } catch (IOException e) {
+            throw new PDBIOException(e);
+        }
+    }
 }

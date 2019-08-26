@@ -1,6 +1,7 @@
 package com.hc.pdb.state;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.hc.pdb.exception.PDBIOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,7 +50,7 @@ public class CrashWorkerManager {
         });
     }
 
-    public void redoAllWorker() throws IOException, ExecutionException, InterruptedException {
+    public void redoAllWorker() throws PDBIOException, ExecutionException, InterruptedException {
         //1 load all recorder that not finished
         List<List<Recorder.RecordLog>> logs = logRecorder.getAllLogNotFinished();
         //2 redo all recorder
@@ -60,7 +61,7 @@ public class CrashWorkerManager {
      * 宕机后继续执行任务
      * @param logs
      */
-    public void redoWork(List<List<Recorder.RecordLog>> logs) throws IOException,
+    public void redoWork(List<List<Recorder.RecordLog>> logs) throws PDBIOException,
             ExecutionException, InterruptedException {
         if(logs.size() == 0){
             LOGGER.info("no log to continue");
@@ -77,7 +78,7 @@ public class CrashWorkerManager {
             IWorkerCrashableFactory factory = name2WorkerCrashableFactory.get(workerName);
             if(factory == null){
                 LOGGER.info("can not create worker {} because worker factory is null",workerName);
-                throw new RuntimeException("can not create worker");
+                throw new PDBIOException("can not create worker");
             }
 
             IWorkerCrashable workerCrashable = factory.create(log);

@@ -1,7 +1,8 @@
 package com.hc.pdb.state;
 
 
-import java.io.IOException;
+import com.hc.pdb.exception.PDBIOException;
+
 import java.util.List;
 
 /**
@@ -17,5 +18,5 @@ public interface IWorkerCrashableFactory {
      * 创建一个{@link IWorkerCrashable}
      * @return
      */
-    IWorkerCrashable create(List<Recorder.RecordLog> log) throws IOException;
+    IWorkerCrashable create(List<Recorder.RecordLog> log) throws PDBIOException;
 }

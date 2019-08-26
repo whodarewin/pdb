@@ -1,5 +1,6 @@
 package com.hc.pdb.state;
 
+import com.hc.pdb.PDBStatus;
 import com.hc.pdb.exception.PDBException;
 import com.hc.pdb.exception.PDBIOException;
 import com.hc.pdb.file.FileConstants;
@@ -12,7 +13,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.function.Consumer;
 
 /**
  * StateManager
@@ -22,7 +22,7 @@ import java.util.function.Consumer;
  * @date 2019/6/12
  */
 
-public class StateManager {
+public class StateManager implements PDBStatus.StatusListener {
     private static final Logger LOGGER = LoggerFactory.getLogger(StateManager.class);
     private static final String STATE_FILE_NAME = "state";
     private static final String STATE_BAK_FILE_NAME = "bak";
@@ -38,6 +38,10 @@ public class StateManager {
      */
     public StateManager(String path) throws Exception {
         this.path = path;
+        File pathFile = new File(path);
+        if(!pathFile.exists()){
+            pathFile.mkdirs();
+        }
         String stateFileName = getStateFileName();
         String bakFileName = getStateBakFileName();
         File stateFile = new File(stateFileName);
@@ -220,11 +224,11 @@ public class StateManager {
         String metaFileName = path + STATE_FILE_NAME + FileConstants.META_FILE_SUFFIX;
         File metaFile = new File(metaFileName);
         if(!metaFile.delete()){
-            throw new RuntimeException("can not delete meta file");
+            throw new PDBIOException("can not delete meta file");
         }
 
         if(!bakFile.renameTo(metaFile)){
-            throw new RuntimeException();
+            throw new PDBIOException("meta bak file "+ bakFileName + " rename to file " + metaFileName + " failed");
         }
     }
 
@@ -250,6 +254,14 @@ public class StateManager {
          return state;
      }
 
+     public void close() throws PDBIOException {
+        try {
+            this.file.close();
+        }catch (IOException e){
+            throw new PDBIOException(e);
+        }
+     }
+
     /**
      * 获得stateFile的名字
      * @return
@@ -265,4 +277,9 @@ public class StateManager {
     private String getStateBakFileName(){
         return path + STATE_FILE_NAME + FileConstants.META_FILE_SUFFIX + STATE_BAK_FILE_NAME;
      }
+
+    @Override
+    public void onClose() throws PDBIOException {
+        close();
+    }
 }

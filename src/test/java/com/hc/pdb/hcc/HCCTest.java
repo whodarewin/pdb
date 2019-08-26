@@ -1,10 +1,12 @@
 package com.hc.pdb.hcc;
 
 import com.hc.pdb.Cell;
+import com.hc.pdb.PDBStatus;
 import com.hc.pdb.conf.Configuration;
 import com.hc.pdb.conf.PDBConstants;
 import com.hc.pdb.exception.PDBIOException;
 import com.hc.pdb.exception.PDBSerializeException;
+import com.hc.pdb.exception.PDBStopException;
 import com.hc.pdb.file.FileConstants;
 import com.hc.pdb.hcc.meta.MetaReader;
 import com.hc.pdb.state.HCCFileMeta;
@@ -30,11 +32,11 @@ public class HCCTest {
     private Configuration configuration;
     private HCCFileMeta fileMeta;
     @Before
-    public void setUp() throws PDBIOException, PDBSerializeException {
+    public void setUp() throws PDBIOException, PDBSerializeException, PDBStopException {
         configuration = new Configuration();
         configuration.put(PDBConstants.DB_PATH_KEY,HCCTest.class.getClassLoader().getResource("").getPath());
         String path = configuration.get(PDBConstants.DB_PATH_KEY);
-        HCCWriter writer = new HCCWriter(configuration);
+        HCCWriter writer = new HCCWriter(configuration,new PDBStatus());
         List<Cell> cells = new ArrayList<>();
         for (int i = 0; i < 100000 ; i++) {
             Cell cell = new Cell(Bytes.toBytes(i), UUID.randomUUID().toString().getBytes(),20l, false);

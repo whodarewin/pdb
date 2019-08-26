@@ -2,7 +2,6 @@ package com.hc.pdb.scanner;
 
 import com.hc.pdb.Cell;
 import com.hc.pdb.exception.PDBException;
-import com.hc.pdb.exception.PDBIOException;
 import com.hc.pdb.exception.PDBRuntimeException;
 import com.hc.pdb.util.Bytes;
 import org.slf4j.Logger;
@@ -10,7 +9,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.concurrent.NotThreadSafe;
 import java.io.IOException;
-import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Set;
 
@@ -96,5 +94,12 @@ public class FilterScanner implements IScanner {
     @Override
     public Cell peek() {
         return current;
+    }
+
+    @Override
+    public void close() throws IOException {
+        for (IScanner scanner : queue) {
+            scanner.close();
+        }
     }
 }

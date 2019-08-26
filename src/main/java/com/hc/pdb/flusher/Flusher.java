@@ -6,8 +6,7 @@ import com.hc.pdb.Cell;
 import com.hc.pdb.LockContext;
 import com.hc.pdb.PDBStatus;
 import com.hc.pdb.exception.PDBException;
-import com.hc.pdb.exception.PDBIOException;
-import com.hc.pdb.exception.PDBSerializeException;
+import com.hc.pdb.exception.PDBStopException;
 import com.hc.pdb.hcc.HCCWriter;
 import com.hc.pdb.mem.MemCache;
 import com.hc.pdb.state.HCCFileMeta;
@@ -35,14 +34,14 @@ public class Flusher implements Runnable {
     private PDBStatus pdbStatus;
     private WALFileMeta walFileMeta;
     private String hccFileName;
-
+    private String walPath;
 
     public Flusher(FlushEntry entry, HCCWriter writer,
                    StateManager manager, PDBStatus pdbStatus) {
-        Preconditions.checkNotNull(entry.getMemCache(), "MemCache can not be null");
-        Preconditions.checkNotNull(entry.getWalFileMeta(),"WalFileMeta can not be null");
+        Preconditions.checkNotNull(entry, "FlushEntry can not be null");
         Preconditions.checkNotNull(writer, "hccWriter can not be null");
         Preconditions.checkNotNull(manager,"state manager can not be null");
+        Preconditions.checkNotNull(pdbStatus,"PDBStatus can not be null");
 
         this.cache = entry.getMemCache();
         this.hccWriter = writer;
@@ -51,28 +50,45 @@ public class Flusher implements Runnable {
         this.pdbStatus = pdbStatus;
         this.walFileMeta = entry.getWalFileMeta();
         this.hccFileName = walFileMeta.getParams().get(0).toString();
+        this.walPath = walFileMeta.getWalPath();
     }
 
     @Override
     public void run() {
         try {
-            LOGGER.info("begin flush,wal file path {},hcc file path is {}",walFileMeta.getWalPath(),walFileMeta.getParams().get(0));
+            if(pdbStatus.isClose()){
+                LOGGER.info("pdb closed,flush exist");
+                throw new PDBStopException();
+            }
+            LOGGER.info("begin flush,wal file path {},hcc file path is {}",walPath,walFileMeta.getParams().get(0));
             switch (walFileMeta.getState()){
                 case WALFileMeta.BEGIN_FLUSH :
+                    if(pdbStatus.isClose()){
+                        LOGGER.info("pdb closed,flush exist");
+                        throw new PDBStopException();
+                    }
                     deleteHccFileFirst();
                     HCCFileMeta meta = flushHCCFile();
+                    if(meta == null){
+                        LOGGER.info("meta is null,check if pdb is closed,stop flush");
+                        return;
+                    }
                     changeMetaAndDeleteWalFile(meta);
-                    stateManager.deleteFlushingWal(walFileMeta.getWalPath());
+                    stateManager.deleteFlushingWal(walPath);
                     break;
                 case WALFileMeta.HCC_WRITE_FINISH:
+                    if(pdbStatus.isClose()){
+                        LOGGER.info("pdb closed,flush exist");
+                        throw new PDBStopException();
+                    }
                     changeMetaAndDeleteWalFile((HCCFileMeta) walFileMeta.getParams().get(1));
-                    stateManager.deleteFlushingWal(walFileMeta.getWalPath());
+                    stateManager.deleteFlushingWal(walPath);
                     break;
                 default:
                     throw new FlushException("no state " + walFileMeta.getState() + " found");
             }
         } catch (Exception e) {
-            pdbStatus.setClose(true,"flush exception");
+            pdbStatus.setClosed("flush exception");
             pdbStatus.setCrashException(e);
         }
     }
@@ -87,7 +103,7 @@ public class Flusher implements Runnable {
     private HCCFileMeta flushHCCFile() throws PDBException {
         List<Cell> cells = new ArrayList<>(cache.getAllCells());
         HCCFileMeta meta = hccWriter.writeHCC(cells.iterator(), cells.size(), hccFileName);
-        stateManager.addFlushingWal(walFileMeta.getWalPath(),WALFileMeta.HCC_WRITE_FINISH, Lists.newArrayList(hccFileName,meta));
+        stateManager.addFlushingWal(walPath,WALFileMeta.HCC_WRITE_FINISH, Lists.newArrayList(hccFileName,meta));
         return meta;
     }
 
@@ -104,12 +120,12 @@ public class Flusher implements Runnable {
         } finally {
             LockContext.flushLock.writeLock().unlock();
         }
-        File walFile = new File(walFileMeta.getWalPath());
+        File walFile = new File(walPath);
         if(walFile.exists()){
             FileUtils.forceDelete(walFile);
         }
-        stateManager.addFlushingWal(walFileMeta.getWalPath(),WALFileMeta.CHANGE_META_DELETE_WAL_FINISH,
-                Lists.newArrayList(walFileMeta.getWalPath()));
+        stateManager.addFlushingWal(walPath,WALFileMeta.CHANGE_META_DELETE_WAL_FINISH,
+                Lists.newArrayList(walPath));
     }
 
 

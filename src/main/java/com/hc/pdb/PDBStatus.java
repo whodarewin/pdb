@@ -33,15 +33,21 @@ public class PDBStatus {
         return close;
     }
 
-    public void setClose(boolean close,String cause) {
+    public void setClosed(String cause) {
         LOGGER.info("set db to close,cause {}",cause);
-        this.close = close;
+        if(this.close){
+            LOGGER.info("pdb already closed,return.");
+            return;
+        }
+        this.close = true;
         this.cause = cause;
         for (StatusListener listener : listeners) {
             try {
                 listener.onClose();
             } catch (PDBIOException e) {
-                LOGGER.info("error on listener closez",e);
+                LOGGER.info("error on listener close",e);
+            } catch (InterruptedException e) {
+                LOGGER.info("error on listener close",e);
             }
         }
     }
@@ -61,6 +67,6 @@ public class PDBStatus {
 
     public interface StatusListener{
 
-        void onClose() throws PDBIOException;
+        void onClose() throws PDBIOException, InterruptedException;
     }
 }

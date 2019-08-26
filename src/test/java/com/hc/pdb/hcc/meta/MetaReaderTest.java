@@ -1,10 +1,12 @@
 package com.hc.pdb.hcc.meta;
 
 import com.hc.pdb.Cell;
+import com.hc.pdb.PDBStatus;
 import com.hc.pdb.conf.Configuration;
 import com.hc.pdb.conf.PDBConstants;
 import com.hc.pdb.exception.PDBIOException;
 import com.hc.pdb.exception.PDBSerializeException;
+import com.hc.pdb.exception.PDBStopException;
 import com.hc.pdb.file.FileConstants;
 import com.hc.pdb.hcc.HCCWriter;
 import com.hc.pdb.state.HCCFileMeta;
@@ -26,12 +28,12 @@ public class MetaReaderTest{
 
     private String hccFileName;
     @Before
-    public void setUp() throws IOException, PDBIOException, PDBSerializeException {
+    public void setUp() throws IOException, PDBIOException, PDBSerializeException, PDBStopException {
 
         Configuration configuration = new Configuration();
         configuration.put(PDBConstants.DB_PATH_KEY, MetaReaderTest.class.getClassLoader().getResource("").getPath());
         String path = configuration.get(PDBConstants.DB_PATH_KEY);
-        HCCWriter hccWriter = new HCCWriter(configuration);
+        HCCWriter hccWriter = new HCCWriter(configuration,new PDBStatus());
         List<Cell> cells = new ArrayList<Cell>();
 
         for (int i = 0; i < 100; i++) {

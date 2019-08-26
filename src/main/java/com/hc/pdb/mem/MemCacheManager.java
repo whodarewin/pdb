@@ -124,8 +124,13 @@ public class MemCacheManager implements IRecoveryable, PDBStatus.StatusListener{
     }
 
     @Override
-    public void onClose() throws PDBIOException {
+    public void onClose() throws PDBIOException, InterruptedException {
         this.flushExecutor.shutdownNow();
+
+        while(!this.flushExecutor.awaitTermination(1,TimeUnit.SECONDS)){
+            LOGGER.info("wait flush terminated...");
+        }
+
         this.walWriter.close();
     }
 

@@ -22,4 +22,9 @@ public class NoneScanner implements IScanner {
     public Cell peek() {
         return null;
     }
+
+    @Override
+    public void close() throws IOException {
+        //do nothing
+    }
 }

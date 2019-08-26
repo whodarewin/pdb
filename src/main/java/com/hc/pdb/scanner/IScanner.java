@@ -3,6 +3,8 @@ package com.hc.pdb.scanner;
 import com.hc.pdb.Cell;
 import com.hc.pdb.exception.PDBException;
 
+import java.io.Closeable;
+
 /**
  * IScanner
  *
@@ -10,7 +12,7 @@ import com.hc.pdb.exception.PDBException;
  * @date 2019/6/11
  */
 
-public interface IScanner {
+public interface IScanner extends Closeable {
 
     /**
      * 找到下一个并移动指针位置

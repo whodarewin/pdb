@@ -1,13 +1,14 @@
 package com.hc.pdb.compactor;
 
 import com.hc.pdb.Cell;
-import com.hc.pdb.ISafeClose;
 import com.hc.pdb.LockContext;
 import com.hc.pdb.PDBStatus;
 import com.hc.pdb.conf.Configuration;
 import com.hc.pdb.conf.PDBConstants;
 import com.hc.pdb.exception.PDBException;
 import com.hc.pdb.exception.PDBIOException;
+import com.hc.pdb.exception.PDBRuntimeException;
+import com.hc.pdb.exception.PDBStopException;
 import com.hc.pdb.hcc.HCCFile;
 import com.hc.pdb.hcc.HCCWriter;
 import com.hc.pdb.hcc.meta.MetaReader;
@@ -27,6 +28,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -97,8 +99,11 @@ public class Compactor implements StateChangeListener,IRecoveryable,
     }
 
     @Override
-    public void onClose() {
+    public void onClose() throws InterruptedException {
         this.compactorExecutor.shutdownNow();
+        while(!this.compactorExecutor.awaitTermination(1, TimeUnit.SECONDS)){
+            LOGGER.info("compactor is closing...");
+        }
     }
 
     @Override
@@ -178,11 +183,11 @@ public class Compactor implements StateChangeListener,IRecoveryable,
                         deleteMetaFileCompacting();
                         break;
                     default:
-                        throw new RuntimeException("no such state:" + state);
+                        throw new PDBIOException("no such state:" + state);
                 }
             }catch (Exception e){
                 pdbStatus.setCrashException(e);
-                pdbStatus.setClose(true,"compact exception");
+                pdbStatus.setClosed("compact exception");
                 throw new RuntimeException(e);
             }
         }
@@ -226,7 +231,7 @@ public class Compactor implements StateChangeListener,IRecoveryable,
                     try {
                         return filterScanner.next() != null;
                     } catch (PDBException e) {
-                        throw new RuntimeException(e);
+                        throw new PDBRuntimeException(e);
                     }
                 }
 
@@ -235,6 +240,10 @@ public class Compactor implements StateChangeListener,IRecoveryable,
                     return scanner.peek();
                 }
             }, size, toFilePath);
+            //删除和增加两个文件相互抵消
+            if(fileMeta.getKvSize() == 0){
+                return false;
+            }
             return true;
         }
 

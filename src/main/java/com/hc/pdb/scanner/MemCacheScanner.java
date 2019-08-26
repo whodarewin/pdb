@@ -2,6 +2,8 @@ package com.hc.pdb.scanner;
 
 import com.hc.pdb.Cell;
 import com.hc.pdb.mem.MemCache;
+
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -32,6 +34,11 @@ public class MemCacheScanner implements IScanner{
     @Override
     public Cell peek() {
         return current;
+    }
+
+    @Override
+    public void close() throws IOException {
+        //do nothing
     }
 }
 

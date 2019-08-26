@@ -34,3 +34,16 @@
             4. 验证写入的数据。
         3. clean 稳定性
 4. 组件测试
+    1. StateManager 测试
+        1. CurrentWal 测试
+            1. 创建新的StateManager。
+            2. 设置CurrentWal
+            3. 关闭StateManager
+            4. 重启StateManager
+            5. 验证CurrentWal读取出来的和已经有的是否一致。
+        2. FlushingWalMeta Test
+            1. 创建新的StateManager。
+            2. add Flushing Wal META
+            3. 关闭StateManager
+            4. 重启StateManager
+            5. 验证Flusing Wal META读取出来的和已经有的是否一致。

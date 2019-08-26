@@ -3,6 +3,7 @@ package com.hc.pdb.hcc;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.hc.pdb.LockContext;
+import com.hc.pdb.PDBStatus;
 import com.hc.pdb.conf.Configuration;
 import com.hc.pdb.exception.PDBIOException;
 import com.hc.pdb.exception.PDBRuntimeException;
@@ -82,5 +83,4 @@ public class HCCManager implements StateChangeListener {
         this.fileMetas = state.getFileMetas();
         loadHCCFile();
     }
-
 }

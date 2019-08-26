@@ -32,7 +32,7 @@ public class FileWalWriter implements IWalWriter {
             walFile = new File(fileName);
             if(!walFile.exists()){
                 if (!walFile.createNewFile()) {
-                    throw new RuntimeException("can not create file " + fileName);
+                    throw new PDBIOException("can not create file " + fileName);
                 }
             }
             this.output = new FileOutputStream(walFile);

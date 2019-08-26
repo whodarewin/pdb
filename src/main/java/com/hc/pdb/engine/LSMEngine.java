@@ -71,7 +71,7 @@ public class LSMEngine implements IEngine {
 
 
             //整个程序只有这一个写hcc的类，无状态。
-            hccWriter = new HCCWriter(configuration);
+            hccWriter = new HCCWriter(configuration,pdbStatus);
 
             //～～ 搭建读架子
             //创建 hccManager
@@ -92,6 +92,7 @@ public class LSMEngine implements IEngine {
 
             pdbStatus.addListener(compactor);
             pdbStatus.addListener(memCacheManager);
+            pdbStatus.addListener(stateManager);
         }catch(Exception e){
             throw new PDBException(e);
         }
@@ -123,7 +124,7 @@ public class LSMEngine implements IEngine {
 
     @Override
     public void close() {
-        pdbStatus.setClose(true,"lsm close");
+        pdbStatus.setClosed("lsm close");
     }
 
 

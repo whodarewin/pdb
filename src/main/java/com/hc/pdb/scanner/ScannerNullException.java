@@ -8,9 +8,11 @@ package com.hc.pdb.scanner;
  */
 
 public class ScannerNullException extends RuntimeException {
+
     public ScannerNullException(String msg){
         super(msg);
     }
+
     public ScannerNullException(String msg,Exception e){
         super(msg,e);
     }

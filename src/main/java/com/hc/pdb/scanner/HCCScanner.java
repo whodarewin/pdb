@@ -45,4 +45,9 @@ public class HCCScanner implements IScanner {
     public Cell peek() {
         return current;
     }
+
+    @Override
+    public void close() throws IOException {
+        this.reader.close();
+    }
 }

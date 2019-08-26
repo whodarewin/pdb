@@ -1,11 +1,13 @@
 package com.hc.pdb.hcc.block;
 
 import com.hc.pdb.Cell;
+import com.hc.pdb.PDBStatus;
 import com.hc.pdb.conf.Configuration;
 import com.hc.pdb.conf.PDBConstants;
 import com.hc.pdb.exception.PDBException;
 import com.hc.pdb.exception.PDBIOException;
 import com.hc.pdb.exception.PDBSerializeException;
+import com.hc.pdb.exception.PDBStopException;
 import com.hc.pdb.file.FileConstants;
 import com.hc.pdb.hcc.WriteContext;
 import com.hc.pdb.util.ByteBloomFilter;
@@ -31,14 +33,16 @@ public class BlockWriter implements IBlockWriter {
     private static final Logger LOGGER = LoggerFactory.getLogger(BlockWriter.class);
     private Configuration conf;
     private int indexShift = FileConstants.HCC_WRITE_PREFIX.length - 1;
+    private PDBStatus status;
 
-    public BlockWriter(Configuration conf) {
+    public BlockWriter(Configuration conf, PDBStatus pdbStatus) {
         this.conf = conf;
+        this.status = pdbStatus;
     }
 
     @Override
     public BlockWriterResult writeBlock(Iterator<Cell> cellIterator, FileOutputStream outputStream, WriteContext context)
-            throws PDBIOException, PDBSerializeException {
+            throws PDBIOException, PDBSerializeException, PDBStopException {
         long blockSize = conf.getLong(PDBConstants.BLOCK_SIZE_KEY, PDBConstants.DEFAULT_BLOCK_SIZE);
         blockSize = blockSize * 1024;
 
@@ -49,6 +53,10 @@ public class BlockWriter implements IBlockWriter {
         byte[] start = null, end = null;
 
         while (cellIterator.hasNext()) {
+            if(this.status.isClose()){
+                LOGGER.warn("pdb is closed");
+                throw new PDBStopException();
+            }
             Cell cell = cellIterator.next();
             if(start == null){
                 start = cell.getKey();
