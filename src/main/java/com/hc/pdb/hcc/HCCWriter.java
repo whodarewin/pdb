@@ -32,7 +32,6 @@ import java.util.UUID;
  * @author han.congcong
  * @date 2019/7/18
  */
-
 public class HCCWriter implements IHCCWriter {
     private static final Logger LOGGER = LoggerFactory.getLogger(HCCWriter.class);
 
@@ -44,6 +43,7 @@ public class HCCWriter implements IHCCWriter {
 
     public HCCWriter(Configuration configuration, PDBStatus status) {
         Preconditions.checkNotNull(configuration, "configuration can not be null");
+        Preconditions.checkNotNull(status,"PDBStatus can not be null");
         this.configuration = configuration;
         path = configuration.get(PDBConstants.DB_PATH_KEY);
         errorRate = configuration.getDouble(PDBConstants.ERROR_RATE_KEY, PDBConstants.DEFAULT_ERROR_RATE);
@@ -52,7 +52,7 @@ public class HCCWriter implements IHCCWriter {
     }
 
     @Override
-    public HCCFileMeta writeHCC(Iterator<Cell> cellIterator, int size,String fileName)
+    public HCCFileMeta writeHCC(Iterator<Cell> cellIterator, int size, String fileName)
             throws PDBIOException, PDBSerializeException, PDBStopException {
         //1 创建文件
         try {

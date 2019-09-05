@@ -112,13 +112,13 @@ public class Flusher implements Runnable {
             return;
         }
         try {
-            LockContext.flushLock.writeLock().lock();
+            LockContext.FLUSH_LOCK.writeLock().lock();
             //hcc manager有了
             stateManager.add(meta);
             //删除flush的
             callback.callback();
         } finally {
-            LockContext.flushLock.writeLock().unlock();
+            LockContext.FLUSH_LOCK.writeLock().unlock();
         }
         File walFile = new File(walPath);
         if(walFile.exists()){
@@ -139,8 +139,6 @@ public class Flusher implements Runnable {
         private MemCache memCache;
         private WALFileMeta walFileMeta;
         private Callback callback;
-
-
 
         public FlushEntry(MemCache memCache, WALFileMeta walFileMeta, Callback callback) {
             this.memCache = memCache;

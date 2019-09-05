@@ -27,16 +27,18 @@ import java.util.UUID;
 /**
  * hcc 读写测试
  */
-public class HCCTest {
-    private static final Logger LOGGER = LoggerFactory.getLogger(HCCTest.class);
+public class HCCFileTest {
+    private static final Logger LOGGER = LoggerFactory.getLogger(HCCFileTest.class);
     private Configuration configuration;
     private HCCFileMeta fileMeta;
+    private PDBStatus pdbStatus;
     @Before
-    public void setUp() throws PDBIOException, PDBSerializeException, PDBStopException {
+    public void setUp() throws PDBIOException, PDBSerializeException, PDBStopException, IOException {
         configuration = new Configuration();
-        configuration.put(PDBConstants.DB_PATH_KEY,HCCTest.class.getClassLoader().getResource("").getPath());
+        configuration.put(PDBConstants.DB_PATH_KEY,HCCFileTest.class.getClassLoader().getResource("").getPath());
         String path = configuration.get(PDBConstants.DB_PATH_KEY);
-        HCCWriter writer = new HCCWriter(configuration,new PDBStatus());
+        pdbStatus = new PDBStatus(path);
+        HCCWriter writer = new HCCWriter(configuration,pdbStatus);
         List<Cell> cells = new ArrayList<>();
         for (int i = 0; i < 100000 ; i++) {
             Cell cell = new Cell(Bytes.toBytes(i), UUID.randomUUID().toString().getBytes(),20l, false);
@@ -71,5 +73,6 @@ public class HCCTest {
             file.delete();
             LOGGER.info("success deleted file {}", fileMeta.getFilePath());
         }
+        pdbStatus.setClosed("test");
     }
 }

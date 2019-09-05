@@ -8,7 +8,6 @@ import com.hc.pdb.conf.PDBConstants;
 import com.hc.pdb.exception.PDBException;
 import com.hc.pdb.exception.PDBIOException;
 import com.hc.pdb.exception.PDBRuntimeException;
-import com.hc.pdb.exception.PDBStopException;
 import com.hc.pdb.hcc.HCCFile;
 import com.hc.pdb.hcc.HCCWriter;
 import com.hc.pdb.hcc.meta.MetaReader;
@@ -205,13 +204,13 @@ public class Compactor implements StateChangeListener,IRecoveryable,
 
         private void addNewHccFileToMeta() throws Exception {
             try {
-                LockContext.flushLock.writeLock().lock();
+                LockContext.FLUSH_LOCK.writeLock().lock();
                 stateManager.add(fileMeta);
                 for (HCCFileMeta hccFileMeta : hccFileMetas) {
                     stateManager.delete(hccFileMeta.getFilePath());
                 }
             }finally {
-                LockContext.flushLock.writeLock().unlock();
+                LockContext.FLUSH_LOCK.writeLock().unlock();
             }
         }
 

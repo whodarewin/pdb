@@ -1,5 +1,7 @@
 package com.hc.pdb.conf;
 
+import org.apache.commons.beanutils.ConvertUtils;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,56 +22,30 @@ public class Configuration {
 
     public Long getLong(String key, long defaultValue) {
         Object o = k2v.get(key);
-
-        if (o instanceof String) {
-            return Long.parseLong((String) o);
-        }
-
-        if(o instanceof Long){
-            return (Long) o;
-        }
-
         if(o == null){
             return defaultValue;
         }
 
-        throw new WrongClassException("expected : long", null);
+        return (Long) ConvertUtils.convert(o,Long.class);
     }
 
     public Integer getInt(String key, int defaultValue) {
         Object o = k2v.get(key);
 
-        if (o instanceof String) {
-            return Integer.parseInt((String) o);
-        }
-
-        if(o instanceof Integer){
-            return (Integer) o;
-        }
-
         if(o == null){
             return defaultValue;
         }
 
-        throw new WrongClassException("expected : int", null);
+        return (Integer) ConvertUtils.convert(o,Integer.class);
     }
 
     public Double getDouble(String key, double defaultValue) {
         Object o = k2v.get(key);
-
-        if (o instanceof String) {
-            return Double.parseDouble((String) o);
-        }
-
-        if(o instanceof Integer){
-            return (Double) o;
-        }
-
         if(o == null){
             return defaultValue;
         }
 
-        throw new WrongClassException("expected : double", null);
+        return (Double) ConvertUtils.convert(o,Double.class);
     }
 
     public String get(String key) {
@@ -83,11 +59,7 @@ public class Configuration {
             return defaultValue;
         }
 
-        if (o instanceof String) {
-            return (String) o;
-        }
-
-        throw new ConfValueCastException(o.getClass().getName() + " can not cast to String");
+        return (String) ConvertUtils.convert(o,String.class);
     }
 
 }

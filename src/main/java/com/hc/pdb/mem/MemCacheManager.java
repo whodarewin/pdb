@@ -108,13 +108,13 @@ public class MemCacheManager implements IRecoveryable, PDBStatus.StatusListener{
                                     flushEntry -> flushEntry.getMemCache().getId().equals(tmpCache.getId()))
                     );
                     try {
-                        LockContext.flushLock.writeLock().lock();
+                        LockContext.FLUSH_LOCK.writeLock().lock();
                         flushingEntry.add(entry);
                         //3 创建新的一套写入系统
                         initCurrentWalAndMemCache();
 
                     }finally {
-                        LockContext.flushLock.writeLock().unlock();
+                        LockContext.FLUSH_LOCK.writeLock().unlock();
                     }
                     stateManager.addFlushingWal(walWriter.getWalFileName(),WALFileMeta.BEGIN_FLUSH,Lists.newArrayList(hccFileName));
                     flushExecutor.submit(new Flusher(entry,hccWriter,stateManager,pdbStatus));

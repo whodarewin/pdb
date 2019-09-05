@@ -1,5 +1,6 @@
 package com.hc.pdb;
 
+import com.google.common.base.Preconditions;
 import com.hc.pdb.conf.Configuration;
 import com.hc.pdb.conf.PDBConstants;
 import com.hc.pdb.util.PDBFileUtils;
@@ -17,7 +18,12 @@ public class PDBBuilder {
     private Configuration configuration = new Configuration();
 
     public PDB build() throws Exception {
+        checkPath();
         return new PDB(configuration);
+    }
+
+    private void checkPath() {
+        Preconditions.checkNotNull(configuration.get(PDBConstants.DB_PATH_KEY),"pdb path is empty");
     }
 
     public PDBBuilder path(String path) {

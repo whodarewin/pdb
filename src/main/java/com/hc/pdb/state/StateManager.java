@@ -66,6 +66,13 @@ public class StateManager implements PDBStatus.StatusListener {
             f.createNewFile();
             file = new RandomAccessFile(stateFileName, "r");
         }
+        checkFileStatus();
+    }
+
+    /**
+     * 检查state里面的file是否都存在
+     */
+    private void checkFileStatus() {
     }
 
     public synchronized void add(HCCFileMeta fileMeta) throws Exception {

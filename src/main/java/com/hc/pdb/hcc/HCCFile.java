@@ -1,6 +1,7 @@
 package com.hc.pdb.hcc;
 
 import com.hc.pdb.exception.PDBIOException;
+import com.hc.pdb.file.FileConstants;
 import com.hc.pdb.hcc.meta.MetaInfo;
 import com.hc.pdb.hcc.meta.MetaReader;
 import com.hc.pdb.util.ByteBloomFilter;
@@ -8,7 +9,6 @@ import com.hc.pdb.util.Bytes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
@@ -19,10 +19,10 @@ import java.util.TreeMap;
  */
 public class HCCFile {
     private static final Logger LOGGER = LoggerFactory.getLogger(HCCFile.class);
-
+    /**
+     * 文件路径
+     */
     private String filePath;
-
-    private RandomAccessFile file;
 
     private MetaInfo metaInfo;
     /**
@@ -43,25 +43,45 @@ public class HCCFile {
      */
     public HCCFile(String path, MetaReader metaReader) throws PDBIOException {
         this.filePath = path;
+        RandomAccessFile file = null;
         try {
             file = new RandomAccessFile(path, "r");
             metaInfo = metaReader.read(file);
+
+            LOGGER.info("meta info {}",metaInfo);
+            preLoad(file);
         }catch (IOException e){
             throw new PDBIOException(e);
+        }finally {
+            if(file != null){
+                try {
+                    file.close();
+                } catch (IOException e) {
+                    throw new PDBIOException(e);
+                }
+            }
         }
-        LOGGER.info("meta info {}",metaInfo);
-        preLoad();
     }
 
-    private void preLoad() throws PDBIOException {
+    private void preLoad(RandomAccessFile file) throws PDBIOException, IOException {
         //todo:check prefix
+        checkFileStatus(file);
         //读取bloom过滤器
-        loadBloom();
+        loadBloom(file);
         //读取索引
-        loadIndex();
+        loadIndex(file);
     }
 
-    private void loadBloom() throws PDBIOException {
+    private void checkFileStatus(RandomAccessFile file) throws PDBIOException, IOException {
+        byte[] prefix = new byte[3];
+        file.seek(0);
+        file.readFully(prefix);
+        if(Bytes.compare(prefix, FileConstants.HCC_WRITE_PREFIX) != 0){
+            throw new PDBIOException("hcc file prefix not match!");
+        }
+    }
+
+    private void loadBloom(RandomAccessFile file) throws PDBIOException {
         //todo: 和meta的代码一致，合并成一个
         try {
             byte[] metaLengthBytes = new byte[4];
@@ -80,7 +100,7 @@ public class HCCFile {
         }
     }
 
-    private void loadIndex() throws PDBIOException {
+    private void loadIndex(RandomAccessFile file) throws PDBIOException {
         int startIndex = metaInfo.getIndexStartIndex();
         int endIndex = metaInfo.getBloomStartIndex();
         LOGGER.info("begin to load index start {} end {}",startIndex, endIndex);
@@ -118,13 +138,5 @@ public class HCCFile {
 
     public byte[] getEnd(){
         return metaInfo.getEndKey();
-    }
-
-    public void close() throws PDBIOException {
-        try {
-            this.file.close();
-        } catch (IOException e) {
-            throw new PDBIOException(e);
-        }
     }
 }

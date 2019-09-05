@@ -27,13 +27,15 @@ public class MetaReaderTest{
     private RandomAccessFile randomAccessFile;
 
     private String hccFileName;
+    private PDBStatus pdbStatus;
     @Before
     public void setUp() throws IOException, PDBIOException, PDBSerializeException, PDBStopException {
 
         Configuration configuration = new Configuration();
         configuration.put(PDBConstants.DB_PATH_KEY, MetaReaderTest.class.getClassLoader().getResource("").getPath());
         String path = configuration.get(PDBConstants.DB_PATH_KEY);
-        HCCWriter hccWriter = new HCCWriter(configuration,new PDBStatus());
+        pdbStatus = new PDBStatus(path);
+        HCCWriter hccWriter = new HCCWriter(configuration,pdbStatus);
         List<Cell> cells = new ArrayList<Cell>();
 
         for (int i = 0; i < 100; i++) {
@@ -63,5 +65,6 @@ public class MetaReaderTest{
             File file = new File(hccFileName);
             file.delete();
         }
+        pdbStatus.setClosed("test");
     }
 }

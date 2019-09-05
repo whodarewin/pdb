@@ -11,5 +11,5 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  */
 
 public class LockContext {
-    public static ReadWriteLock flushLock = new ReentrantReadWriteLock();
+    public static ReadWriteLock FLUSH_LOCK = new ReentrantReadWriteLock();
 }

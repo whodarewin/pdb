@@ -1,13 +1,9 @@
 package com.hc.pdb;
 
-import com.hc.pdb.exception.DBCloseException;
-import com.hc.pdb.hcc.HCCTest;
 import com.hc.pdb.util.Bytes;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.io.IOException;
 
 /**
  * PDBTest
@@ -20,7 +16,7 @@ public class PDBTest {
     private PDB pdb;
     @Before
     public void init() throws Exception {
-        String path = HCCTest.class.getClassLoader().getResource("").getPath() + "pdb";
+        String path = PDBTest.class.getClassLoader().getResource("").getPath() + "pdb";
         PDBBuilder builder = new PDBBuilder();
         builder.path(path);
         this.pdb = builder.build();

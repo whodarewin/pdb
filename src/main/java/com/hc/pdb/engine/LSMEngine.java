@@ -58,7 +58,8 @@ public class LSMEngine implements IEngine {
             LOGGER.info("create lsm db at {}", path);
 
             PDBFileUtils.createDirIfNotExist(path);
-            this.pdbStatus = new PDBStatus();
+
+            this.pdbStatus = new PDBStatus(path);
             //加载状态
             this.stateManager = new StateManager(path);
             stateManager.load();
@@ -68,7 +69,6 @@ public class LSMEngine implements IEngine {
 
 
             this.configuration = configuration;
-
 
             //整个程序只有这一个写hcc的类，无状态。
             hccWriter = new HCCWriter(configuration,pdbStatus);
