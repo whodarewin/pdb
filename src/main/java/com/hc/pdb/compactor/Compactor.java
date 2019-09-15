@@ -54,6 +54,10 @@ public class Compactor implements StateChangeListener,IRecoveryable,
                 PDBConstants.COMPACTOR_THREAD_SIZE);
         compactThreshold = configuration.getInt(PDBConstants.COMPACTOR_HCCFILE_THRESHOLD_KEY,
                 PDBConstants.COMPACTOR_HCCFILE_THRESHOLD);
+        if(compactThreshold < 2){
+            LOGGER.info("compactor threshold can not lower than 2,which is {}", compactThreshold);
+            compactThreshold = 2;
+        }
         LOGGER.info("compactor thread size is {}",compactorSize);
         compactorExecutor = Executors.newFixedThreadPool(compactorSize,new NamedThreadFactory("pdb-compactor"));
         this.path = configuration.get(PDBConstants.DB_PATH_KEY);
@@ -67,8 +71,8 @@ public class Compactor implements StateChangeListener,IRecoveryable,
     public void onChange(State state) throws PDBException {
         synchronized (this) {
             while (true) {
-                Set<HCCFileMeta> metas = state.getFileMetas();
-                Set<HCCFileMeta> noCompactMetas = metas.stream().filter(meta -> !stateManager.isCompactingFile(meta))
+                Set<HCCFileMeta> allMetas = state.getFileMetas();
+                Set<HCCFileMeta> noCompactMetas = allMetas.stream().filter(meta -> !stateManager.isCompactingFile(meta))
                         .collect(Collectors.toSet());
 
                 if(noCompactMetas.size() > compactThreshold) {
@@ -244,7 +248,6 @@ public class Compactor implements StateChangeListener,IRecoveryable,
             }
             return true;
         }
-
 
         private void deleteFileCompacted() throws Exception {
             for (HCCFileMeta meta : hccFileMetas) {
