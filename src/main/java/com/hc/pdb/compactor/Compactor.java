@@ -65,7 +65,6 @@ public class Compactor implements StateChangeListener,IRecoveryable,
 
     @Override
     public void onChange(State state) throws PDBException {
-        //todo:循环检测
         synchronized (this) {
             while (true) {
                 Set<HCCFileMeta> metas = state.getFileMetas();

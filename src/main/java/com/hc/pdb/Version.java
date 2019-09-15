@@ -1,5 +1,5 @@
 package com.hc.pdb;
 
 public class Version {
-    public static char VERSION = '1';
+    public static String VERSION = "1.0.0";
 }
