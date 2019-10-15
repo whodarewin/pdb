@@ -54,6 +54,12 @@ public class WALFileMeta {
         this.params = params;
     }
 
+    /**
+     * 使用walPath作为{@link WALFileMeta}的相等属性，hashCode同此，用于
+     * 可幂等性的在hashMap中添加对象。
+     * @param o
+     * @return
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
