@@ -94,7 +94,7 @@ public class MemCacheManager implements IRecoveryable, PDBStatus.StatusListener{
                     }
                     MemCache tmpCache = current;
                     Flusher.FlushEntry entry;
-                    String hccFileName = PDBFileUtils.createHccFileName(path);
+                    String hccFileName = PDBFileUtils.createHccFileFlushName(path);
                     //1 记录日志
                     WALFileMeta walFileMeta =
                             new WALFileMeta(walWriter.getWalFileName(),WALFileMeta.CREATE,Lists.newArrayList(hccFileName));

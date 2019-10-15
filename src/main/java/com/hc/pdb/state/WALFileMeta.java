@@ -15,6 +15,7 @@ public class WALFileMeta {
     public static final String CREATE = "create";
     public static final String BEGIN_FLUSH = "begin_flush";
     public static final String HCC_WRITE_FINISH = "hcc_write_finish";
+    public static final String HCC_CHANGE_NAME_FINISH = "hcc_change_name_finish";
     public static final String CHANGE_META_DELETE_WAL_FINISH = "change_meta_del_wal_finish";
     public static final String END_FLUSH = "end_flush";
     private String walPath;

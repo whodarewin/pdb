@@ -7,12 +7,15 @@ import com.hc.pdb.LockContext;
 import com.hc.pdb.PDBStatus;
 import com.hc.pdb.exception.PDBException;
 import com.hc.pdb.exception.PDBStopException;
+import com.hc.pdb.file.FileConstants;
 import com.hc.pdb.hcc.HCCWriter;
 import com.hc.pdb.mem.MemCache;
 import com.hc.pdb.state.HCCFileMeta;
 import com.hc.pdb.state.StateManager;
 import com.hc.pdb.state.WALFileMeta;
+import com.hc.pdb.util.PDBFileUtils;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,26 +66,13 @@ public class Flusher implements Runnable {
             LOGGER.info("begin flush,wal file path {},hcc file path is {}",walPath,walFileMeta.getParams().get(0));
             switch (walFileMeta.getState()){
                 case WALFileMeta.BEGIN_FLUSH :
-                    if(pdbStatus.isClose()){
-                        LOGGER.info("pdb closed,flush exist");
-                        throw new PDBStopException();
-                    }
-                    deleteHccFileFirst();
-                    HCCFileMeta meta = flushHCCFile();
-                    if(meta == null){
-                        LOGGER.info("meta is null,check if pdb is closed,stop flush");
-                        return;
-                    }
-                    changeMetaAndDeleteWalFile(meta);
-                    stateManager.deleteFlushingWal(walPath);
+                    dealWithHCCBeginFlush();
                     break;
-                case WALFileMeta.HCC_WRITE_FINISH:
-                    if(pdbStatus.isClose()){
-                        LOGGER.info("pdb closed,flush exist");
-                        throw new PDBStopException();
-                    }
-                    changeMetaAndDeleteWalFile((HCCFileMeta) walFileMeta.getParams().get(1));
-                    stateManager.deleteFlushingWal(walPath);
+                case WALFileMeta.HCC_WRITE_FINISH :
+                    dealWithHCCWriteFinish();
+                    break;
+                case WALFileMeta.HCC_CHANGE_NAME_FINISH:
+                    dealWithHCCChangeNameFinish();
                     break;
                 default:
                     throw new FlushException("no state " + walFileMeta.getState() + " found");
@@ -91,6 +81,52 @@ public class Flusher implements Runnable {
             pdbStatus.setClosed("flush exception");
             pdbStatus.setCrashException(e);
         }
+    }
+
+    private void dealWithHCCBeginFlush() throws Exception {
+        if(pdbStatus.isClose()){
+            LOGGER.info("pdb closed,flush exist");
+            throw new PDBStopException();
+        }
+        deleteHccFileFirst();
+        HCCFileMeta meta = flushHCCFile();
+        if(meta == null){
+            LOGGER.info("meta is null,check if pdb is closed,stop flush");
+            return;
+        }
+        String fileName = changeHccFileName();
+        if(StringUtils.isNotEmpty(fileName)){
+            meta.setFilePath(fileName);
+        }else{
+            throw new PDBException("change flush fileName error,"+meta.getFilePath());
+        }
+        changeMetaAndDeleteWalFile(meta);
+        stateManager.deleteFlushingWal(walPath);
+    }
+
+    private void dealWithHCCWriteFinish() throws Exception {
+        if(pdbStatus.isClose()){
+            LOGGER.info("pdb closed,flush exist");
+            throw new PDBStopException();
+        }
+        HCCFileMeta meta = (HCCFileMeta) walFileMeta.getParams().get(1);
+        String fileName = changeHccFileName();
+        if(StringUtils.isNotEmpty(fileName)){
+            meta.setFilePath(fileName);
+        }else{
+            throw new PDBException("change flush fileName error," + meta.getFilePath());
+        }
+        changeMetaAndDeleteWalFile(meta);
+        stateManager.deleteFlushingWal(walPath);
+    }
+
+    private void dealWithHCCChangeNameFinish() throws Exception {
+        if(pdbStatus.isClose()){
+            LOGGER.info("pdb closed,flush exist");
+            throw new PDBStopException();
+        }
+        changeMetaAndDeleteWalFile((HCCFileMeta) walFileMeta.getParams().get(1));
+        stateManager.deleteFlushingWal(walPath);
     }
 
     private void deleteHccFileFirst() throws IOException {
@@ -105,6 +141,21 @@ public class Flusher implements Runnable {
         HCCFileMeta meta = hccWriter.writeHCC(cells.iterator(), cells.size(), hccFileName);
         stateManager.addFlushingWal(walPath,WALFileMeta.HCC_WRITE_FINISH, Lists.newArrayList(hccFileName,meta));
         return meta;
+    }
+
+    private String changeHccFileName(){
+
+        String hccFileNameWithoutFlush = this.hccFileName.substring(0, this.hccFileName.length() -
+                FileConstants.DATA_FILE_FLUSH_SUFFIX.length());
+        File hccFile = new File(hccFileName);
+        File hccFileWithoutFlush = new File(hccFileNameWithoutFlush);
+        if(hccFile.exists()){
+            hccFile.renameTo(hccFileWithoutFlush);
+            return hccFileNameWithoutFlush;
+        }else if(!hccFile.exists() && hccFileWithoutFlush.exists()){
+            return hccFileNameWithoutFlush;
+        }
+        return null;
     }
 
     private void changeMetaAndDeleteWalFile(HCCFileMeta meta) throws Exception {

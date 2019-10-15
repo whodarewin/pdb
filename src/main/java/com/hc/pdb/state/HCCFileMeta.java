@@ -53,6 +53,21 @@ public class HCCFileMeta {
         return kvSize;
     }
 
+    public void setFilePath(String filePath) {
+        this.filePath = filePath;
+    }
+
+    public void setFileMD5(String fileMD5) {
+        this.fileMD5 = fileMD5;
+    }
+
+    public void setKvSize(int kvSize) {
+        this.kvSize = kvSize;
+    }
+
+    public void setCreateTime(long createTime) {
+        this.createTime = createTime;
+    }
 
     @Override
     public boolean equals(Object o) {

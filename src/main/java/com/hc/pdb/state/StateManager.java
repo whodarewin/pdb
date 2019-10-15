@@ -1,10 +1,13 @@
 package com.hc.pdb.state;
 
 import com.hc.pdb.PDBStatus;
+import com.hc.pdb.conf.PDBConstants;
 import com.hc.pdb.exception.PDBException;
 import com.hc.pdb.exception.PDBIOException;
 import com.hc.pdb.file.FileConstants;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.FileFileFilter;
+import org.apache.commons.io.filefilter.IOFileFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.*;
@@ -13,6 +16,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Consumer;
 
 /**
  * StateManager
@@ -39,23 +43,30 @@ public class StateManager implements PDBStatus.StatusListener {
     public StateManager(String path) throws Exception {
         this.path = path;
         File pathFile = new File(path);
-        if(!pathFile.exists()){
-            pathFile.mkdirs();
+        if(!pathFile.exists() && pathFile.mkdirs()){
+            throw new PDBIOException("create pdb data path failed");
         }
+
         String stateFileName = getStateFileName();
         String bakFileName = getStateBakFileName();
+
         File stateFile = new File(stateFileName);
         File bakFile = new File(bakFileName);
 
-        //重新整理硬盘数据
+        // 重新整理硬盘数据
+        // state file和bak file 如果同时存在，则删除bak file，
+        // 因为bak file为老的state 信息，需要删除完成最终的状态变更。
         if(stateFile.exists()){
             if(bakFile.exists()) {
                 FileUtils.forceDelete(bakFile);
             }
         }
 
+        // state file 已经被删除了，bak 还没有重命名的时候，重命名。
         if((!stateFile.exists()) && bakFile.exists()){
-            bakFile.renameTo(stateFile);
+            if(bakFile.renameTo(stateFile)){
+                throw new PDBIOException("rename bak state file to state file error");
+            }
         }
 
         try {
@@ -63,7 +74,9 @@ public class StateManager implements PDBStatus.StatusListener {
         } catch (FileNotFoundException e) {
             LOGGER.info("no meta found,new db,create one, path {}", stateFileName);
             File f = new File(stateFileName);
-            f.createNewFile();
+            if(!f.createNewFile()){
+                throw new PDBIOException("create state file error");
+            }
             file = new RandomAccessFile(stateFileName, "r");
         }
         checkFileStatus();
@@ -73,6 +86,8 @@ public class StateManager implements PDBStatus.StatusListener {
      * 检查state里面的file是否都存在
      */
     private void checkFileStatus() {
+        //todo 检查
+        Collection<File> files = FileUtils.listFiles(new File(path), new HCCFileFilter(),new NoPassFileFilter());
     }
 
     public synchronized void add(HCCFileMeta fileMeta) throws Exception {
@@ -288,5 +303,32 @@ public class StateManager implements PDBStatus.StatusListener {
     @Override
     public void onClose() throws PDBIOException {
         close();
+    }
+}
+
+
+class HCCFileFilter implements IOFileFilter{
+
+    @Override
+    public boolean accept(File file) {
+        return true;
+    }
+
+    @Override
+    public boolean accept(File dir, String name) {
+        return name.endsWith(FileConstants.DATA_FILE_SUFFIX);
+    }
+}
+
+class NoPassFileFilter implements IOFileFilter{
+
+    @Override
+    public boolean accept(File file) {
+        return false;
+    }
+
+    @Override
+    public boolean accept(File dir, String name) {
+        return false;
     }
 }

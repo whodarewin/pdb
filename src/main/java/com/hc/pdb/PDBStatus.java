@@ -12,7 +12,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * DBStatus
- *
+ * TODO：与{@link com.hc.pdb.state.StateManager} 合并
  * @author han.congcong
  * @date 2019/8/6
  */
@@ -80,7 +80,6 @@ public class PDBStatus {
     }
 
     public interface StatusListener{
-
         void onClose() throws PDBIOException, InterruptedException;
     }
 }

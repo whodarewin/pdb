@@ -55,7 +55,7 @@ public class BlockWriter implements IBlockWriter {
         while (cellIterator.hasNext()) {
             if(this.status.isClose()){
                 LOGGER.warn("pdb is closed");
-                throw new PDBStopException();
+                throw new PDBStopException("pdb stopped");
             }
             Cell cell = cellIterator.next();
             if(start == null){

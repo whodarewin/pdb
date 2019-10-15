@@ -14,6 +14,14 @@ public class FileConstants {
      */
     public static final String META_FILE_SUFFIX = ".meta";
     /**
+     * flush file的后缀
+     */
+    public static final String DATA_FILE_FLUSH_SUFFIX = ".flush";
+    /**
+     * compact file的后缀
+     */
+    public static final String DATA_FILE_COMPACT_SUFFIX = ".compact";
+    /**
      * 数据文件开始验证字节
      */
     public static final byte[] HCC_WRITE_PREFIX = new byte[]{72, 67, 67};

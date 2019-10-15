@@ -46,6 +46,14 @@ public class PDBFileUtils {
         return path + UUID.randomUUID().toString() + FileConstants.DATA_FILE_SUFFIX;
     }
 
+    public static String createHccFileFlushName(String path){
+        return createHccFileName(path)+ '.' + FileConstants.DATA_FILE_FLUSH_SUFFIX;
+    }
+
+    public static String createHccFileCompactName(String path){
+        return createHccFileName(path) + '.' + FileConstants.DATA_FILE_COMPACT_SUFFIX;
+    }
+
     public static String createWalFileName(String path){
         return path + UUID.randomUUID().toString() + FileConstants.WAL_FILE_SUFFIX;
     }

@@ -39,13 +39,27 @@ import java.util.stream.Collectors;
 
 public class Compactor implements StateChangeListener,IRecoveryable,
         PDBStatus.StatusListener {
-    public static final String NAME = "compactor";
     private static final Logger LOGGER = LoggerFactory.getLogger(Compactor.class);
+    public static final String NAME = "compactor";
+    /**
+     * compact的线程池
+     */
     private ExecutorService compactorExecutor;
+    /**
+     * compact的阈值
+     */
     private int compactThreshold;
+    /**
+     * 状态管理
+     */
     private StateManager stateManager;
+    /**
+     * 全局HCCWriter
+     */
     private HCCWriter hccWriter;
+
     private PDBStatus pdbStatus;
+
     private String path;
 
     public Compactor(Configuration configuration, StateManager stateManager,
@@ -54,7 +68,7 @@ public class Compactor implements StateChangeListener,IRecoveryable,
                 PDBConstants.COMPACTOR_THREAD_SIZE);
         compactThreshold = configuration.getInt(PDBConstants.COMPACTOR_HCCFILE_THRESHOLD_KEY,
                 PDBConstants.COMPACTOR_HCCFILE_THRESHOLD);
-        LOGGER.info("compactor thread size is {}",compactorSize);
+        LOGGER.info("compact thread size is {}", compactorSize);
         compactorExecutor = Executors.newFixedThreadPool(compactorSize,new NamedThreadFactory("pdb-compactor"));
         this.path = configuration.get(PDBConstants.DB_PATH_KEY);
         this.stateManager = stateManager;
