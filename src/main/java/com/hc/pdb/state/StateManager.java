@@ -5,6 +5,7 @@ import com.hc.pdb.conf.PDBConstants;
 import com.hc.pdb.exception.PDBException;
 import com.hc.pdb.exception.PDBIOException;
 import com.hc.pdb.file.FileConstants;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.FileFileFilter;
 import org.apache.commons.io.filefilter.IOFileFilter;
@@ -13,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -79,15 +81,26 @@ public class StateManager implements PDBStatus.StatusListener {
             }
             file = new RandomAccessFile(stateFileName, "r");
         }
-        checkFileStatus();
     }
 
     /**
      * 检查state里面的file是否都存在
      */
-    private void checkFileStatus() {
-        //todo 检查
-        Collection<File> files = FileUtils.listFiles(new File(path), new HCCFileFilter(),new NoPassFileFilter());
+    private void checkFileStatus() throws PDBException {
+        //检查hcc
+        if(CollectionUtils.isNotEmpty(this.getState().getFileMetas())) {
+            Collection<File> files = FileUtils.listFiles(new File(path), new HCCFileFilter(), new NoPassFileFilter());
+            Set<String> paths = new HashSet<>();
+            files.forEach(file -> {
+                paths.add(file.getAbsolutePath());
+            });
+            for (HCCFileMeta meta : this.getState().getFileMetas()) {
+                if (!paths.contains(meta.getFilePath())) {
+                    throw new PDBException("no file named " + meta.getFilePath());
+                }
+            }
+        }
+        //检查wal
     }
 
     public synchronized void add(HCCFileMeta fileMeta) throws Exception {
@@ -264,6 +277,7 @@ public class StateManager implements PDBStatus.StatusListener {
         State state = new State();
         state.deSerialize(buffer);
         this.state = state;
+        checkFileStatus();
         notifyListener();
     }
 
