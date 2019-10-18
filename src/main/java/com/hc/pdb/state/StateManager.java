@@ -345,6 +345,19 @@ class HCCFileFilter implements IOFileFilter{
     }
 }
 
+class WALFileFilter implements IOFileFilter{
+
+    @Override
+    public boolean accept(File file) {
+        return true;
+    }
+
+    @Override
+    public boolean accept(File dir, String name) {
+        return name.endsWith(FileConstants.WAL_FILE_SUFFIX);
+    }
+}
+
 class NoPassFileFilter implements IOFileFilter{
 
     @Override

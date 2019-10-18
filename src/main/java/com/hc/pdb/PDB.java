@@ -4,16 +4,12 @@ import com.google.common.base.Preconditions;
 import com.hc.pdb.conf.Configuration;
 import com.hc.pdb.engine.IEngine;
 import com.hc.pdb.engine.LSMEngine;
-import com.hc.pdb.exception.DBCloseException;
 import com.hc.pdb.exception.PDBException;
 import com.hc.pdb.scanner.IScanner;
 
-import java.io.IOException;
-import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 
 /**
- * TODO:key-value null值处理
  * PDB 对外暴露接口
  */
 public class PDB {

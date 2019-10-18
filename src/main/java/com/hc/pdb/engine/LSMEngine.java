@@ -6,7 +6,6 @@ import com.hc.pdb.PDBStatus;
 import com.hc.pdb.compactor.Compactor;
 import com.hc.pdb.conf.Configuration;
 import com.hc.pdb.conf.PDBConstants;
-import com.hc.pdb.exception.DBCloseException;
 import com.hc.pdb.exception.PDBException;
 import com.hc.pdb.exception.PDBIOException;
 import com.hc.pdb.hcc.HCCManager;
