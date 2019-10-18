@@ -132,7 +132,7 @@ public class StateManager implements PDBStatus.StatusListener {
         notifyListener();
     }
 
-    public synchronized String addCompactingFile(String toFilePath,HCCFileMeta... hccFileMeta) throws PDBException {
+    public synchronized CompactingFile addCompactingFile(String toFilePath, HCCFileMeta compactedHccFileMeta, HCCFileMeta... hccFileMeta) throws PDBException {
         for (HCCFileMeta fileMeta : hccFileMeta) {
             LOGGER.info("add compacting file meta {}",fileMeta);
         }
@@ -143,11 +143,12 @@ public class StateManager implements PDBStatus.StatusListener {
         }
         compactingFile.setState(CompactingFile.BEGIN);
         compactingFile.setToFilePath(toFilePath);
+        compactingFile.setCompactedHccFileMeta(compactedHccFileMeta);
         state.getCompactingFileMeta().remove(compactingFile);
         state.getCompactingFileMeta().add(compactingFile);
         sync();
         notifyListener();
-        return compactingFile.getCompactingID();
+        return compactingFile;
     }
 
     public synchronized void deleteFlushingWal(String walPath) throws Exception {
@@ -187,6 +188,16 @@ public class StateManager implements PDBStatus.StatusListener {
         state.getCompactingFileMeta().forEach(compactingFile -> {
             if(compactingFile.getCompactingID().equals(compactingID)){
                 compactingFile.setState(changeState);
+            }
+        });
+        sync();
+        notifyListener();
+    }
+
+    public synchronized void setCompactingFileCompactedHccFileMeta(String compactingID,HCCFileMeta hccFileMeta) throws PDBException {
+        state.getCompactingFileMeta().forEach(compactingFile -> {
+            if(compactingFile.getCompactingID().equals(compactingID)){
+                compactingFile.setCompactedHccFileMeta(hccFileMeta);
             }
         });
         sync();

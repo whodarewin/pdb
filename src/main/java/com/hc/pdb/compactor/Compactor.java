@@ -8,6 +8,7 @@ import com.hc.pdb.conf.PDBConstants;
 import com.hc.pdb.exception.PDBException;
 import com.hc.pdb.exception.PDBIOException;
 import com.hc.pdb.exception.PDBRuntimeException;
+import com.hc.pdb.file.FileConstants;
 import com.hc.pdb.hcc.HCCFile;
 import com.hc.pdb.hcc.HCCWriter;
 import com.hc.pdb.hcc.meta.MetaReader;
@@ -98,12 +99,12 @@ public class Compactor implements StateChangeListener,IRecoveryable,
                         return;
                     }
 
-                    String toFilePath = PDBFileUtils.createHccFileName(path);
-                    String compactingID = stateManager
-                            .addCompactingFile(toFilePath,toCompact.toArray(new HCCFileMeta[toCompact.size()]));
+                    String toFilePath = PDBFileUtils.createHccFileCompactName(path);
+                    CompactingFile compactingFile = stateManager
+                            .addCompactingFile(toFilePath,null,toCompact.toArray(new HCCFileMeta[toCompact.size()]));
 
                     compactorExecutor
-                            .submit(new CompactorWorker(compactingID,toCompact,toFilePath,CompactingFile.BEGIN,stateManager));
+                            .submit(new CompactorWorker(compactingFile,stateManager));
                 }else{
                     LOGGER.info("no file to compact,compact threshold {} size {} compacting file size {}",
                             compactThreshold,noCompactMetas.size(),stateManager.getCompactingFiles().size());
@@ -126,10 +127,7 @@ public class Compactor implements StateChangeListener,IRecoveryable,
     public void recovery() {
         for (CompactingFile compactingFile : stateManager.getCompactingFiles()) {
             compactorExecutor.submit(new CompactorWorker(
-                    compactingFile.getCompactingID(),
-                    compactingFile.getCompactingFiles(),
-                    compactingFile.getToFilePath(),
-                    compactingFile.getState(),
+                    compactingFile,
                     stateManager
                     ));
         }
@@ -145,13 +143,13 @@ public class Compactor implements StateChangeListener,IRecoveryable,
         private HCCFileMeta fileMeta;
         private String state;
 
-        public CompactorWorker(String compactingID,List<HCCFileMeta> hccFileMetas,
-                               String toFilePath, String state, StateManager stateManager) {
-            this.compactingID = compactingID;
-            this.hccFileMetas = hccFileMetas;
+        public CompactorWorker(CompactingFile compactingFile, StateManager stateManager) {
+            this.compactingID = compactingFile.getCompactingID();
+            this.hccFileMetas = compactingFile.getCompactingFiles();
             this.stateManager = stateManager;
-            this.toFilePath = toFilePath;
-            this.state = state;
+            this.toFilePath = compactingFile.getToFilePath();
+            this.state = compactingFile.getState();
+            this.fileMeta = compactingFile.getCompactedHccFileMeta();
         }
 
         @Override
@@ -163,8 +161,8 @@ public class Compactor implements StateChangeListener,IRecoveryable,
                 switch (state){
                     case CompactingFile.BEGIN:
                         deleteCompactTargetFileIfHave();
-                        boolean succ = writeNewHCCFile();
-                        if(succ) {
+                        HCCFileMeta fileMeta = writeNewHCCFile();
+                        if(fileMeta != null) {
                             stateManager.changeCompactingFileState(compactingID, CompactingFile.WRITE_HCC_FILE_FINISH);
                             addNewHccFileToMeta();
                             stateManager.changeCompactingFileState(compactingID, CompactingFile.ADD_COMPACTED_HCC_FILE_TO_STATE_FINISH);
@@ -231,11 +229,11 @@ public class Compactor implements StateChangeListener,IRecoveryable,
             }
         }
 
-        public boolean writeNewHCCFile() throws PDBException {
+        public HCCFileMeta writeNewHCCFile() throws PDBException {
 
             FilterScanner scanner = getScanner().getKey();
             if(scanner.next() == null){
-                return false;
+                return null;
             }
             Pair<FilterScanner,Integer> pair = getScanner();
             FilterScanner filterScanner = pair.getKey();
@@ -258,9 +256,25 @@ public class Compactor implements StateChangeListener,IRecoveryable,
             }, size, toFilePath);
             //删除和增加两个文件相互抵消
             if(fileMeta.getKvSize() == 0){
-                return false;
+                return null;
             }
-            return true;
+            String hccFileName = renameFile();
+            fileMeta.setFilePath(hccFileName);
+            stateManager.setCompactingFileCompactedHccFileMeta(compactingID,fileMeta);
+            return fileMeta;
+        }
+
+        private String renameFile() throws PDBIOException {
+            File file = new File(toFilePath);
+            if(!file.exists()){
+                throw new PDBIOException("file not found "+ toFilePath);
+            }
+            String hccFileName = toFilePath.substring(0,toFilePath.length() -
+                    FileConstants.DATA_FILE_COMPACT_SUFFIX.length());
+            if(file.renameTo(new File(hccFileName))){
+                return hccFileName;
+            }
+            throw new PDBIOException("rename " + toFilePath + "to " + hccFileName + "error");
         }
 
         private void deleteFileCompacted() throws Exception {

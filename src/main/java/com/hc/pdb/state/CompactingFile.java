@@ -24,13 +24,15 @@ public class CompactingFile {
     private List<HCCFileMeta> compactingFiles = new ArrayList<>();
     private String state;
     private String toFilePath;
+    private HCCFileMeta compactedHccFileMeta;
 
     public CompactingFile(){}
 
-    public CompactingFile(List<HCCFileMeta> compactingFiles, String state, String toFilePath) {
+    public CompactingFile(List<HCCFileMeta> compactingFiles, String state, String toFilePath, HCCFileMeta compactedHccFileMeta) {
         this.compactingFiles = compactingFiles;
         this.state = state;
         this.toFilePath = toFilePath;
+        this.compactedHccFileMeta = compactedHccFileMeta;
     }
 
     public List<HCCFileMeta> getCompactingFiles() {
@@ -59,6 +61,14 @@ public class CompactingFile {
 
     public void setToFilePath(String toFilePath) {
         this.toFilePath = toFilePath;
+    }
+
+    public HCCFileMeta getCompactedHccFileMeta() {
+        return compactedHccFileMeta;
+    }
+
+    public void setCompactedHccFileMeta(HCCFileMeta compactedHccFileMeta) {
+        this.compactedHccFileMeta = compactedHccFileMeta;
     }
 
     @Override
