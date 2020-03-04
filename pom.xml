@@ -17,7 +17,7 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <commons.collection>3.2.2</commons.collection>
         <commons.io>2.6</commons.io>
-        <jackson.version>2.9.9</jackson.version>
+        <jackson.version>2.10.3</jackson.version>
         <common.lang.version>3.9</common.lang.version>
     </properties>
     <description>a local db</description>
