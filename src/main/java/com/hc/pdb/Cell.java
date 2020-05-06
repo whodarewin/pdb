@@ -28,6 +28,14 @@ public class Cell implements ISerializable, Comparable<Cell>{
 
     public Cell(){}
 
+    public Cell(byte[] key, byte[] value){
+        this(key,value,NO_TTL,false);
+    }
+
+    public Cell(byte[] key, byte[] value, long ttl){
+        this(key,value,ttl,false);
+    }
+
     public Cell(byte[] key, byte[] value, long ttl, boolean delete) {
         this.key = key;
         this.value = value;

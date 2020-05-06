@@ -1,4 +1,6 @@
 # PDB
+基于LSM树的存储引擎，写着玩的。。。  
+just for fun
 ```$xslt
     String path = "/tmp/pdb";
     PDBBuilder builder = new PDBBuilder();

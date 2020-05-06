@@ -46,15 +46,15 @@ public class LSMEngine implements IEngine {
      * @throws Exception
      */
     public LSMEngine(Configuration configuration) throws PDBException {
-        createOrStartPDB(configuration);
+        createOrLoadPDB(configuration);
     }
 
-    private void createOrStartPDB(Configuration configuration) throws PDBException {
+    private void createOrLoadPDB(Configuration configuration) throws PDBException {
         try {
             Preconditions.checkNotNull(configuration);
             this.configuration = configuration;
             this.path = configuration.get(PDBConstants.DB_PATH_KEY);
-            LOGGER.info("create lsm db at {}", path);
+            LOGGER.info("create or load lsm db at {}", path);
 
             PDBFileUtils.createDirIfNotExist(path);
 
@@ -118,7 +118,7 @@ public class LSMEngine implements IEngine {
         }catch (IOException e){
             throw new PDBIOException(e);
         }
-        createOrStartPDB(configuration);
+        createOrLoadPDB(configuration);
     }
 
     @Override

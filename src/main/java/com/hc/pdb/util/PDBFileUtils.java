@@ -30,15 +30,16 @@ public class PDBFileUtils {
      * 创建文件夹
      * @param path 路径
      */
-    public static void createDirIfNotExist(String path) throws IOException {
+    public static boolean createDirIfNotExist(String path) throws IOException {
         File file = new File(path);
         if(file.isDirectory()){
-            return;
+            return true;
         }else{
             if(file.isFile()){
                 throw new IOException(path + " is a file");
             }
             file.mkdirs();
+            return  false;
         }
     }
 
