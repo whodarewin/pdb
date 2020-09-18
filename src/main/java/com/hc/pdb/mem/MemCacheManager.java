@@ -176,7 +176,8 @@ public class MemCacheManager implements IRecoveryable, PDBStatus.StatusListener{
             }
 
             for(WALFileMeta walFileMeta : stateManager.getFlushingWal()){
-                MemCache cache = new MemCache(new WalFileReader(walFileMeta.getWalPath()));
+                MemCache cache = new MemCache();
+                cache.init(new WalFileReader(walFileMeta.getWalPath()));
                 Flusher.FlushEntry entry = new Flusher.FlushEntry(cache,
                         walFileMeta,
                         () -> flushingEntry.removeIf(

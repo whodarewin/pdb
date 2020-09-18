@@ -14,38 +14,51 @@ import java.util.Map;
  */
 
 public class Configuration {
+
     private Map<String, Object> k2v = new HashMap<>();
 
     public void put(String key, Object value) {
         k2v.put(key, value);
     }
 
-    public Long getLong(String key, long defaultValue) {
-        Object o = k2v.get(key);
-        if(o == null){
-            return defaultValue;
-        }
-
-        return (Long) ConvertUtils.convert(o,Long.class);
+    public long getLong(String key){
+        return getLong(key,-1);
     }
 
-    public Integer getInt(String key, int defaultValue) {
+    public long getLong(String key, long defaultValue) {
         Object o = k2v.get(key);
-
         if(o == null){
             return defaultValue;
         }
 
-        return (Integer) ConvertUtils.convert(o,Integer.class);
+    return (long) ConvertUtils.convert(o,Long.class);
     }
 
-    public Double getDouble(String key, double defaultValue) {
+    public int getInt(String key){
+        return getInt(key,-1);
+    }
+
+    public int getInt(String key, int defaultValue) {
+        Object o = k2v.get(key);
+
+        if(o == null){
+            return defaultValue;
+        }
+
+        return (int) ConvertUtils.convert(o,Integer.class);
+    }
+
+    public double getDouble(String key){
+        return getDouble(key,-1);
+    }
+
+    public double getDouble(String key, double defaultValue) {
         Object o = k2v.get(key);
         if(o == null){
             return defaultValue;
         }
 
-        return (Double) ConvertUtils.convert(o,Double.class);
+        return (double) ConvertUtils.convert(o,Double.class);
     }
 
     public String get(String key) {

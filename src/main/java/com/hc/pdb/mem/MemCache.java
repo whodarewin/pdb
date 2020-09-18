@@ -29,7 +29,7 @@ public class MemCache{
 
     public MemCache(){}
 
-    public MemCache(IWalReader reader) throws IOException {
+    public void init(IWalReader reader) throws IOException {
         Iterator<Cell> iterator = reader.read();
         while(iterator.hasNext()){
             Cell cell = iterator.next();

@@ -78,7 +78,7 @@ public class LSMEngine implements IEngine {
             HCCManager hccManager = new HCCManager(configuration, reader);
             //注册hccManager hccFile 变动时通知
             stateManager.addListener(hccManager);
-            //创建CrashWorkerManage
+            //创建CrashWorkerManager
             memCacheManager = new MemCacheManager(configuration, stateManager, hccWriter, pdbStatus);
             //创建scannerMechine，整体的读架子搭建起来
             scannerMechine = new ScannerMechine(hccManager, memCacheManager);
