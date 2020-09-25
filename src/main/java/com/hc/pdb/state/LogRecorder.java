@@ -190,6 +190,7 @@ public class LogRecorder {
                 }
             } catch (IOException | InterruptedException e) {
                 e.printStackTrace();
+                //TODO:how to handle this?
             }finally {
                 cleaning.set(false);
             }
