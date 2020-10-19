@@ -34,6 +34,7 @@ import java.util.UUID;
  */
 public class HCCWriter implements IHCCWriter {
     private static final Logger LOGGER = LoggerFactory.getLogger(HCCWriter.class);
+    private static final int MB_SIZE = 1024 * 1024;
 
     private Configuration configuration;
     private HCCManager manager;
@@ -74,10 +75,10 @@ public class HCCWriter implements IHCCWriter {
             file.createNewFile();
             long createTime = System.currentTimeMillis();
             String md5 = null;
-            try (FileOutputStream fileOutputStream = new FileOutputStream(file)) {
+            try (BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(file),MB_SIZE)) {
                 //写prefix
                 LOGGER.info("first,write hcc prefix");
-                fileOutputStream.write(FileConstants.HCC_WRITE_PREFIX);
+                outputStream.write(FileConstants.HCC_WRITE_PREFIX);
                 //创建bloom filter
 
                 ByteBloomFilter filter = new ByteBloomFilter(size, errorRate, 1, 1);
@@ -85,7 +86,7 @@ public class HCCWriter implements IHCCWriter {
                 WriteContext context = new WriteContext(filter);
                 LOGGER.info("second,write block,index is {}", FileConstants.HCC_WRITE_PREFIX.length);
                 //2 开始写block
-                IBlockWriter.BlockWriterResult result = blockWriter.writeBlock(cellIterator, fileOutputStream, context);
+                IBlockWriter.BlockWriterResult result = blockWriter.writeBlock(cellIterator, outputStream, context);
                 if(result == null){
                     LOGGER.warn("block write result is null,check if pdb is closed");
                     return null;
@@ -98,23 +99,23 @@ public class HCCWriter implements IHCCWriter {
                 //todo:优化掉toByteArray的copy
                 ByteArrayOutputStream indexStream = context.getIndex();
 
-                fileOutputStream.write(indexStream.toByteArray());
+                outputStream.write(indexStream.toByteArray());
 
                 //4 开始写bloomFilter
                 ByteBloomFilter bloomFilter = context.getBloom();
                 LOGGER.info("index write finished at {}", blockFinishIndex + context.getIndex().size());
                 int bloomStartIndex = blockFinishIndex + context.getIndex().size();
                 LOGGER.info("fourth,write bloom, index is {}", bloomStartIndex);
-                bloomFilter.writeBloom(fileOutputStream);
+                bloomFilter.writeBloom(outputStream);
 
                 //4 开始写meta
 
                 MetaInfo metaInfo = new MetaInfo(createTime, result.getStart(), result.getEnd(), indexStartIndex, bloomStartIndex);
                 LOGGER.info("fifth,write meta info {}", metaInfo);
                 byte[] bytes = metaInfo.serialize();
-                fileOutputStream.write(bytes);
-                fileOutputStream.write(Bytes.toBytes(bytes.length));
-                fileOutputStream.flush();
+                outputStream.write(bytes);
+                outputStream.write(Bytes.toBytes(bytes.length));
+                outputStream.flush();
             }
 
             if(!file.exists()){

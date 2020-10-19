@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Iterator;
 import java.util.List;
 
@@ -41,7 +42,7 @@ public class BlockWriter implements IBlockWriter {
     }
 
     @Override
-    public BlockWriterResult writeBlock(Iterator<Cell> cellIterator, FileOutputStream outputStream, WriteContext context)
+    public BlockWriterResult writeBlock(Iterator<Cell> cellIterator, OutputStream outputStream, WriteContext context)
             throws PDBIOException, PDBSerializeException, PDBStopException {
         long blockSize = conf.getLong(PDBConstants.BLOCK_SIZE_KEY, PDBConstants.DEFAULT_BLOCK_SIZE);
         blockSize = blockSize * 1024;
