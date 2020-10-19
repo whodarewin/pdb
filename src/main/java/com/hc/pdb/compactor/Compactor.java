@@ -96,6 +96,7 @@ public class Compactor implements StateChangeListener,IRecoveryable,
                             .sorted((o1, o2) -> (int) (o1.getCreateTime() - o2.getCreateTime()))
                             .limit(2).collect(Collectors.toList());
                     if(toCompact.size() < 2){
+                        LOGGER.info("choose compact file size is lower than 2 ,which is {},return",toCompact.size());
                         return;
                     }
 
@@ -105,6 +106,7 @@ public class Compactor implements StateChangeListener,IRecoveryable,
 
                     compactorExecutor
                             .submit(new CompactorWorker(compactingFile,stateManager));
+                    LOGGER.info("submit compact task success");
                 }else{
                     LOGGER.info("no file to compact,compact threshold {} size {} compacting file size {}",
                             compactThreshold,noCompactMetas.size(),stateManager.getCompactingFiles().size());
@@ -160,38 +162,16 @@ public class Compactor implements StateChangeListener,IRecoveryable,
             try {
                 switch (state){
                     case CompactingFile.BEGIN:
-                        deleteCompactTargetFileIfHave();
-                        HCCFileMeta fileMeta = writeNewHCCFile();
-                        if(fileMeta != null) {
-                            stateManager.changeCompactingFileState(compactingID, CompactingFile.WRITE_HCC_FILE_FINISH);
-                            addNewHccFileToMeta();
-                            stateManager.changeCompactingFileState(compactingID, CompactingFile.ADD_COMPACTED_HCC_FILE_TO_STATE_FINISH);
-                            deleteFileCompacted();
-                            stateManager.changeCompactingFileState(compactingID, CompactingFile.DELETE_COMPACTED_FILE_FINISH);
-                            deleteMetaFileCompacting();
-                        }else{
-                            stateManager.changeCompactingFileState(compactingID, CompactingFile.COMPACTED_HCC_FILE_IS_NULL);
-                            deleteFileCompacted();
-                            stateManager.changeCompactingFileState(compactingID, CompactingFile.DELETE_COMPACTED_FILE_FINISH);
-                            deleteMetaFileCompacting();
-                        }
+                        dealWithBegin();
                         break;
                     case CompactingFile.WRITE_HCC_FILE_FINISH:
-                        addNewHccFileToMeta();
-                        stateManager.changeCompactingFileState(compactingID,CompactingFile.ADD_COMPACTED_HCC_FILE_TO_STATE_FINISH);
-                        deleteFileCompacted();
-                        stateManager.changeCompactingFileState(compactingID,CompactingFile.DELETE_COMPACTED_FILE_FINISH);
-                        deleteMetaFileCompacting();
+                        dealWithWriteHccFileFinish();
                         break;
                     case CompactingFile.COMPACTED_HCC_FILE_IS_NULL:
-                        deleteFileCompacted();
-                        stateManager.changeCompactingFileState(compactingID, CompactingFile.DELETE_COMPACTED_FILE_FINISH);
-                        deleteMetaFileCompacting();
+                        dealWhthCompactedHccFileIsNull();
                         break;
                     case CompactingFile.ADD_COMPACTED_HCC_FILE_TO_STATE_FINISH:
-                        deleteFileCompacted();
-                        stateManager.changeCompactingFileState(compactingID,CompactingFile.DELETE_COMPACTED_FILE_FINISH);
-                        deleteMetaFileCompacting();
+                        dealWithAddCompactedHccFileToStateFinish();
                         break;
                     case CompactingFile.DELETE_COMPACTED_FILE_FINISH:
                         deleteMetaFileCompacting();
@@ -203,6 +183,44 @@ public class Compactor implements StateChangeListener,IRecoveryable,
                 pdbStatus.setCrashException(e);
                 pdbStatus.setClosed("compact exception");
                 throw new RuntimeException(e);
+            }
+        }
+
+        private void dealWithAddCompactedHccFileToStateFinish() throws Exception {
+            deleteFileCompacted();
+            stateManager.changeCompactingFileState(compactingID,CompactingFile.DELETE_COMPACTED_FILE_FINISH);
+            deleteMetaFileCompacting();
+        }
+
+        private void dealWhthCompactedHccFileIsNull() throws Exception {
+            deleteFileCompacted();
+            stateManager.changeCompactingFileState(compactingID, CompactingFile.DELETE_COMPACTED_FILE_FINISH);
+            deleteMetaFileCompacting();
+        }
+
+        private void dealWithWriteHccFileFinish() throws Exception {
+            addNewHccFileToMeta();
+            stateManager.changeCompactingFileState(compactingID,CompactingFile.ADD_COMPACTED_HCC_FILE_TO_STATE_FINISH);
+            deleteFileCompacted();
+            stateManager.changeCompactingFileState(compactingID,CompactingFile.DELETE_COMPACTED_FILE_FINISH);
+            deleteMetaFileCompacting();
+        }
+
+        private void dealWithBegin() throws Exception {
+            deleteCompactTargetFileIfHave();
+            HCCFileMeta fileMeta = writeNewHCCFile();
+            if(fileMeta != null) {
+                stateManager.changeCompactingFileState(compactingID, CompactingFile.WRITE_HCC_FILE_FINISH);
+                addNewHccFileToMeta();
+                stateManager.changeCompactingFileState(compactingID, CompactingFile.ADD_COMPACTED_HCC_FILE_TO_STATE_FINISH);
+                deleteFileCompacted();
+                stateManager.changeCompactingFileState(compactingID, CompactingFile.DELETE_COMPACTED_FILE_FINISH);
+                deleteMetaFileCompacting();
+            }else{
+                stateManager.changeCompactingFileState(compactingID, CompactingFile.COMPACTED_HCC_FILE_IS_NULL);
+                deleteFileCompacted();
+                stateManager.changeCompactingFileState(compactingID, CompactingFile.DELETE_COMPACTED_FILE_FINISH);
+                deleteMetaFileCompacting();
             }
         }
 
@@ -233,6 +251,7 @@ public class Compactor implements StateChangeListener,IRecoveryable,
 
             FilterScanner scanner = getScanner().getKey();
             if(scanner.next() == null){
+                LOGGER.warn("no value to write");
                 return null;
             }
             Pair<FilterScanner,Integer> pair = getScanner();
