@@ -15,7 +15,7 @@
         <protostuff.version>1.6.0</protostuff.version>
 
         <commons.collection>3.2.2</commons.collection>
-        <commons.io>2.6</commons.io>
+        <commons.io>2.7</commons.io>
         <jackson.version>2.10.3</jackson.version>
         <common.lang.version>3.9</common.lang.version>
     </properties>
