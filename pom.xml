@@ -16,7 +16,7 @@
 
         <commons.collection>3.2.2</commons.collection>
         <commons.io>2.6</commons.io>
-        <jackson.version>2.10.3</jackson.version>
+        <jackson.version>2.12.6.1</jackson.version>
         <common.lang.version>3.9</common.lang.version>
     </properties>
     <description>a local db</description>
